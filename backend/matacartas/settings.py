@@ -100,3 +100,9 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
     "CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000"
 ).split(",")
 CORS_ALLOW_CREDENTIALS = True
+
+# CSRF
+# Needed when the frontend is served from a different origin (e.g. Vite dev server)
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    "CSRF_TRUSTED_ORIGINS", "http://localhost:5173,http://localhost:3000"
+).split(",")

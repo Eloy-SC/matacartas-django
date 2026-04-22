@@ -23,8 +23,8 @@ matacartas_django/
 │   └── Dockerfile
 ├── frontend/                # React + Vite app
 │   ├── src/
-│   │   ├── App.jsx
-│   │   └── main.jsx
+│   │   ├── App.js
+│   │   └── main.js
 │   ├── index.html
 │   ├── vite.config.js
 │   ├── nginx.conf           # Used in production image

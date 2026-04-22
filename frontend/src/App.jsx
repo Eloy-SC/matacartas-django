@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./App.css";
 
 function App() {
   const [apiStatus, setApiStatus] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("/api/health/")
@@ -15,6 +17,9 @@ function App() {
     <div className="app">
       <h1>Matacartas</h1>
       <p>Django + React + PostgreSQL starter app</p>
+      <button type="button" onClick={() => navigate("/login")}> 
+        Ir a login
+      </button>
       {apiStatus && (
         <div className={`api-status ${apiStatus.status}`}>
           <strong>API Status:</strong> {apiStatus.message}
