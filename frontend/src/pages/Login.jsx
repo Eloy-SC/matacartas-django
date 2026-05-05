@@ -1,21 +1,74 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 export default function Login() {
+  const location = useLocation();
   const [mode, setMode] = useState("login"); // 'login' | 'register'
   const [username, setUsername] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [imgUrl, setImgUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  function formatApiError(data) {
+    if (!data) return "";
+    if (typeof data === "string") return data;
+
+    if (typeof data.detail === "string") return data.detail;
+
+    if (typeof data === "object") {
+      const parts = [];
+      for (const [field, value] of Object.entries(data)) {
+        if (Array.isArray(value)) {
+          parts.push(`${field}: ${value.join(" ")}`);
+        } else if (typeof value === "string") {
+          parts.push(`${field}: ${value}`);
+        }
+      }
+      return parts.join("\n");
+    }
+
+    return "";
+  }
+
+  const initialModeFromQuery = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const queryMode = params.get("mode");
+    return queryMode === "register" ? "register" : "login";
+  }, [location.search]);
+
+  useEffect(() => {
+    setMode(initialModeFromQuery);
+    setError("");
+    setSuccessMessage("");
+    setPassword("");
+    setRepeatPassword("");
+  }, [initialModeFromQuery]);
 
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
     setSuccessMessage("");
 
-    if (!username || !password) {
-      setError("Introduce usuario y contraseña");
-      return;
+    if (mode === "login") {
+      if (!username || !password) {
+        setError("Introduce usuario y contraseña");
+        return;
+      }
+    } else {
+      if (!username || !password || !repeatPassword || !nombre || !email) {
+        setError("Introduce todos los campos requeridos");
+        return;
+      }
+
+      if (password !== repeatPassword) {
+        setError("Las contraseñas no coinciden");
+        return;
+      }
     }
 
     setLoading(true);
@@ -60,16 +113,23 @@ export default function Login() {
           "Content-Type": "application/json",
           "X-CSRFToken": csrfToken,
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username,
+          nombre,
+          password,
+          imagen: imgUrl,
+          email: email,
+        }),
       });
 
       const data = await registerRes.json().catch(() => ({}));
       if (!registerRes.ok) {
-        throw new Error(data.detail || "No se pudo registrar el usuario");
+        throw new Error(formatApiError(data) || "No se pudo registrar el usuario");
       }
 
       setSuccessMessage("Registro correcto. Ya puedes iniciar sesión.");
       setPassword("");
+      setRepeatPassword("");
       setMode("login");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error en la autenticación");
@@ -83,6 +143,8 @@ export default function Login() {
     setError("");
     setSuccessMessage("");
     setPassword("");
+    setRepeatPassword("");
+    setImgUrl("");
   }
 
   return (
@@ -91,7 +153,7 @@ export default function Login() {
 
       <form onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="username">Usuario</label>
+          <label htmlFor="username">{mode === "login" ? "Usuario" : "Nombre de usuario"}</label>
           <br />
           <input
             id="username"
@@ -103,6 +165,21 @@ export default function Login() {
           />
         </div>
 
+        {mode === "register" && (
+        <div>
+          <label htmlFor="nombre">Nombre del perfil</label>
+          <br />
+          <input
+            id="nombre"
+            name="nombre"
+            autoComplete="nombre"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            disabled={loading}
+          />
+        </div>
+        )}
+
         <div style={{ marginTop: 12 }}>
           <label htmlFor="password">Contraseña</label>
           <br />
@@ -110,12 +187,59 @@ export default function Login() {
             id="password"
             name="password"
             type="password"
-            autoComplete="current-password"
+            autoComplete={mode === "login" ? "current-password" : "new-password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}
           />
         </div>
+
+        {mode === "register" && (
+          <div style={{ marginTop: 12 }}>
+            <label htmlFor="repeatPassword">Repetir contraseña</label>
+            <br />
+            <input
+              id="repeatPassword"
+              name="repeatPassword"
+              type="password"
+              autoComplete="new-password"
+              value={repeatPassword}
+              onChange={(e) => setRepeatPassword(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+        )}
+
+        {mode === "register" && (
+          <div style={{ marginTop: 12 }}>
+            <label htmlFor="email">Correo electrónico</label>
+            <br />
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+        )}
+
+        {mode === "register" && (
+          <div style={{ marginTop: 12 }}>
+            <label htmlFor="imgUrl">Foto de perfil</label>
+            <br />
+            <input
+              id="imgUrl"
+              name="imgUrl"
+              type="url"
+              placeholder="https://..."
+              value={imgUrl}
+              onChange={(e) => setImgUrl(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+        )}
 
         <div style={{ marginTop: 12 }}>
           <button type="submit" disabled={loading}>
@@ -150,7 +274,7 @@ export default function Login() {
         </div>
 
         {error && (
-          <p role="alert" style={{ marginTop: 12 }}>
+          <p role="alert" style={{ marginTop: 12, whiteSpace: "pre-line" }}>
             {error}
           </p>
         )}

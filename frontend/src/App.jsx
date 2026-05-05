@@ -20,6 +20,13 @@ function App() {
       <button type="button" onClick={() => navigate("/login")}> 
         Ir a login
       </button>
+      <button
+        type="button"
+        style={{ marginLeft: 8 }}
+        onClick={() => navigate("/login?mode=register")}
+      >
+        Registrarse
+      </button>
       {apiStatus && (
         <div className={`api-status ${apiStatus.status}`}>
           <strong>API Status:</strong> {apiStatus.message}

@@ -1,6 +1,6 @@
 from django.urls import path
-from .views.auth import csrf, me, register, session_login, session_logout
-from .views.health import health_check
+from .views.auth_view import csrf, me, register, session_login, session_logout
+from .views.health_view import health_check
 
 urlpatterns = [
     path("health/", health_check, name="health-check"),

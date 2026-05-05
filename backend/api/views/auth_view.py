@@ -1,10 +1,11 @@
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
 from django.middleware.csrf import get_token
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from ..serializers.user_serializer import UserSerializer
+from ..services import auth_service
 
 
 @api_view(["GET"])
@@ -27,14 +28,14 @@ def session_login(request):
 
     if not username or not password:
         return Response(
-            {"detail": "Missing username or password"},
+            {"detail": "Falta el nombre de usuario o la contraseña"},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
     user = authenticate(request, username=username, password=password)
     if user is None:
         return Response(
-            {"detail": "Invalid credentials"},
+            {"detail": "Credenciales inválidas"},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -47,42 +48,33 @@ def session_login(request):
         }
     )
 
-
-@api_view(["POST"])
-@permission_classes([AllowAny])
-def register(request):
-    username = request.data.get("username")
-    password = request.data.get("password")
-
-    if not username or not password:
-        return Response(
-            {"detail": "Missing username or password"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    if User.objects.filter(username=username).exists():
-        return Response(
-            {"detail": "Username already exists"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    user = User.objects.create_user(username=username, password=password)
-    return Response(
-        {
-            "id": user.id,
-            "username": user.get_username(),
-            "detail": "User created",
-        },
-        status=status.HTTP_201_CREATED,
-    )
-
-
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def session_logout(request):
     logout(request)
-    return Response({"detail": "Logged out"})
+    return Response({"detail": "Sesión cerrada"})
 
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def register(request):
+    serializer = UserSerializer(data=request.data)
+
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        usuario = auth_service.registrar_usuario(**serializer.validated_data)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response(
+        {
+            "id": usuario.id,
+            "username": usuario.get_username(),
+            "detail": "Usuario creado",
+        },
+        status=status.HTTP_201_CREATED,
+    )
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
