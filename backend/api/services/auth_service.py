@@ -2,7 +2,6 @@ from django.db import transaction
 from django.db.utils import IntegrityError
 from django.contrib.auth import get_user_model
 from api.models.perfil import Perfil
-from api.selectors import user_selector
 
 
 class RegistrationError(Exception):
@@ -18,15 +17,15 @@ def registrar_usuario(username, password, email, nombre, imagen):
     UserModel = get_user_model()
     try:
         user = UserModel.objects.create_user(username=username, password=password, email=email)
-    except IntegrityError:
-        errors = {}
-        if user_selector.get_users_by_username(username).exists():
-            errors["username"] = ["El nombre de usuario ya existe"]
-        if user_selector.get_users_by_email(email).exists():
-            errors["email"] = ["El correo electrónico ya existe"]
-        if not errors:
-            errors["detail"] = ["No se pudo crear el usuario"]
-        raise RegistrationError(errors)
+    except IntegrityError as e:
+        # No repetimos comprobaciones: el serializer ya valida duplicados.
+        # Este bloque cubre la condición de carrera y/o constraints a nivel DB.
+        msg = str(e)
+        if "username" in msg:
+            raise RegistrationError({"username": ["El nombre de usuario ya existe"]})
+        if "email" in msg:
+            raise RegistrationError({"email": ["El correo electrónico ya existe"]})
+        raise RegistrationError({"detail": ["No se pudo crear el usuario"]})
 
     Perfil.objects.create(user=user, nombre=nombre, imagen=imagen, puntuacion=0)
     return user

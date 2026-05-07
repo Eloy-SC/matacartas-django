@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from api.selectors import user_selector
@@ -54,6 +53,15 @@ class UserSerializer(serializers.Serializer):
     imagen = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     def validate_username(self, value: str) -> str:
+        if (
+            not value.isascii()
+            or not value.islower()
+            or not all(ch.isalnum() or ch == "_" for ch in value)
+        ):
+            raise serializers.ValidationError(
+                "El nombre de usuario solo puede contener letras minúsculas, números y guiones bajos."
+            )
+
         if user_selector.get_users_by_username(value).exists():
             raise serializers.ValidationError("El nombre de usuario ya existe")
         return value
@@ -62,9 +70,3 @@ class UserSerializer(serializers.Serializer):
         if user_selector.get_users_by_email(value).exists():
             raise serializers.ValidationError("El correo electrónico ya existe")
         return value
-
-    def create(self, validated_data):
-        try:
-            return auth_service.registro_usuario(**validated_data)
-        except auth_service.RegistrationError as e:
-            raise serializers.ValidationError(e.errors)

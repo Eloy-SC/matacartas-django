@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Login() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mode, setMode] = useState("login"); // 'login' | 'register'
   const [username, setUsername] = useState("");
   const [nombre, setNombre] = useState("");
@@ -24,9 +25,9 @@ export default function Login() {
       const parts = [];
       for (const [field, value] of Object.entries(data)) {
         if (Array.isArray(value)) {
-          parts.push(`${field}: ${value.join(" ")}`);
+          parts.push(`${value.join(" ")}`);
         } else if (typeof value === "string") {
-          parts.push(`${field}: ${value}`);
+          parts.push(`${value}`);
         }
       }
       return parts.join("\n");
@@ -100,8 +101,8 @@ export default function Login() {
           throw new Error(data.detail || "Credenciales inválidas");
         }
 
-        setSuccessMessage("Login correcto");
-        setPassword("");
+        navigate("/inicio")
+
         return;
       }
 
@@ -153,7 +154,7 @@ export default function Login() {
 
       <form onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="username">{mode === "login" ? "Usuario" : "Nombre de usuario"}</label>
+          <label htmlFor="username">{mode === "login" ? "Usuario" : "Nombre de usuario *"}</label>
           <br />
           <input
             id="username"
@@ -167,7 +168,7 @@ export default function Login() {
 
         {mode === "register" && (
         <div>
-          <label htmlFor="nombre">Nombre del perfil</label>
+          <label htmlFor="nombre">Nombre del perfil *</label>
           <br />
           <input
             id="nombre"
@@ -181,7 +182,7 @@ export default function Login() {
         )}
 
         <div style={{ marginTop: 12 }}>
-          <label htmlFor="password">Contraseña</label>
+          <label htmlFor="password">{mode === "login" ? "Contraseña" : "Contraseña *"}</label>
           <br />
           <input
             id="password"
@@ -196,7 +197,7 @@ export default function Login() {
 
         {mode === "register" && (
           <div style={{ marginTop: 12 }}>
-            <label htmlFor="repeatPassword">Repetir contraseña</label>
+            <label htmlFor="repeatPassword">Repetir contraseña *</label>
             <br />
             <input
               id="repeatPassword"
@@ -212,7 +213,7 @@ export default function Login() {
 
         {mode === "register" && (
           <div style={{ marginTop: 12 }}>
-            <label htmlFor="email">Correo electrónico</label>
+            <label htmlFor="email">Correo electrónico *</label>
             <br />
             <input
               id="email"

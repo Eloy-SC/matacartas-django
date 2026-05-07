@@ -64,8 +64,8 @@ def register(request):
     
     try:
         usuario = auth_service.registrar_usuario(**serializer.validated_data)
-    except ValueError as e:
-        return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    except auth_service.RegistrationError as e:
+        return Response(e.errors, status=status.HTTP_400_BAD_REQUEST)
 
     return Response(
         {
