@@ -1,0 +1,124 @@
+:root {
+  /* Ajusta aquí tu "morado oscuro" */
+  --ui-accent: #3b1a5a;
+  --ui-bg: #ffffff;
+  --ui-text: #222222;
+  --ui-page-bg: #f5f5f5;
+}
+
+body {
+  background: var(--ui-page-bg);
+  color: var(--ui-text);
+}
+
+/* Botones: cuadrados, grandes, blanco + morado; hover invierte */
+button {
+  appearance: none;
+  border: 2px solid var(--ui-accent);
+  background: var(--ui-bg);
+  color: var(--ui-accent);
+  border-radius: 0;
+  padding: 12px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1;
+}
+
+button:hover {
+  background: var(--ui-accent);
+  color: var(--ui-bg);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ui-accent) 35%, transparent);
+  outline-offset: 2px;
+}
+
+/* Campos de formulario (opcional, pero ayuda a que combine con los botones) */
+input {
+  border: 2px solid color-mix(in srgb, var(--ui-accent) 55%, #ffffff);
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  border-radius: 0;
+  padding: 6px 8px;
+  font-size: 1rem;
+}
+
+input:focus-visible {
+  outline: 1px solid color-mix(in srgb, var(--ui-accent) 35%, transparent);
+}
+
+label {
+  color: var(--ui-accent);
+  font-weight: 700;
+}
+
+.app--with-avatar {
+  position: relative;
+}
+
+.avatar-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border-radius: 9999px;
+  border: 2px solid var(--ui-accent);
+  background: var(--ui-bg);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.avatar-button:hover {
+  background: var(--ui-bg);
+  color: inherit;
+}
+
+.avatar-button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ui-accent) 35%, transparent);
+  outline-offset: 2px;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 9999px;
+  display: block;
+}
+
+.profile-preview {
+  margin-top: 10px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.profile-preview__img {
+  width: 96px;
+  height: 96px;
+  border-radius: 9999px;
+  border: 2px solid var(--ui-accent);
+  background: var(--ui-bg);
+  object-fit: cover;
+}
+
+.profile-preview__warning {
+  margin-top: 6px;
+  margin-bottom: 10px;
+  color: var(--ui-accent);
+  font-size: 0.95rem;
+  min-height: 1.2em;
+}
+
+.profile-preview__warning--hidden {
+  visibility: hidden;
+}

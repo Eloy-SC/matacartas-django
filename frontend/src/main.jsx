@@ -4,7 +4,9 @@ import App from "./App.jsx";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Login from "./pages/Login.jsx";
 import Inicio from "./pages/Inicio.jsx";
+import Perfil from "./pages/Perfil.jsx";
 import "./index.css";
+import "./styles/main.css";
 
 function RequireAuth({ children }) {
   const location = useLocation();
@@ -42,14 +44,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
-        <Route
-          path="/inicio"
-          element={
-            <RequireAuth>
-              <Inicio />
-            </RequireAuth>
-          }
-        />
+        <Route path="/inicio" element={ <RequireAuth> <Inicio /> </RequireAuth>}/>
+        <Route path="/perfil" element={ <RequireAuth> <Perfil /> </RequireAuth>}/>
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

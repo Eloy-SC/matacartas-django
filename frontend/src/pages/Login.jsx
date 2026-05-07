@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import "../styles/main.css";
+import defaultProfilePic from "../assets/default_profile_pic.png";
 
 export default function Login() {
   const location = useLocation();
@@ -11,9 +13,15 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [imgUrl, setImgUrl] = useState("");
+  const [imgPreviewError, setImgPreviewError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  const profilePreviewSrc = imgUrl && !imgPreviewError ? imgUrl : defaultProfilePic;
+  const showProfilePreviewWarning = Boolean(imgUrl) && imgPreviewError;
+  const profilePreviewWarningText =
+    "No se ha podido encontrar la imagen, se asignará esta por defecto";
 
   function formatApiError(data) {
     if (!data) return "";
@@ -49,6 +57,15 @@ export default function Login() {
     setPassword("");
     setRepeatPassword("");
   }, [initialModeFromQuery]);
+
+  useEffect(() => {
+    if (!imgUrl) {
+      setImgPreviewError(false);
+      return;
+    }
+
+    setImgPreviewError(false);
+  }, [imgUrl]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -150,10 +167,12 @@ export default function Login() {
 
   return (
     <div className="app">
-      <h1>{mode === "login" ? "Login" : "Registro"}</h1>
+      <h1>M A T A C A R T A S</h1>
+
+      <h2 className="">{mode === "login" ? "INICIO DE SESIÓN" : "REGISTRO"}</h2>
 
       <form onSubmit={handleSubmit}>
-        <div>
+        <div style={{ marginTop: 12 }}>
           <label htmlFor="username">{mode === "login" ? "Usuario" : "Nombre de usuario *"}</label>
           <br />
           <input
@@ -167,7 +186,7 @@ export default function Login() {
         </div>
 
         {mode === "register" && (
-        <div>
+        <div style={{ marginTop: 12 }}>
           <label htmlFor="nombre">Nombre del perfil *</label>
           <br />
           <input
@@ -229,7 +248,16 @@ export default function Login() {
         {mode === "register" && (
           <div style={{ marginTop: 12 }}>
             <label htmlFor="imgUrl">Foto de perfil</label>
-            <br />
+            <div className="profile-preview" aria-hidden="true">
+              <img
+                className="profile-preview__img"
+                src={profilePreviewSrc}
+                alt="Previsualización de foto de perfil"
+                onError={() => {
+                  if (imgUrl) setImgPreviewError(true);
+                }}
+              />
+            </div>
             <input
               id="imgUrl"
               name="imgUrl"
@@ -239,6 +267,16 @@ export default function Login() {
               onChange={(e) => setImgUrl(e.target.value)}
               disabled={loading}
             />
+            <p
+              className={`profile-preview__warning ${
+                showProfilePreviewWarning ? "" : "profile-preview__warning--hidden"
+              }`}
+              role="status"
+              aria-live="polite"
+              aria-hidden={!showProfilePreviewWarning}
+            >
+              {profilePreviewWarningText}
+            </p>
           </div>
         )}
 

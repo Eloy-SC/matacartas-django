@@ -80,10 +80,16 @@ def register(request):
 @permission_classes([IsAuthenticated])
 def me(request):
     user = request.user
+    perfil = getattr(user, "perfil", None)
     return Response(
         {
             "id": user.id,
             "username": user.get_username(),
             "isAuthenticated": True,
+            "perfil": {
+                "nombre": getattr(perfil, "nombre", None),
+                "puntuacion": getattr(perfil, "puntuacion", None),
+                "imagen": getattr(perfil, "imagen", None),
+            },
         }
     )
