@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.middleware.csrf import get_token
+from ..utils.exceptions import RegistrationError
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -64,7 +65,7 @@ def register(request):
     
     try:
         usuario = auth_service.registrar_usuario(**serializer.validated_data)
-    except auth_service.RegistrationError as e:
+    except RegistrationError as e:
         return Response(e.errors, status=status.HTTP_400_BAD_REQUEST)
 
     return Response(
@@ -79,12 +80,22 @@ def register(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def me(request):
-    user = request.user
-    perfil = getattr(user, "perfil", None)
+    try:
+        user_perfil = auth_service.me(request.user)
+    except Exception:
+        return Response(
+            {"detail": "No se pudo obtener el usuario autenticado"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    
+    user = user_perfil[0]
+    perfil = user_perfil[1]
+    
     return Response(
         {
             "id": user.id,
-            "username": user.get_username(),
+            "username": getattr(user, "username", ""),
+            "email": getattr(user, "email", ""),
             "isAuthenticated": True,
             "perfil": {
                 "nombre": getattr(perfil, "nombre", None),

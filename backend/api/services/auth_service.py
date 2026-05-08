@@ -1,13 +1,9 @@
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.contrib.auth import get_user_model
-from api.models.perfil import Perfil
-
-
-class RegistrationError(Exception):
-    def __init__(self, errors):
-        super().__init__("Registration failed")
-        self.errors = errors
+from ..models.perfil import Perfil
+from ..utils.exceptions import RegistrationError
+from ..selectors import user_selector
 
 @transaction.atomic
 def registrar_usuario(username, password, email, nombre, imagen):
@@ -30,3 +26,13 @@ def registrar_usuario(username, password, email, nombre, imagen):
     Perfil.objects.create(user=user, nombre=nombre, imagen=imagen, puntuacion=0)
     return user
 
+@transaction.atomic
+def me(user):
+    '''
+    Devuelve el usuario autenticado junto con su perfil. No es utilizado por administradores.
+    '''
+    UserModel = get_user_model()
+    user = UserModel.objects.get(id=user.id)
+    perfil = user_selector.get_perfil_by_user_id(user.id)
+    user_perfil = (user, perfil)
+    return user_perfil
