@@ -96,6 +96,7 @@ def me(request):
             "id": user.id,
             "username": getattr(user, "username", ""),
             "email": getattr(user, "email", ""),
+            "is_staff": getattr(user, "is_staff", False),
             "isAuthenticated": True,
             "perfil": {
                 "nombre": getattr(perfil, "nombre", None),

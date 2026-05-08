@@ -71,7 +71,7 @@ export default function Inicio() {
 			<button
 				type="button"
 				className="avatar-button"
-				onClick={() => navigate("/perfil")}
+				onClick={() => navigate("/perfil?mode=view")}
 				aria-label="Ir al perfil"
 			>
 				<img

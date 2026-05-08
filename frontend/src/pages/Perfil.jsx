@@ -1,14 +1,48 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import defaultProfilePic from "../assets/default_profile_pic.png";
 
 export default function Perfil() {
+	const location = useLocation();
 	const navigate = useNavigate();
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState("");
-	const [editing, setEditing] = useState(false);
 	const [avatarError, setAvatarError] = useState(false);
+	const [mode, setMode] = useState("view"); // 'view' | 'edit'
+
+	const initialModeFromQuery = useMemo(() => {
+		const params = new URLSearchParams(location.search);
+		const queryMode = params.get("mode");
+		return queryMode === "edit" ? "edit" : "view";
+	}, [location.search]);
+
+	useEffect(() => {
+		setMode(initialModeFromQuery);
+		setError("");
+		setNewPassword("");
+		setRepeatNewPassword("");
+		setAvatarError(false);
+	}, [initialModeFromQuery]);
+
+	const editing = mode === "edit";
+
+	function switchMode(nextMode) {
+		setMode(nextMode);
+		setError("");
+		setNewPassword("");
+		setRepeatNewPassword("");
+		setAvatarError(false);
+		if (nextMode === "view") {
+			setForm({
+				username: me?.username ?? "",
+				email: me?.email ?? "",
+				nombre: me?.perfil?.nombre ?? "",
+				imagen: me?.perfil?.imagen ?? "",
+			});
+		}
+		navigate(`/perfil?mode=${nextMode}`, { replace: true });
+	}
 
 	const [me, setMe] = useState(null);
 	const [form, setForm] = useState({
@@ -61,30 +95,7 @@ export default function Perfil() {
 		return () => {
 			cancelled = true;
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
-
-	function startEdit() {
-		setError("");
-		setEditing(true);
-		setNewPassword("");
-		setRepeatNewPassword("");
-		setAvatarError(false);
-	}
-
-	function cancelEdit() {
-		setError("");
-		setEditing(false);
-		setNewPassword("");
-		setRepeatNewPassword("");
-		setForm({
-			username: me?.username ?? "",
-			email: me?.email ?? "",
-			nombre: me?.perfil?.nombre ?? "",
-			imagen: me?.perfil?.imagen ?? "",
-		});
-		setAvatarError(false);
-	}
 
 	async function handleSave(e) {
 		e.preventDefault();
@@ -142,9 +153,24 @@ export default function Perfil() {
 				throw new Error(msg);
 			}
 
-			setEditing(false);
-			setNewPassword("");
-			setRepeatNewPassword("");
+			// Si se cambió la contraseña, forzamos cierre de sesión y mandamos a login.
+			if (nextPassword) {
+				try {
+					await fetch("/api/auth/logout/", {
+						method: "POST",
+						credentials: "include",
+						headers: {
+							"Content-Type": "application/json",
+							"X-CSRFToken": csrfToken,
+						},
+					});
+				} finally {
+					navigate("/login", { replace: true });
+				}
+				return;
+			}
+
+			switchMode("view");
 			await loadMe();
 		} catch (e2) {
 			setError(e2 instanceof Error ? e2.message : "Error actualizando el perfil");
@@ -156,167 +182,175 @@ export default function Perfil() {
 	if (loading) {
 		return (
 			<div className="app">
-				<h1>M A T A C A R T A S</h1>
-				<h2>PERFIL</h2>
+				<h1 style={{ marginBottom: 60 }}>PERFIL</h1>
 				<p>Cargando...</p>
 			</div>
 		);
 	}
 
 	return (
-		<div className="app app--with-avatar">
-			<button
-				type="button"
-				className="avatar-button"
-				onClick={() => navigate("/inicio")}
-				aria-label="Volver a inicio"
+		<div className="app">
+			<h1 style={{ marginBottom: 40 }}>PERFIL</h1>
+
+			<form
+				onSubmit={handleSave}
+				style={{ width: "min(900px, 100%)", margin: "0 auto" }}
 			>
-				<img
-					className="avatar-img"
-					src={avatarSrc}
-					alt="Foto de perfil"
-					onError={() => {
-						if (form.imagen) setAvatarError(true);
-					}}
-				/>
-			</button>
-
-			<h1>M A T A C A R T A S</h1>
-			<h2>PERFIL</h2>
-
-			<div className="profile-preview">
-				<img
-					className="profile-preview__img"
-					src={avatarSrc}
-					alt="Vista previa de la imagen"
-					onError={() => {
-						if (form.imagen) setAvatarError(true);
-					}}
-				/>
-			</div>
-
-			<form onSubmit={handleSave} style={{ width: "min(420px, 100%)" }}>
-				<div style={{ display: "grid", gap: 10 }}>
-					<div style={{ display: "grid", gap: 6 }}>
-						<label htmlFor="perfil-username">Username</label>
-						{editing ? (
-							<input
-								id="perfil-username"
-								value={form.username}
-								onChange={(e3) => setForm((prev) => ({ ...prev, username: e3.target.value }))}
-								autoComplete="username"
-								required
-							/>
-						) : (
-							<input id="perfil-username" value={form.username} readOnly />
-						)}
-					</div>
-
-					<div style={{ display: "grid", gap: 6 }}>
-						<label htmlFor="perfil-email">Email</label>
-						{editing ? (
-							<input
-								id="perfil-email"
-								type="email"
-								value={form.email}
-								onChange={(e3) => setForm((prev) => ({ ...prev, email: e3.target.value }))}
-								autoComplete="email"
-								required
-							/>
-						) : (
-							<input id="perfil-email" type="email" value={form.email} readOnly />
-						)}
-					</div>
-
-					<div style={{ display: "grid", gap: 6 }}>
-						<label htmlFor="perfil-nombre">Nombre</label>
-						{editing ? (
-							<input
-								id="perfil-nombre"
-								value={form.nombre}
-								onChange={(e3) => setForm((prev) => ({ ...prev, nombre: e3.target.value }))}
-								required
-							/>
-						) : (
-							<input id="perfil-nombre" value={form.nombre} readOnly />
-						)}
-					</div>
-
-					<div style={{ display: "grid", gap: 6 }}>
-						<label htmlFor="perfil-imagen">Imagen (URL)</label>
-						{editing ? (
-							<input
-								id="perfil-imagen"
-								value={form.imagen ?? ""}
-								onChange={(e3) => {
-									setAvatarError(false);
-									setForm((prev) => ({ ...prev, imagen: e3.target.value }));
+				<div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+					<div style={{ width: 420 }}>
+						<div className="profile-preview" style={{ width: 420, height: 420 }}>
+							<img
+								className="profile-preview__img"
+								src={avatarSrc}
+								alt="Vista previa de la imagen"
+								onError={() => {
+									if (form.imagen) setAvatarError(true);
 								}}
-								placeholder="https://..."
+								style={{ width: 420, height: 420, objectFit: "cover" }}
 							/>
-						) : (
-							<input id="perfil-imagen" value={form.imagen ?? ""} readOnly />
-						)}
-						<p
-							className={
-								avatarError ? "profile-preview__warning" : "profile-preview__warning profile-preview__warning--hidden"
-							}
-						>
-							No se pudo cargar la imagen; se muestra la predeterminada.
-						</p>
+						</div>
+
+						<div style={{ display: "grid", gap: 6, marginTop: 10 }}>
+							<label htmlFor="perfil-imagen">Imagen (URL)</label>
+							{editing ? (
+								<input
+									id="perfil-imagen"
+									value={form.imagen ?? ""}
+									onChange={(e3) => {
+										setAvatarError(false);
+										setForm((prev) => ({ ...prev, imagen: e3.target.value }));
+									}}
+									placeholder="https://..."
+								/>
+							) : (
+								<input id="perfil-imagen" value={form.imagen ?? ""} readOnly />
+							)}
+							<p
+								className={
+									avatarError
+										? "profile-preview__warning"
+										: "profile-preview__warning profile-preview__warning--hidden"
+								}
+							>
+								No se puede obtener la imagen; se te asignará la predeterminada.
+							</p>
+						</div>
 					</div>
 
-					<div style={{ display: "grid", gap: 6 }}>
-						<label htmlFor="perfil-puntuacion">Puntuación</label>
-						<input id="perfil-puntuacion" value={String(puntuacion ?? "")} readOnly />
+					<div style={{ flex: 1, minWidth: 260 }}>
+						<div style={{ display: "flex", gap: 10, marginBottom: 14, justifyContent: "center" }}>
+							{editing ? (
+								<>
+									<button type="submit" disabled={saving}>
+										{saving ? "Guardando..." : "Guardar"}
+									</button>
+									<button
+										type="button"
+										onClick={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											switchMode("view");
+										}}
+										disabled={saving}
+									>
+										Cancelar
+									</button>
+								</>
+							) : (
+								<>
+									<button
+										type="button"
+										onClick={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											switchMode("edit");
+										}}
+									>
+										Editar
+									</button>
+									<button type="button" onClick={() => navigate("/inicio")}>
+										Volver
+									</button>
+								</>
+							)}
+						</div>
+
+						<div style={{ display: "flex", gap: 10, marginBottom: 30, marginTop: 30, justifyContent: "center" }}>
+							<h3>Puntuación: {puntuacion}</h3>
+						</div>
+
+						<div style={{ display: "grid", gap: 10 }}>
+							<div style={{ display: "grid", gap: 6 }}>
+								<label htmlFor="perfil-username">Nombre de usuario</label>
+								{editing ? (
+									<input
+										id="perfil-username"
+										value={form.username}
+										onChange={(e3) => setForm((prev) => ({ ...prev, username: e3.target.value }))}
+										autoComplete="username"
+										required
+									/>
+								) : (
+									<input id="perfil-username" value={form.username} readOnly />
+								)}
+							</div>
+
+							<div style={{ display: "grid", gap: 6 }}>
+								<label htmlFor="perfil-email">Correo electrónico</label>
+								{editing ? (
+									<input
+										id="perfil-email"
+										type="email"
+										value={form.email}
+										onChange={(e3) => setForm((prev) => ({ ...prev, email: e3.target.value }))}
+										autoComplete="email"
+										required
+									/>
+								) : (
+									<input id="perfil-email" type="email" value={form.email} readOnly />
+								)}
+							</div>
+
+							<div style={{ display: "grid", gap: 6 }}>
+								<label htmlFor="perfil-nombre">Nombre de perfil</label>
+								{editing ? (
+									<input
+										id="perfil-nombre"
+										value={form.nombre}
+										onChange={(e3) => setForm((prev) => ({ ...prev, nombre: e3.target.value }))}
+										required
+									/>
+								) : (
+									<input id="perfil-nombre" value={form.nombre} readOnly />
+								)}
+							</div>
+
+							{editing && (
+								<>
+									<div style={{ display: "grid", gap: 6 }}>
+										<label htmlFor="perfil-pass1">Nueva contraseña</label>
+										<input
+											id="perfil-pass1"
+											type="password"
+											value={newPassword}
+											onChange={(e3) => setNewPassword(e3.target.value)}
+											autoComplete="new-password"
+										/>
+									</div>
+									<div style={{ display: "grid", gap: 6 }}>
+										<label htmlFor="perfil-pass2">Repetir nueva contraseña</label>
+										<input
+											id="perfil-pass2"
+											type="password"
+											value={repeatNewPassword}
+											onChange={(e3) => setRepeatNewPassword(e3.target.value)}
+											autoComplete="new-password"
+										/>
+									</div>
+								</>
+							)}
+						</div>
 					</div>
-
-					{editing && (
-						<>
-							<div style={{ display: "grid", gap: 6 }}>
-								<label htmlFor="perfil-pass1">Nueva contraseña</label>
-								<input
-									id="perfil-pass1"
-									type="password"
-									value={newPassword}
-									onChange={(e3) => setNewPassword(e3.target.value)}
-									autoComplete="new-password"
-								/>
-							</div>
-							<div style={{ display: "grid", gap: 6 }}>
-								<label htmlFor="perfil-pass2">Repetir nueva contraseña</label>
-								<input
-									id="perfil-pass2"
-									type="password"
-									value={repeatNewPassword}
-									onChange={(e3) => setRepeatNewPassword(e3.target.value)}
-									autoComplete="new-password"
-								/>
-							</div>
-						</>
-					)}
-				</div>
-
-				<div style={{ display: "flex", gap: 10, marginTop: 14, justifyContent: "center" }}>
-					{editing ? (
-						<>
-							<button type="submit" disabled={saving}>
-								{saving ? "Guardando..." : "Guardar"}
-							</button>
-							<button type="button" onClick={cancelEdit} disabled={saving}>
-								Cancelar
-							</button>
-						</>
-					) : (
-						<>
-							<button type="button" onClick={startEdit}>
-								Editar
-							</button>
-							<button type="button" onClick={() => navigate("/inicio")}>
-								Volver
-							</button>
-						</>
-					)}
 				</div>
 			</form>
 
