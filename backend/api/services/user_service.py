@@ -33,3 +33,15 @@ def actualizar_perfil(user, *, username, email, nombre, imagen=None, password=No
         raise ActualizarPerfilError({"detail": ["No se pudo actualizar el perfil"]})
 
     return user
+
+def listar_usuarios_admin(user):
+    """
+    Devuelve una lista de todos los usuarios y todos sus atributos a excepción de la contraseña. 
+    Sólo puede ser utilizado por usuarios staff.
+    """
+
+    if not user.is_staff:
+        raise PermissionError("No tienes permiso para listar los usuarios")
+
+    UserModel = get_user_model()
+    return UserModel.objects.all()

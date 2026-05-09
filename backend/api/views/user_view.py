@@ -1,6 +1,6 @@
 from api.utils.exceptions import ActualizarPerfilError
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from ..serializers.user_serializer import PerfilUpdateSerializer
@@ -27,4 +27,25 @@ def perfil_actualizar(request):
         },
         status=status.HTTP_200_OK,
     )
+
+@api_view(["GET"])
+@permission_classes([])
+def listar_usuarios_admin(request):
+    try:
+        usuarios = user_service.listar_usuarios_admin(request.user)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+
+    data = [
+        {
+            "id": usuario.id,
+            "username": usuario.get_username(),
+            "email": usuario.email,
+            "is_staff": usuario.is_staff,
+            "is_active": usuario.is_active,
+        }
+        for usuario in usuarios
+    ]
+
+    return Response(data, status=200)
 

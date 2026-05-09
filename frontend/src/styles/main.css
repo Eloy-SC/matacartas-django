@@ -8,8 +8,20 @@
   --ui-page-bg: #f5f5f5;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
-  background: var(--ui-page-bg);
+  min-height: 100vh;
+  background-color: var(--ui-page-bg);
+  background-image: url("../assets/background.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
   color: var(--ui-text);
 }
 
@@ -74,10 +86,26 @@ label {
   position: relative;
 }
 
+.admin-inicio-button {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  appearance: none;
+  border: 2px solid var(--ui-accent);
+  background: var(--ui-bg);
+  color: var(--ui-accent);
+  border-radius: 0;
+  padding: 12px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1;
+}
+
 .avatar-button {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 30px;
+  right: 30px;
   width: 56px;
   height: 56px;
   padding: 0;

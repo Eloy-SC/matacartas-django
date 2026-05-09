@@ -5,6 +5,8 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import Login from "./pages/Login.jsx";
 import Inicio from "./pages/Inicio.jsx";
 import Perfil from "./pages/Perfil.jsx";
+import Admin from "./pages/Admin.jsx";
+import AdminUsers from "./pages/AdminUsers.jsx";
 import "./index.css";
 import "./styles/main.css";
 
@@ -46,6 +48,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/login" element={<Login />} />
         <Route path="/inicio" element={ <RequireAuth> <Inicio /> </RequireAuth>}/>
         <Route path="/perfil" element={ <RequireAuth> <Perfil /> </RequireAuth>}/>
+        <Route path="/admin" element={ <RequireAuth> <Admin /> </RequireAuth>}/>
+        <Route path="/admin/usuarios" element={ <RequireAuth> <AdminUsers /> </RequireAuth>}/>
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

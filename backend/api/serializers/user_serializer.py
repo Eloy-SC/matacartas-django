@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from api.selectors import user_selector
-from api.services import auth_service
 
 class UserSerializer(serializers.Serializer):
     username = serializers.CharField(

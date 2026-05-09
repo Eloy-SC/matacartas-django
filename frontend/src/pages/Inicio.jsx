@@ -70,6 +70,13 @@ export default function Inicio() {
 		<div className="app app--with-avatar">
 			<button
 				type="button"
+				className="admin-inicio-button"
+				onClick={() => navigate("/admin")}
+				aria-label="Panel de administración"
+			> ADMINISTRACIÓN
+			</button>
+			<button
+				type="button"
 				className="avatar-button"
 				onClick={() => navigate("/perfil?mode=view")}
 				aria-label="Ir al perfil"
