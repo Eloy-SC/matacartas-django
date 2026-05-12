@@ -3,8 +3,6 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework import status
 
-from ..models import Perfil
-
 
 class RegisterAPITest(APITestCase):
     def test_register_creates_user(self):
@@ -22,7 +20,7 @@ class RegisterAPITest(APITestCase):
         UserModel = get_user_model()
         self.assertTrue(UserModel.objects.filter(username="alice").exists())
         user = UserModel.objects.get(username="alice")
-        self.assertTrue(Perfil.objects.filter(user=user).exists())
+        self.assertEqual(user.nombre, "Alice")
 
     def test_register_saves_img_in_profile(self):
         url = reverse("register")
@@ -40,11 +38,11 @@ class RegisterAPITest(APITestCase):
 
         UserModel = get_user_model()
         user = UserModel.objects.get(username="bob")
-        self.assertEqual(user.perfil.imagen, "https://example.com/img.png")
+        self.assertEqual(user.imagen, "https://example.com/img.png")
 
     def test_register_rejects_existing_username(self):
         UserModel = get_user_model()
-        UserModel.objects.create_user(username="alice", password="x")
+        UserModel.objects.create_user(username="alice", password="x", nombre="Alice", email="")
 
         url = reverse("register")
         payload = {

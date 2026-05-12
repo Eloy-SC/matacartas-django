@@ -30,28 +30,23 @@ def _get_user_model(apps):
 
 def seed_test_users(apps, schema_editor):
     UserModel = _get_user_model(apps)
-    Perfil = apps.get_model("api", "Perfil")
 
     for user_spec in TEST_USERS:
         username = user_spec["username"]
         password = user_spec["password"]
 
-        user, _created = UserModel.objects.get_or_create(username=username)
-        
-        user.password = make_password(password)
-        user.is_staff = user_spec["is_staff"]
-        user.is_superuser = user_spec["is_superuser"]
+        defaults = {
+            "password": make_password(password),
+            "is_staff": user_spec["is_staff"],
+            "is_superuser": user_spec["is_superuser"],
+            "is_active": True,
+            "email": user_spec.get("email", ""),
+            "nombre": user_spec["nombre"],
+            "puntuacion": 0,
+            "imagen": user_spec.get("imagen", ""),
+        }
 
-        user.save()
-
-        Perfil.objects.get_or_create(
-            user=user,
-            nombre=user_spec["nombre"],
-            defaults={
-                "puntuacion": 0,
-                "imagen": "",
-            },
-        )
+        UserModel.objects.update_or_create(username=username, defaults=defaults)
 
 
 def unseed_test_users(apps, schema_editor):
@@ -62,7 +57,6 @@ def unseed_test_users(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("api", "0001_initial"),
     ]
 

@@ -81,15 +81,12 @@ def register(request):
 @permission_classes([IsAuthenticated])
 def me(request):
     try:
-        user_perfil = auth_service.me(request.user)
+        user = auth_service.me(request.user)
     except Exception:
         return Response(
             {"detail": "No se pudo obtener el usuario autenticado"},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    
-    user = user_perfil[0]
-    perfil = user_perfil[1]
     
     return Response(
         {
@@ -99,9 +96,9 @@ def me(request):
             "is_staff": getattr(user, "is_staff", False),
             "isAuthenticated": True,
             "perfil": {
-                "nombre": getattr(perfil, "nombre", None),
-                "puntuacion": getattr(perfil, "puntuacion", None),
-                "imagen": getattr(perfil, "imagen", None),
+                "nombre": getattr(user, "nombre", None),
+                "puntuacion": getattr(user, "puntuacion", None),
+                "imagen": getattr(user, "imagen", None),
             },
         }
     )

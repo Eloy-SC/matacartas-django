@@ -1,7 +1,5 @@
 from django.db import IntegrityError, transaction
 from django.contrib.auth import get_user_model
-
-from ..models.perfil import Perfil
 from ..utils.exceptions import ActualizarPerfilError
 
 
@@ -11,19 +9,16 @@ def actualizar_perfil(user, *, username, email, nombre, imagen=None, password=No
 
     UserModel = get_user_model()
     user = UserModel.objects.select_for_update().get(id=user.id)
-    perfil = Perfil.objects.select_for_update().get(user=user)
 
     user.username = username
     user.email = email
     if password:
         user.set_password(password)
-
-    perfil.nombre = nombre
-    perfil.imagen = imagen
+    user.nombre = nombre
+    user.imagen = imagen
 
     try:
         user.save()
-        perfil.save()
     except IntegrityError as e:
         msg = str(e)
         if "username" in msg:

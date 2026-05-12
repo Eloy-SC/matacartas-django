@@ -106,3 +106,6 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = os.environ.get(
     "CSRF_TRUSTED_ORIGINS", "http://localhost:5173,http://localhost:3000"
 ).split(",")
+
+# USUARIOS
+AUTH_USER_MODEL = "api.Usuario"

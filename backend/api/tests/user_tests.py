@@ -3,8 +3,6 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from ..models import Perfil
-
 
 class PerfilActualizarAPITest(APITestCase):
     def setUp(self):
@@ -13,8 +11,11 @@ class PerfilActualizarAPITest(APITestCase):
             username="alice",
             password="old-password-123",
             email="alice@example.com",
+            nombre="Alice",
         )
-        Perfil.objects.create(user=self.user, nombre="Alice", imagen=None, puntuacion=10)
+        self.user.puntuacion = 10
+        self.user.imagen = None
+        self.user.save()
         self.client.force_authenticate(user=self.user)
 
     def test_update_profile_without_password(self):
@@ -30,11 +31,10 @@ class PerfilActualizarAPITest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.user.refresh_from_db()
-        self.user.perfil.refresh_from_db()
         self.assertEqual(self.user.username, "alice")
         self.assertEqual(self.user.email, "alice@example.com")
-        self.assertEqual(self.user.perfil.nombre, "Alice Updated")
-        self.assertEqual(self.user.perfil.imagen, "https://example.com/a.png")
+        self.assertEqual(self.user.nombre, "Alice Updated")
+        self.assertEqual(self.user.imagen, "https://example.com/a.png")
         self.assertTrue(self.user.check_password("old-password-123"))
 
     def test_update_profile_changes_password_when_provided(self):
@@ -59,8 +59,8 @@ class PerfilActualizarAPITest(APITestCase):
             username="bob",
             password="x",
             email="bob@example.com",
+            nombre="Bob",
         )
-        Perfil.objects.create(user=other, nombre="Bob", imagen=None, puntuacion=0)
 
         url = reverse("perfil-actualizar")
         payload = {
@@ -80,8 +80,8 @@ class PerfilActualizarAPITest(APITestCase):
             username="bob",
             password="x",
             email="bob@example.com",
+            nombre="Bob",
         )
-        Perfil.objects.create(user=other, nombre="Bob", imagen=None, puntuacion=0)
 
         url = reverse("perfil-actualizar")
         payload = {
