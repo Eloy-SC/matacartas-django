@@ -89,13 +89,12 @@ class _UniqueUsernameEmailMixin:
             raise serializers.ValidationError("El correo electrónico ya existe")
         return value
 
-class UserSerializer(_UniqueUsernameEmailMixin, serializers.Serializer):
+class RegisterSerializer(_UniqueUsernameEmailMixin, serializers.Serializer):
     username = _username_field(required=True)
     password = _password_field(required=True)
     email = _email_field(required=True)
     nombre = _nombre_field(required=True)
     imagen = _imagen_field(required=False)
-    is_staff = _is_staff_field(required=False)
 
 
 class PerfilUpdateSerializer(_UniqueUsernameEmailMixin, serializers.Serializer):
@@ -104,3 +103,11 @@ class PerfilUpdateSerializer(_UniqueUsernameEmailMixin, serializers.Serializer):
     email = _email_field(required=True)
     nombre = _nombre_field(required=True)
     imagen = _imagen_field(required=False)
+
+class UserSerializer(_UniqueUsernameEmailMixin, serializers.Serializer):
+    username = _username_field(required=True)
+    password = _password_field(required=True)
+    email = _email_field(required=True)
+    nombre = _nombre_field(required=True)
+    imagen = _imagen_field(required=False)
+    is_staff = _is_staff_field(required=False)
