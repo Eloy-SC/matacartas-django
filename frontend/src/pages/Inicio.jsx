@@ -9,6 +9,7 @@ export default function Inicio() {
 	const [error, setError] = useState("");
 	const [profileImageUrl, setProfileImageUrl] = useState("");
 	const [avatarError, setAvatarError] = useState(false);
+	const [isStaff, setIsStaff] = useState(false);
 
 	const avatarSrc = profileImageUrl && !avatarError ? profileImageUrl : defaultProfilePic;
 
@@ -22,10 +23,12 @@ export default function Inicio() {
 				if (cancelled) return;
 				const imagen = data?.perfil?.imagen;
 				setProfileImageUrl(typeof imagen === "string" ? imagen : "");
+				setIsStaff(Boolean(data?.is_staff));
 			})
 			.catch(() => {
 				if (cancelled) return;
 				setProfileImageUrl("");
+				setIsStaff(false);
 			});
 
 		return () => {
@@ -69,13 +72,16 @@ export default function Inicio() {
 
 	return (
 		<div className="app app--with-avatar">
-			<button
-				type="button"
-				className="admin-inicio-button"
-				onClick={() => navigate("/admin")}
-				aria-label="Panel de administración"
-			> ADMINISTRACIÓN
-			</button>
+			{isStaff && (
+				<button
+					type="button"
+					className="admin-inicio-button"
+					onClick={() => navigate("/admin")}
+					aria-label="Panel de administración"
+				>
+					ADMINISTRACIÓN
+				</button>
+			)}
 			<img src={cabecera} alt="Matacartas" style={{maxWidth: "100%", height: "auto"}} />
 			<button
 				type="button"
