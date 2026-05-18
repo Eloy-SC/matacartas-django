@@ -18,16 +18,16 @@ function App() {
     <div className="app">
       <img src={cabecera} alt="Matacartas" style={{maxWidth: "100%", height: "auto"}} />
       <div>
-        <button type="button" onClick={() => navigate("/login")}> 
-          Ir a login
-        </button>
-        <button
-          type="button"
-          style={{ marginLeft: 8 }}
-          onClick={() => navigate("/login?mode=register")}
-        >
-          Registrarse
-        </button>
+        <div>
+          <button type="button" className="app-inicio-button" onClick={() => navigate("/login")}> 
+            INICIA SESIÓN
+          </button>
+        </div>
+        <div>
+          <button type="button" className="app-inicio-button" onClick={() => navigate("/login?mode=register")}>
+            REGÍSTRATE
+          </button>
+        </div>
       </div>
     </div>
   );

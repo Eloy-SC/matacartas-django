@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/main.css";
 import defaultProfilePic from "../assets/default_profile_pic.png";
 import cabecera from "../assets/cabecera.png";
+import fondoContenedores from "../assets/fondo_contenedores.png";
 
 export default function Login() {
   const location = useLocation();
@@ -170,9 +171,10 @@ export default function Login() {
     <div className="app">
       <img src={cabecera} alt="Matacartas" style={{maxWidth: "100%", height: "auto"}} />
 
-      <h2 className="">{mode === "login" ? "INICIO DE SESIÓN" : "REGISTRO"}</h2>
+      <div className="form-card" style={{ "--form-card-texture": `url(${fondoContenedores})` }}>
+        <h2 className="">{mode === "login" ? "INICIO DE SESIÓN" : "REGISTRO"}</h2>
 
-      <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
         <div style={{ marginTop: 12 }}>
           <label htmlFor="username">{mode === "login" ? "Usuario" : "Nombre de usuario *"}</label>
           <br />
@@ -314,12 +316,13 @@ export default function Login() {
         </div>
 
         {error && (
-          <p role="alert" style={{ marginTop: 12, whiteSpace: "pre-line" }}>
+          <p role="alert" style={{ marginTop: 12, whiteSpace: "pre-line", color: "red" }}>
             {error}
           </p>
         )}
-        {successMessage && <p style={{ marginTop: 12 }}>{successMessage}</p>}
+        {successMessage && <p style={{ marginTop: 12, color: "green" }}>{successMessage}</p>}
       </form>
+      </div>
     </div>
   );
 }

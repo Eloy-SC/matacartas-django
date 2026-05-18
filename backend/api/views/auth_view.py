@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from ..serializers.user_serializer import UserSerializer
+from ..serializers.user_serializer import RegisterSerializer, UserSerializer
 from ..services import auth_service
 
 
@@ -58,7 +58,7 @@ def session_logout(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def register(request):
-    serializer = UserSerializer(data=request.data)
+    serializer = RegisterSerializer(data=request.data)
 
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -92,7 +92,7 @@ export default function Inicio() {
 					}}
 				/>
 			</button>
-			<div>
+			<div className="form-card">
 				<p>Esta es una página protegida: sólo accesible si has iniciado sesión.</p>
 				<button type="button" onClick={handleLogout} disabled={loading}>
 					{loading ? "Cerrando sesión..." : "Cerrar sesión"}
