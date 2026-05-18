@@ -1,6 +1,8 @@
 .app {
   max-width: 1440px;
-  margin: 80px auto;
+  margin-top: 0px;
+  margin-left: auto;
+  margin-right: auto;
   padding: 2rem;
   text-align: center;
 }
@@ -13,7 +15,7 @@
 
 .app p {
   font-size: 1.1rem;
-  color: #666;
+  color: #ffffff;
   margin-bottom: 2rem;
 }
 

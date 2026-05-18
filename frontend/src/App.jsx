@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./App.css";
+import cabecera from "./assets/cabecera.png";
 
 function App() {
   const [apiStatus, setApiStatus] = useState(null);
@@ -15,23 +16,19 @@ function App() {
 
   return (
     <div className="app">
-      <h1>Matacartas</h1>
-      <p>Django + React + PostgreSQL starter app</p>
-      <button type="button" onClick={() => navigate("/login")}> 
-        Ir a login
-      </button>
-      <button
-        type="button"
-        style={{ marginLeft: 8 }}
-        onClick={() => navigate("/login?mode=register")}
-      >
-        Registrarse
-      </button>
-      {apiStatus && (
-        <div className={`api-status ${apiStatus.status}`}>
-          <strong>API Status:</strong> {apiStatus.message}
-        </div>
-      )}
+      <img src={cabecera} alt="Matacartas" style={{maxWidth: "100%", height: "auto"}} />
+      <div>
+        <button type="button" onClick={() => navigate("/login")}> 
+          Ir a login
+        </button>
+        <button
+          type="button"
+          style={{ marginLeft: 8 }}
+          onClick={() => navigate("/login?mode=register")}
+        >
+          Registrarse
+        </button>
+      </div>
     </div>
   );
 }

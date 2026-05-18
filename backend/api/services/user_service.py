@@ -1,7 +1,7 @@
 from django.db import IntegrityError, transaction
 from django.contrib.auth import get_user_model
-from ..utils.exceptions import ActualizarPerfilError
-
+from ..utils.exceptions import ActualizarPerfilError, RegistrationError
+from ..selectors.user_selector import get_users_no_password, get_user_by_id_no_password
 
 @transaction.atomic
 def actualizar_perfil(user, *, username, email, nombre, imagen=None, password=None):
@@ -29,14 +29,100 @@ def actualizar_perfil(user, *, username, email, nombre, imagen=None, password=No
 
     return user
 
-def listar_usuarios_admin(user):
+def listar_usuarios_admin(actor):
     """
     Devuelve una lista de todos los usuarios y todos sus atributos a excepción de la contraseña. 
-    Sólo puede ser utilizado por usuarios staff.
+    Sólo puede ser utilizado por administradores.
     """
 
-    if not user.is_staff:
+    if not actor.is_staff:
         raise PermissionError("No tienes permiso para listar los usuarios")
 
+    return get_users_no_password()
+
+def get_usuario_admin(actor, user_id):
+    """
+    Devuelve un usuario por su ID con todos sus atributos a excepción de la contraseña. 
+    Sólo puede ser utilizado por administradores.
+    """
+
+    if not actor.is_staff:
+        raise PermissionError("No tienes permiso para obtener el usuario")
+
+    return get_user_by_id_no_password(user_id)
+
+def crear_usuario_admin(actor, *, username, password, email, nombre, imagen=None, is_staff=False):
+    """
+    Crea un nuevo usuario con los datos proporcionados. 
+    Sólo puede ser utilizado por administradores.
+    """
+
+    if not actor.is_staff:
+        raise PermissionError("No tienes permiso para crear un usuario")
+
     UserModel = get_user_model()
-    return UserModel.objects.all()
+    user = UserModel(username=username, password=password, email=email, nombre=nombre, imagen=imagen, is_staff=is_staff)
+
+    try:
+        user.save()
+    except IntegrityError as e:
+        msg = str(e)
+        if "username" in msg:
+            raise RegistrationError({"username": ["El nombre de usuario ya existe"]})
+        if "email" in msg:
+            raise RegistrationError({"email": ["El correo electrónico ya existe"]})
+        raise RegistrationError({"detail": ["No se pudo crear el usuario"]})
+
+    return user
+
+def editar_usuario_admin(actor, user_id, *, username, password, email, nombre, imagen=None, is_staff=False):
+    """
+    Edita un usuario por su ID. 
+    Sólo puede ser utilizado por administradores.
+    """
+    if not actor.is_staff:
+        raise PermissionError("No tienes permiso para editar un usuario")
+
+    UserModel = get_user_model()
+    user = UserModel.objects.filter(id=user_id).first()
+    if user is None:
+        raise ValueError("No se encontró el usuario")
+
+    user.username = username
+    user.email = email
+    if password:
+        user.set_password(password)
+    user.nombre = nombre
+    user.imagen = imagen
+    user.is_staff = is_staff
+
+    try:
+        user.save()
+    except IntegrityError as e:
+        msg = str(e)
+        if "username" in msg:
+            raise RegistrationError({"username": ["El nombre de usuario ya existe"]})
+        if "email" in msg:
+            raise RegistrationError({"email": ["El correo electrónico ya existe"]})
+        raise RegistrationError({"detail": ["No se pudo editar el usuario"]})
+
+    return user
+
+def eliminar_usuario_admin(actor, user_id):
+    """
+    Elimina un usuario por su ID. 
+    Sólo puede ser utilizado por administradores.
+    """
+
+    if not actor.is_staff:
+        raise PermissionError("No tienes permiso para eliminar un usuario")
+
+    UserModel = get_user_model()
+    user = UserModel.objects.filter(id=user_id).first()
+    if user is None:
+        raise ValueError("No se encontró el usuario")
+
+    try: 
+        user.delete()
+    except Exception as e:
+        raise ValueError("No se pudo eliminar el usuario")

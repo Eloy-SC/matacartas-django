@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/main.css";
 import defaultProfilePic from "../assets/default_profile_pic.png";
+import cabecera from "../assets/cabecera.png";
 
 export default function Login() {
   const location = useLocation();
@@ -167,7 +168,7 @@ export default function Login() {
 
   return (
     <div className="app">
-      <h1>M A T A C A R T A S</h1>
+      <img src={cabecera} alt="Matacartas" style={{maxWidth: "100%", height: "auto"}} />
 
       <h2 className="">{mode === "login" ? "INICIO DE SESIÓN" : "REGISTRO"}</h2>
 

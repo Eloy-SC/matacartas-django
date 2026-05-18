@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import defaultProfilePic from "../assets/default_profile_pic.png";
+import cabecera from "../assets/cabecera.png";
 
 export default function Inicio() {
 	const navigate = useNavigate();
@@ -75,6 +76,7 @@ export default function Inicio() {
 				aria-label="Panel de administración"
 			> ADMINISTRACIÓN
 			</button>
+			<img src={cabecera} alt="Matacartas" style={{maxWidth: "100%", height: "auto"}} />
 			<button
 				type="button"
 				className="avatar-button"
@@ -90,16 +92,17 @@ export default function Inicio() {
 					}}
 				/>
 			</button>
-			<h1>M A T A C A R T A S</h1>
-			<p>Esta es una página protegida: sólo accesible si has iniciado sesión.</p>
-			<button type="button" onClick={handleLogout} disabled={loading}>
-				{loading ? "Cerrando sesión..." : "Cerrar sesión"}
-			</button>
-			{error && (
-				<p role="alert" style={{ marginTop: 12 }}>
-					{error}
-				</p>
-			)}
+			<div>
+				<p>Esta es una página protegida: sólo accesible si has iniciado sesión.</p>
+				<button type="button" onClick={handleLogout} disabled={loading}>
+					{loading ? "Cerrando sesión..." : "Cerrar sesión"}
+				</button>
+				{error && (
+					<p role="alert" style={{ marginTop: 12 }}>
+						{error}
+					</p>
+				)}
+			</div>
 		</div>
 	);
 }

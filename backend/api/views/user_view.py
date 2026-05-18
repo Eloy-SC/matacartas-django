@@ -1,9 +1,9 @@
-from api.utils.exceptions import ActualizarPerfilError
+from api.utils.exceptions import ActualizarPerfilError, RegistrationError
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from ..serializers.user_serializer import PerfilUpdateSerializer
+from ..serializers.user_serializer import PerfilUpdateSerializer, UserSerializer
 from ..services import user_service
 
 @api_view(["PUT"])
@@ -41,6 +41,9 @@ def listar_usuarios_admin(request):
             "id": usuario.id,
             "username": usuario.get_username(),
             "email": usuario.email,
+            "nombre": usuario.nombre,
+            "puntuacion": usuario.puntuacion,
+            "imagen": usuario.imagen,
             "is_staff": usuario.is_staff,
             "is_active": usuario.is_active,
         }
@@ -49,3 +52,48 @@ def listar_usuarios_admin(request):
 
     return Response(data, status=200)
 
+@api_view(["GET"])
+@permission_classes([])
+def get_usuario_admin(request, user_id):
+    try:
+        usuario = user_service.get_usuario_admin(request.user, user_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+
+    if not usuario:
+        return Response({"detail": "Usuario no encontrado"}, status=404)
+
+    data = {
+        "id": usuario.id,
+        "username": usuario.get_username(),
+        "email": usuario.email,
+        "nombre": usuario.nombre,
+        "puntuacion": usuario.puntuacion,
+        "imagen": usuario.imagen,
+        "is_staff": usuario.is_staff,
+        "is_active": usuario.is_active,
+    }
+
+    return Response(data, status=200)
+
+@api_view(["POST"])
+@permission_classes([])
+def crear_usuario_admin(request):
+    serializer = UserSerializer(data=request.data, context={"user": request.user})
+
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=400)
+    
+    try:
+        usuario = user_service.crear_usuario_admin(request.user, **serializer.validated_data)
+    except RegistrationError as e:
+        return Response(e.errors, status=400)
+    
+    return Response(
+        {
+            "id": usuario.id,
+            "username": usuario.get_username(),
+            "detail": "Usuario creado",
+        },
+        status=status.HTTP_201_CREATED,
+    )

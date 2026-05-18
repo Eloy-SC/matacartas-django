@@ -12,6 +12,7 @@ TEST_USERS = [
         "is_staff": True,
         "is_superuser": True,
         "nombre": "El Admin",
+        "email": "admin@example.com",
     },
     {
         "username": "player",
@@ -19,6 +20,7 @@ TEST_USERS = [
         "is_staff": False,
         "is_superuser": False,
         "nombre": "El Jugador",
+        "email": "player@example.com",
     },
 ]
 
