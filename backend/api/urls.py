@@ -8,6 +8,13 @@ from .views.user_view import (
     listar_usuarios_admin,
     perfil_actualizar,
 )
+from .views.rango_view import (
+    crear_rango_admin,
+    editar_rango_admin,
+    eliminar_rango_admin,
+    get_rango,
+    listar_rangos,
+)
 from .views.health_view import health_check
 
 urlpatterns = [
@@ -30,5 +37,18 @@ urlpatterns = [
         "users/admin/<int:user_id>/eliminar/",
         eliminar_usuario_admin,
         name="eliminar-usuario-admin",
+    ),
+    path("rangos/listar/", listar_rangos, name="listar-rangos"),
+    path("rangos/admin/crear/", crear_rango_admin, name="crear-rango-admin"),
+    path("rangos/<int:rango_id>/", get_rango, name="get-rango"),
+    path(
+        "rangos/admin/<int:rango_id>/editar/",
+        editar_rango_admin,
+        name="editar-rango-admin",
+    ),
+    path(
+        "rangos/admin/<int:rango_id>/eliminar/",
+        eliminar_rango_admin,
+        name="eliminar-rango-admin",
     ),
 ]

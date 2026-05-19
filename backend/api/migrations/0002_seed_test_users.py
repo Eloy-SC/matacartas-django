@@ -7,100 +7,145 @@ from django.db import migrations
 
 TEST_USERS = [
     {
-        "username": "admin",
-        "password": "admin1234",
+        "username": "breen",
+        "password": "123456",
         "is_staff": True,
         "is_superuser": True,
-        "nombre": "El Admin",
-        "email": "admin@example.com",
+        "nombre": "Dr. Breen",
+        "email": "admin@matacartas.es",
+        "puntuacion": 1000,
     },
     {
-        "username": "player",
-        "password": "player1234",
+        "username": "lukash",
+        "password": "123456",
         "is_staff": False,
         "is_superuser": False,
-        "nombre": "El Jugador",
-        "email": "player@example.com",
+        "nombre": "Lukash",
+        "email": "lukash@freedom.ukr",
+        "puntuacion": 500,
     },
     {
         "username": "user01",
-        "password": "user1234",
+        "password": "123456",
         "is_staff": False,
         "is_superuser": False,
         "nombre": "Usuario 01",
         "email": "user01@example.com",
+        "puntuacion": 100,
     },
     {
         "username": "user02",
-        "password": "user1234",
+        "password": "123456",
         "is_staff": False,
         "is_superuser": False,
         "nombre": "Usuario 02",
         "email": "user02@example.com",
+        "puntuacion": 150,
     },
     {
         "username": "user03",
-        "password": "user1234",
+        "password": "123456",
         "is_staff": False,
         "is_superuser": False,
         "nombre": "Usuario 03",
         "email": "user03@example.com",
+        "puntuacion": 200,
     },
     {
         "username": "user04",
-        "password": "user1234",
+        "password": "123456",
         "is_staff": False,
         "is_superuser": False,
         "nombre": "Usuario 04",
         "email": "user04@example.com",
+        "puntuacion": 250,
     },
     {
         "username": "user05",
-        "password": "user1234",
+        "password": "123456",
         "is_staff": False,
         "is_superuser": False,
         "nombre": "Usuario 05",
         "email": "user05@example.com",
+        "puntuacion": 300,
     },
     {
         "username": "user06",
-        "password": "user1234",
+        "password": "123456",
         "is_staff": False,
         "is_superuser": False,
         "nombre": "Usuario 06",
         "email": "user06@example.com",
+        "puntuacion": 350,
     },
     {
         "username": "user07",
-        "password": "user1234",
+        "password": "123456",
         "is_staff": False,
         "is_superuser": False,
         "nombre": "Usuario 07",
         "email": "user07@example.com",
+        "puntuacion": 400,
     },
     {
         "username": "user08",
-        "password": "user1234",
+        "password": "123456",
         "is_staff": False,
         "is_superuser": False,
         "nombre": "Usuario 08",
         "email": "user08@example.com",
+        "puntuacion": 500,
     },
     {
         "username": "user09",
-        "password": "user1234",
+        "password": "123456",
         "is_staff": False,
         "is_superuser": False,
         "nombre": "Usuario 09",
         "email": "user09@example.com",
+        "puntuacion": 600,
     },
     {
-        "username": "user10",
-        "password": "user1234",
+        "username": "freeman",
+        "password": "123456",
         "is_staff": False,
         "is_superuser": False,
-        "nombre": "Usuario 10",
-        "email": "user10@example.com",
+        "nombre": "Dr. Freeman",
+        "email": "freeman@blackmesa.us",
+        "puntuacion": 700,
+    },
+]
+
+RANGO_SEED = [
+    {
+        "nombre": "Novato",
+        "color": "gris",
+        "puntos_minimos": 50,
+        "puntos_maximos": 100,
+    },
+    {
+        "nombre": "Experimentado",
+        "color": "verde",
+        "puntos_minimos": 101,
+        "puntos_maximos": 300,
+    },
+    {
+        "nombre": "Veterano",
+        "color": "rojo",
+        "puntos_minimos": 301,
+        "puntos_maximos": 500,
+    },
+    {
+        "nombre": "Maestro",
+        "color": "morado",
+        "puntos_minimos": 501,
+        "puntos_maximos": 700,
+    },
+    {
+        "nombre": "Gran capitan",
+        "color": "amarillo_dorado",
+        "puntos_minimos": 701,
+        "puntos_maximos": 1500,
     },
 ]
 
@@ -124,17 +169,29 @@ def seed_test_users(apps, schema_editor):
             "is_active": True,
             "email": user_spec.get("email", ""),
             "nombre": user_spec["nombre"],
-            "puntuacion": 0,
+            "puntuacion": user_spec.get("puntuacion", 0),
             "imagen": user_spec.get("imagen", ""),
         }
 
         UserModel.objects.update_or_create(username=username, defaults=defaults)
 
 
+def seed_rangos(apps, schema_editor):
+    Rango = apps.get_model("api", "Rango")
+    for rango in RANGO_SEED:
+        Rango.objects.update_or_create(nombre=rango["nombre"], defaults=rango)
+
+
 def unseed_test_users(apps, schema_editor):
     UserModel = _get_user_model(apps)
     usernames = [u["username"] for u in TEST_USERS]
     UserModel.objects.filter(username__in=usernames).delete()
+
+
+def unseed_rangos(apps, schema_editor):
+    Rango = apps.get_model("api", "Rango")
+    nombres = [rango["nombre"] for rango in RANGO_SEED]
+    Rango.objects.filter(nombre__in=nombres).delete()
 
 
 class Migration(migrations.Migration):
@@ -144,4 +201,5 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(seed_test_users, reverse_code=unseed_test_users),
+        migrations.RunPython(seed_rangos, reverse_code=unseed_rangos),
     ]

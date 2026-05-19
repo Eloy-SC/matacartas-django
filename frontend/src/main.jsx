@@ -76,13 +76,42 @@ function RequireAdmin({ children }) {
   return children;
 }
 
+function RedirectIfAuthed({ children }) {
+  const [status, setStatus] = React.useState("checking"); // checking | authed | unauthed
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    fetch("/api/auth/me/", { method: "GET", credentials: "include" })
+      .then((res) => {
+        if (cancelled) return;
+        setStatus(res.ok ? "authed" : "unauthed");
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setStatus("unauthed");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (status === "checking") return null;
+  if (status === "authed") {
+    return <Navigate to="/inicio" replace />;
+  }
+
+  return children;
+}
+
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={ <RedirectIfAuthed> <App /> </RedirectIfAuthed>} />
+        <Route path="/login" element={ <RedirectIfAuthed> <Login /> </RedirectIfAuthed>} />
 
         {/* Necesario iniciar sesión */}
         <Route path="/inicio" element={ <RequireAuth> <Inicio /> </RequireAuth>}/>
