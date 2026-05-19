@@ -109,6 +109,21 @@ def editar_usuario_admin(actor, user_id, *, username, password=None, email, nomb
         user.set_password(password)
     user.nombre = nombre
     user.imagen = imagen
+    if is_staff is False and user.is_staff:
+        remaining_admins = UserModel.objects.filter(is_staff=True).exclude(id=user_id)
+        if not remaining_admins.exists():
+            raise RegistrationError({
+                "detail": [
+                    "No se puede retirar permisos de administracion a este usuario porque es el unico administrador"
+                ]
+            })
+    if is_staff is False and actor.id == user_id:
+        raise RegistrationError({
+            "detail": [
+                "No se puedes retirarte permisos de administracion a ti mismo"
+            ]
+        })
+
     if is_staff is not None:
         user.is_staff = is_staff
 
