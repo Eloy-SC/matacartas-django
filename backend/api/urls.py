@@ -2,6 +2,8 @@ from django.urls import path
 from .views.auth_view import csrf, me, register, session_login, session_logout
 from .views.user_view import (
     crear_usuario_admin,
+    editar_usuario_admin,
+    eliminar_usuario_admin,
     get_usuario_admin,
     listar_usuarios_admin,
     perfil_actualizar,
@@ -19,4 +21,14 @@ urlpatterns = [
     path("users/admin/listar/", listar_usuarios_admin, name="listar-usuarios-admin"),
     path("users/admin/crear/", crear_usuario_admin, name="crear-usuario-admin"),
     path("users/admin/<int:user_id>/", get_usuario_admin, name="get-usuario-admin"),
+    path(
+        "users/admin/<int:user_id>/editar/",
+        editar_usuario_admin,
+        name="editar-usuario-admin",
+    ),
+    path(
+        "users/admin/<int:user_id>/eliminar/",
+        eliminar_usuario_admin,
+        name="eliminar-usuario-admin",
+    ),
 ]

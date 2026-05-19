@@ -12,6 +12,18 @@ def get_users_no_password():
     UserModel = get_user_model()
     return UserModel.objects.all().values("id", "username", "email", "nombre", "puntuacion", "imagen", "is_staff", "is_active")
 
+def get_users_no_password_paginated(offset, limit):
+    UserModel = get_user_model()
+    return (
+        UserModel.objects.all()
+        .values("id", "username", "email", "nombre", "puntuacion", "imagen", "is_staff", "is_active")
+        .order_by("id")[offset:offset + limit]
+    )
+
+def get_users_no_password_count():
+    UserModel = get_user_model()
+    return UserModel.objects.count()
+
 def get_user_by_id_no_password(user_id):
     UserModel = get_user_model()
     return UserModel.objects.filter(id=user_id).values("id", "username", "email", "nombre", "puntuacion", "imagen", "is_staff", "is_active").first()

@@ -1,7 +1,11 @@
 from django.db import IntegrityError, transaction
 from django.contrib.auth import get_user_model
 from ..utils.exceptions import ActualizarPerfilError, RegistrationError
-from ..selectors.user_selector import get_users_no_password, get_user_by_id_no_password
+from ..selectors.user_selector import (
+    get_users_no_password_count,
+    get_users_no_password_paginated,
+    get_user_by_id_no_password,
+)
 
 @transaction.atomic
 def actualizar_perfil(user, *, username, email, nombre, imagen=None, password=None):
@@ -29,7 +33,7 @@ def actualizar_perfil(user, *, username, email, nombre, imagen=None, password=No
 
     return user
 
-def listar_usuarios_admin(actor):
+def listar_usuarios_admin(actor, *, page, page_size):
     """
     Devuelve una lista de todos los usuarios y todos sus atributos a excepción de la contraseña. 
     Sólo puede ser utilizado por administradores.
@@ -38,7 +42,18 @@ def listar_usuarios_admin(actor):
     if not actor.is_staff:
         raise PermissionError("No tienes permiso para listar los usuarios")
 
-    return get_users_no_password()
+    total = get_users_no_password_count()
+    offset = (page - 1) * page_size
+    items = list(get_users_no_password_paginated(offset, page_size))
+    total_pages = max(1, (total + page_size - 1) // page_size)
+
+    return {
+        "items": items,
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "total_pages": total_pages,
+    }
 
 def get_usuario_admin(actor, user_id):
     """
@@ -75,7 +90,7 @@ def crear_usuario_admin(actor, *, username, password, email, nombre, imagen=None
 
     return user
 
-def editar_usuario_admin(actor, user_id, *, username, password, email, nombre, imagen=None, is_staff=False):
+def editar_usuario_admin(actor, user_id, *, username, password=None, email, nombre, imagen=None, is_staff=None):
     """
     Edita un usuario por su ID. 
     Sólo puede ser utilizado por administradores.
@@ -94,7 +109,8 @@ def editar_usuario_admin(actor, user_id, *, username, password, email, nombre, i
         user.set_password(password)
     user.nombre = nombre
     user.imagen = imagen
-    user.is_staff = is_staff
+    if is_staff is not None:
+        user.is_staff = is_staff
 
     try:
         user.save()

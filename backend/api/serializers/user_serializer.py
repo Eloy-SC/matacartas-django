@@ -69,6 +69,9 @@ def _imagen_field(*, required: bool) -> serializers.CharField:
 def _is_staff_field(*, required: bool) -> serializers.BooleanField:
     return serializers.BooleanField(required=required, default=False)
 
+def _is_staff_optional_field() -> serializers.BooleanField:
+    return serializers.BooleanField(required=False)
+
 
 class _UniqueUsernameEmailMixin:
     def validate_username(self, value: str) -> str:
@@ -111,3 +114,11 @@ class UserSerializer(_UniqueUsernameEmailMixin, serializers.Serializer):
     nombre = _nombre_field(required=True)
     imagen = _imagen_field(required=False)
     is_staff = _is_staff_field(required=False)
+
+class AdminUserUpdateSerializer(_UniqueUsernameEmailMixin, serializers.Serializer):
+    username = _username_field(required=True)
+    password = _password_field(required=False)
+    email = _email_field(required=True)
+    nombre = _nombre_field(required=True)
+    imagen = _imagen_field(required=False)
+    is_staff = _is_staff_optional_field()

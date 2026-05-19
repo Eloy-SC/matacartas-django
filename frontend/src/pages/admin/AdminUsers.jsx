@@ -5,29 +5,40 @@ import "../../styles/admin.css";
 export default function AdminUsers() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState(null);
 
-  const loadUsers = useCallback(() => {
+  const loadUsers = useCallback((pageNumber = 1) => {
     let cancelled = false;
     setLoading(true);
     setError("");
 
-    fetch("/api/users/admin/listar/", { method: "GET", credentials: "include" })
+    fetch(`/api/users/admin/listar/?page=${pageNumber}`, {
+      method: "GET",
+      credentials: "include",
+    })
       .then(async (res) => {
-        const data = await res.json().catch(() => []);
+        const data = await res.json().catch(() => ({}));
         if (cancelled) return;
         if (!res.ok) {
           const detail = data?.detail || "No se pudo cargar la lista de usuarios";
           throw new Error(detail);
         }
-        setUsers(Array.isArray(data) ? data : []);
+        setUsers(Array.isArray(data?.items) ? data.items : []);
+        setPage(typeof data?.page === "number" ? data.page : pageNumber);
+        setTotalPages(typeof data?.total_pages === "number" ? data.total_pages : 1);
+        setTotalUsers(typeof data?.total === "number" ? data.total : 0);
       })
       .catch((e) => {
         if (cancelled) return;
         setError(e instanceof Error ? e.message : "Error cargando usuarios");
         setUsers([]);
+        setTotalUsers(0);
+        setTotalPages(1);
       })
       .finally(() => {
         if (cancelled) return;
@@ -40,11 +51,11 @@ export default function AdminUsers() {
   }, []);
 
   useEffect(() => {
-    const cancel = loadUsers();
+    const cancel = loadUsers(page);
     return () => {
       if (typeof cancel === "function") cancel();
     };
-  }, [loadUsers]);
+  }, [loadUsers, page]);
 
   async function handleDelete(userId) {
     if (!userId || deletingId) return;
@@ -63,7 +74,7 @@ export default function AdminUsers() {
       }
       const { csrfToken } = await csrfRes.json();
 
-      const res = await fetch(`/api/users/admin/${userId}/`, {
+      const res = await fetch(`/api/users/admin/${userId}/eliminar/`, {
         method: "DELETE",
         credentials: "include",
         headers: {
@@ -86,6 +97,9 @@ export default function AdminUsers() {
 
   return (
     <div className="app">
+      <button className="admin-volver-button" onClick={() => navigate("/admin")}>
+        ⮜
+      </button>
       <div className="admin-title-card">
         <h1 style={{ marginBottom: 0 }}>ADMINISTRACIÓN - USUARIOS</h1>
       </div>
@@ -109,7 +123,9 @@ export default function AdminUsers() {
       {loading ? (
         <p style={{ fontWeight: "bold", color: "white" }}>Cargando...</p>
       ) : error ? (
-        <p role="alert">{error}</p>
+        <p role="alert" style={{ fontWeight: "bold", color: "white" }}>
+          {error}
+        </p>
       ) : (
         <div className="admin-users-table-wrap">
           <table className="admin-users-table">
@@ -118,7 +134,7 @@ export default function AdminUsers() {
                 <th>Nombre de usuario</th>
                 <th>Nombre de perfil</th>
                 <th>Correo electrónico</th>
-                <th>Activo</th>
+                <th>Baneado</th>
                 <th>Administrador</th>
                 <th>Acciones</th>
               </tr>
@@ -134,8 +150,8 @@ export default function AdminUsers() {
                     <td>{user.username ?? ""}</td>
                     <td>{user.nombre ?? ""}</td>
                     <td>{user.email ?? ""}</td>
-                    <td>{user.is_active ? "Si" : "No"}</td>
-                    <td>{user.is_staff ? "Si" : "No"}</td>
+                    <td>{user.is_active ? "❌" : "🟩"}</td>
+                    <td>{user.is_staff ? "🟩" : "❌"}</td>
                     <td>
                       <div className="admin-actions">
                         <button
@@ -159,7 +175,7 @@ export default function AdminUsers() {
                           className="admin-delete-button"
                           aria-label="Borrar usuario"
                           onClick={() => handleDelete(user.id)}
-                          disabled={loading || deletingId === user.id}
+                          disabled={loading || deletingId === user.id || user.is_staff}
                         >
                           <svg
                             viewBox="0 0 24 24"
@@ -177,6 +193,27 @@ export default function AdminUsers() {
               )}
             </tbody>
           </table>
+          <div className="admin-pagination">
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+              disabled={loading || page <= 1}
+            >
+              Anterior
+            </button>
+            <span className="admin-pagination__info">
+              Pagina {page} de {totalPages} ({totalUsers} usuarios)
+            </span>
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={loading || page >= totalPages}
+            >
+              Siguiente
+            </button>
+          </div>
         </div>
       )}
     </div>

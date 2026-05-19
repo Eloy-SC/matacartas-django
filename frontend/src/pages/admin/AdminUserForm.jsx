@@ -14,6 +14,7 @@ export default function AdminUserForm() {
 	const [password, setPassword] = useState("");
 	const [repeatPassword, setRepeatPassword] = useState("");
 	const [imgUrl, setImgUrl] = useState("");
+	const [isStaff, setIsStaff] = useState(false);
 	const [imgPreviewError, setImgPreviewError] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -44,6 +45,7 @@ export default function AdminUserForm() {
 				setNombre(data?.nombre ?? "");
 				setEmail(data?.email ?? "");
 				setImgUrl(data?.imagen ?? "");
+				setIsStaff(Boolean(data?.is_staff));
 			})
 			.catch((e) => {
 				if (cancelled) return;
@@ -97,12 +99,15 @@ export default function AdminUserForm() {
 				nombre,
 				email,
 				imagen: imgUrl,
+				is_staff: isStaff,
 			};
 			if (password) {
 				payload.password = password;
 			}
 
-			const endpoint = userId ? `/api/users/admin/${userId}/` : "/api/users/admin/crear/";
+			const endpoint = userId
+				? `/api/users/admin/${userId}/editar/`
+				: "/api/users/admin/crear/";
 			const method = userId ? "PUT" : "POST";
 			const res = await fetch(endpoint, {
 				method,
@@ -163,7 +168,7 @@ export default function AdminUserForm() {
 						/>
 					</div>
 					<div style={{ marginTop: 12 }}>
-						<label htmlFor="password">Contrasena *</label>
+						<label htmlFor="password">Contrasena {mode === "edit" ? "" : "*"}</label>
 						<br />
 						<input
 							id="password"
@@ -176,7 +181,7 @@ export default function AdminUserForm() {
 						/>
 					</div>
 					<div style={{ marginTop: 12 }}>
-						<label htmlFor="repeatPassword">Repetir contrasena *</label>
+						<label htmlFor="repeatPassword">Repetir contrasena {mode === "edit" ? "" : "*"}</label>
 						<br />
 						<input
 							id="repeatPassword"
@@ -197,6 +202,19 @@ export default function AdminUserForm() {
 							type="email"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
+							disabled={loading}
+						/>
+					</div>
+					<div style={{ marginTop: 12 }}>
+						<label htmlFor="isStaff">Administrador</label>
+						<br />
+						<input
+							id="isStaff"
+							name="isStaff"
+							type="checkbox"
+							className="admin-checkbox"
+							checked={isStaff}
+							onChange={(e) => setIsStaff(e.target.checked)}
 							disabled={loading}
 						/>
 					</div>
@@ -247,12 +265,12 @@ export default function AdminUserForm() {
 						</button>
 					</div>
 					{error && (
-						<p role="alert" style={{ marginTop: 12, whiteSpace: "pre-line", color: "red" }}>
+						<p role="alert" style={{ marginTop: 12, whiteSpace: "pre-line", color: "red", fontWeight: "bold" }}>
 							{error}
 						</p>
 					)}
 					{successMessage && (
-						<p style={{ marginTop: 12, color: "green" }}>{successMessage}</p>
+						<p style={{ marginTop: 12, color: "green", fontWeight: "bold" }}>{successMessage}</p>
 					)}
 				</form>
 			</div>
