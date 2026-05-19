@@ -1,4 +1,5 @@
 from django.urls import path
+
 from .views.auth_view import csrf, me, register, session_login, session_logout
 from .views.user_view import (
     crear_usuario_admin,
@@ -13,6 +14,7 @@ from .views.rango_view import (
     editar_rango_admin,
     eliminar_rango_admin,
     get_rango,
+    get_rango_de_usuario,
     listar_rangos,
 )
 from .views.health_view import health_check
@@ -41,6 +43,7 @@ urlpatterns = [
     path("rangos/listar/", listar_rangos, name="listar-rangos"),
     path("rangos/admin/crear/", crear_rango_admin, name="crear-rango-admin"),
     path("rangos/<int:rango_id>/", get_rango, name="get-rango"),
+    path("rangos/usuario/<int:user_id>/", get_rango_de_usuario, name="get-rango-de-usuario"),
     path(
         "rangos/admin/<int:rango_id>/editar/",
         editar_rango_admin,

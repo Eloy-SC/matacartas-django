@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/admin.css";
+import "../../styles/rangos.css";
 
 export default function AdminUsers() {
   const navigate = useNavigate();
@@ -28,7 +29,33 @@ export default function AdminUsers() {
           const detail = data?.detail || "No se pudo cargar la lista de usuarios";
           throw new Error(detail);
         }
-        setUsers(Array.isArray(data?.items) ? data.items : []);
+        const items = Array.isArray(data?.items) ? data.items : [];
+
+        const itemsWithRango = await Promise.all(
+          items.map(async (user) => {
+            if (!user?.id) return { ...user, rango_nombre: "" };
+            try {
+              const rangoRes = await fetch(`/api/rangos/usuario/${user.id}/`, {
+                method: "GET",
+                credentials: "include",
+              });
+              const rangoData = await rangoRes.json().catch(() => ({}));
+              if (!rangoRes.ok) {
+                return { ...user, rango_nombre: "" };
+              }
+              return {
+                ...user,
+                rango_nombre: rangoData?.nombre ?? "",
+                rango_color: rangoData?.color ?? "",
+              };
+            } catch (e) {
+              return { ...user, rango_nombre: "" };
+            }
+          })
+        );
+
+        if (cancelled) return;
+        setUsers(itemsWithRango);
         setPage(typeof data?.page === "number" ? data.page : pageNumber);
         setTotalPages(typeof data?.total_pages === "number" ? data.total_pages : 1);
         setTotalUsers(typeof data?.total === "number" ? data.total : 0);
@@ -134,6 +161,7 @@ export default function AdminUsers() {
                 <th>Nombre de usuario</th>
                 <th>Nombre de perfil</th>
                 <th>Correo electrónico</th>
+                <th>Rango</th>
                 <th>Baneado</th>
                 <th>Administrador</th>
                 <th>Acciones</th>
@@ -142,7 +170,7 @@ export default function AdminUsers() {
             <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={6}>No hay usuarios.</td>
+                  <td colSpan={7}>No hay usuarios.</td>
                 </tr>
               ) : (
                 users.map((user) => (
@@ -150,6 +178,15 @@ export default function AdminUsers() {
                     <td>{user.username ?? ""}</td>
                     <td>{user.nombre ?? ""}</td>
                     <td>{user.email ?? ""}</td>
+                    <td>
+                      <span
+                        className={`rango-text rango-color-${(user.rango_color ?? "")
+                          .replace(/_/g, "-")
+                          .toLowerCase()}`}
+                      >
+                        {user.rango_nombre ?? ""}
+                      </span>
+                    </td>
                     <td>{user.is_active ? "❌" : "🟩"}</td>
                     <td>{user.is_staff ? "🟩" : "❌"}</td>
                     <td>

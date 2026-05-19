@@ -37,8 +37,8 @@ export default function Perfil() {
 			setForm({
 				username: me?.username ?? "",
 				email: me?.email ?? "",
-				nombre: me?.perfil?.nombre ?? "",
-				imagen: me?.perfil?.imagen ?? "",
+				nombre: me?.nombre ?? "",
+				imagen: me?.imagen ?? "",
 			});
 		}
 		navigate(`/perfil?mode=${nextMode}`, { replace: true });
@@ -54,7 +54,7 @@ export default function Perfil() {
 	const [newPassword, setNewPassword] = useState("");
 	const [repeatNewPassword, setRepeatNewPassword] = useState("");
 
-	const puntuacion = me?.perfil?.puntuacion ?? "";
+	const puntuacion = me?.puntuacion ?? "";
 	const avatarSrc = useMemo(() => {
 		const url = form.imagen?.trim();
 		if (!url || avatarError) return defaultProfilePic;
@@ -75,8 +75,8 @@ export default function Perfil() {
 			setForm({
 				username: data?.username ?? "",
 				email: data?.email ?? "",
-				nombre: data?.perfil?.nombre ?? "",
-				imagen: data?.perfil?.imagen ?? "",
+				nombre: data?.nombre ?? "",
+				imagen: data?.imagen ?? "",
 			});
 			setAvatarError(false);
 		} catch (e) {

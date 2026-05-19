@@ -21,7 +21,7 @@ export default function Inicio() {
 			.then((res) => res.json())
 			.then((data) => {
 				if (cancelled) return;
-				const imagen = data?.perfil?.imagen;
+				const imagen = data?.imagen;
 				setProfileImageUrl(typeof imagen === "string" ? imagen : "");
 				setIsStaff(Boolean(data?.is_staff));
 			})

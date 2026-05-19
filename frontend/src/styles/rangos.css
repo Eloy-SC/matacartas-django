@@ -1,0 +1,170 @@
+/* Base range text styles; set colors per class as needed. */
+.rango-text {
+	font-weight: 700;
+	color: var(--rango-color, #000000);
+	-webkit-text-stroke: var(--rango-stroke-width, 1px)
+		var(--rango-stroke-color, #000000);
+	text-stroke: var(--rango-stroke-width, 1px) var(--rango-stroke-color, #000000);
+}
+
+.rango-color-blanco {
+	--rango-color: #ffffff;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-negro {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-rojo {
+	--rango-color: #ce2626;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-verde {
+	--rango-color: #309e1a;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-azul {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-azul-cian {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-amarillo {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-amarillo-naranja {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-naranja {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-morado {
+	--rango-color: #6002b8;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-rojo-oscuro {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-rojo-claro {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-azul-claro {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-verde-claro {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-verde-esperanza {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-verde-oscuro {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-amarillo-dorado {
+	--rango-color: #bba800;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-gris {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-gris-plata {
+	--rango-color: #adadad;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-bronce {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-marron-bronce {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-marron {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-azul-oscuro {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-rosa {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-rosa-fuxia {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-morado-oscuro {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}
+
+.rango-color-morado-claro {
+	--rango-color: #000000;
+	--rango-stroke-width: 1px;
+	--rango-stroke-color: #000000;
+}

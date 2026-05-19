@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from ..models import Rango
+from ..models.rango import Rango
 
 
 def _nombre_field() -> serializers.CharField:

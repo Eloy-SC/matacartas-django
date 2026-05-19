@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from api.utils.exceptions import RegistrationError
-from ..models import Rango
+from ..models.rango import Rango
 from ..serializers.rango_serializer import RangoSerializer
 from ..services import rango_service
 
@@ -48,6 +48,26 @@ def get_rango(request, rango_id):
 
     return Response(data, status=200)
 
+@api_view(["GET"])
+@permission_classes([])
+def get_rango_de_usuario(request, user_id):
+    try:
+        rango = rango_service.get_rango_de_usuario(request.user, user_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+
+    if not rango:
+        return Response({"detail": "Rango no encontrado"}, status=404)
+
+    data = {
+        "id": rango.id,
+        "nombre": rango.nombre,
+        "color": rango.color,
+        "puntos_minimos": rango.puntos_minimos,
+        "puntos_maximos": rango.puntos_maximos,
+    }
+
+    return Response(data, status=200)
 
 @api_view(["POST"])
 @permission_classes([])

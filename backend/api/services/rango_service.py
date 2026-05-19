@@ -1,9 +1,9 @@
 from django.db import IntegrityError
 
-from backend.api.models import rango
-from backend.api.selectors.rango_selector import get_rango_by_max_puntos, get_rango_by_min_puntos, get_rango_by_min_puntos, get_rangos_parejas_valores
+from ..models.rango import Rango
+from ..selectors.rango_selector import get_rango_by_color, get_rango_by_max_puntos, get_rango_by_min_puntos, get_rango_by_min_puntos, get_rango_by_puntos, get_rangos_parejas_valores, get_rangos_parejas_valores_exclude_rango
+from ..selectors.user_selector import get_puntos_by_user_id
 
-from ..models import Rango
 from ..utils.exceptions import RegistrationError
 
 
@@ -30,6 +30,26 @@ def get_rango(actor, rango_id):
 		.first()
 	)
 
+def get_rango_de_usuario(actor, user_id):
+    """
+    Devuelve el rango de un usuario por su ID. 
+    El rango se determina por la puntuación del usuario. 
+    Si el usuario no tiene un rango asignado, se devuelve None.
+    """
+    if not actor.is_active:
+        raise PermissionError("No tienes permiso para obtener el rango")
+    
+    try:
+        puntuacion_usuario = get_puntos_by_user_id(user_id)
+    except Exception as e:
+        raise RegistrationError({"detail": "No se pudo obtener la puntuación del usuario"})
+
+    rango = get_rango_by_puntos(puntuacion_usuario)
+
+    if rango is None:
+        return None
+    else: 
+        return rango
 
 def crear_rango_admin(actor, *, nombre, color, puntos_minimos, puntos_maximos):
     """
@@ -37,7 +57,7 @@ def crear_rango_admin(actor, *, nombre, color, puntos_minimos, puntos_maximos):
     """
     if not actor.is_staff:
         raise PermissionError("No tienes permiso para crear un rango")
-
+    
     intervalos = get_rangos_parejas_valores()
     for min_puntos, max_puntos in intervalos:
         if (puntos_minimos >= min_puntos and puntos_minimos <= max_puntos) or \
@@ -60,6 +80,10 @@ def crear_rango_admin(actor, *, nombre, color, puntos_minimos, puntos_maximos):
         
     if nombre == "Sin rango":
         raise RegistrationError({"detail": "No se puede crear un rango con el nombre \"Sin rango\""})
+    
+    rango_color_repetido = get_rango_by_color(color)
+    if rango_color_repetido is not None:
+        raise RegistrationError({"detail": "Ya hay un rango con ese color"})
     
     rango = Rango(
 		nombre=nombre,
@@ -90,7 +114,7 @@ def editar_rango_admin(actor, rango_id, *, nombre, color, puntos_minimos, puntos
     if not actor.is_staff:
         raise PermissionError("No tienes permiso para editar un rango")
     
-    intervalos = get_rangos_parejas_valores()
+    intervalos = get_rangos_parejas_valores_exclude_rango(rango_id)
     for min_puntos, max_puntos in intervalos:
         if (puntos_minimos >= min_puntos and puntos_minimos <= max_puntos) or \
            (puntos_maximos >= min_puntos and puntos_maximos <= max_puntos) or \
@@ -98,20 +122,27 @@ def editar_rango_admin(actor, rango_id, *, nombre, color, puntos_minimos, puntos
             raise RegistrationError({"detail": "Los puntos mínimos y máximos no pueden solaparse con los de otro rango"})
 	
     min_solapado = get_rango_by_max_puntos(puntos_minimos)
-    if min_solapado is not None:
+    if min_solapado is not None and min_solapado.id != rango_id:
         nuevos_puntos_minimos = puntos_minimos + 1
-        if get_rango_by_min_puntos(nuevos_puntos_minimos) is not None:
+        min_solapado_siguiente = get_rango_by_min_puntos(nuevos_puntos_minimos)
+        if min_solapado_siguiente is not None and min_solapado_siguiente.id != rango_id:
             raise RegistrationError({"detail": "Ya hay un rango con f{puntos_minimos} como máximo y \
 									  otro con {nuevos_puntos_minimos} como mínimo"})
+    
     max_solapado = get_rango_by_min_puntos(puntos_maximos)
-    if max_solapado is not None:
+    if max_solapado is not None and max_solapado.id != rango_id:
         nuevos_puntos_maximos = puntos_maximos - 1
-        if get_rango_by_min_puntos(nuevos_puntos_maximos) is not None:
+        max_solapado_anterior = get_rango_by_max_puntos(nuevos_puntos_maximos)
+        if max_solapado_anterior is not None and max_solapado_anterior.id != rango_id:
             raise RegistrationError({"detail": "Ya hay un rango con f{puntos_maximos} como mínimo y \
 									  otro con {nuevos_puntos_maximos} como máximo"})
         
     if nombre == "Sin rango":
         raise RegistrationError({"detail": "No se puede crear un rango con el nombre \"Sin rango\""})
+    
+    rango_color_repetido = get_rango_by_color(color)
+    if rango_color_repetido is not None and rango_color_repetido.id != rango_id:
+        raise RegistrationError({"detail": "Ya hay un rango con ese color"})
     
     rango = Rango.objects.filter(id=rango_id).first()
     if rango is None:
@@ -121,13 +152,6 @@ def editar_rango_admin(actor, rango_id, *, nombre, color, puntos_minimos, puntos
     rango.color = color
     rango.puntos_minimos = puntos_minimos
     rango.puntos_maximos = puntos_maximos
-
-    rango = Rango(
-		nombre=nombre,
-		color=color,
-		puntos_minimos=puntos_minimos,
-		puntos_maximos=puntos_maximos,
-	)
 
     try:
         rango.save()
@@ -139,7 +163,7 @@ def editar_rango_admin(actor, rango_id, *, nombre, color, puntos_minimos, puntos
             raise RegistrationError({"puntos_minimos": ["Los puntos minimos ya existen"]})
         if "puntos_maximos" in msg:
             raise RegistrationError({"puntos_maximos": ["Los puntos maximos ya existen"]})
-        raise RegistrationError({"detail": ["No se pudo crear el rango"]})
+        raise RegistrationError({"detail": ["No se pudo editar el rango"]})
 
     return rango
 

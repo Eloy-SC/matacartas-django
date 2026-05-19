@@ -8,6 +8,8 @@ import Perfil from "./pages/Perfil.jsx";
 import Admin from "./pages/admin/Admin.jsx";
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminUserForm from "./pages/admin/AdminUserForm.jsx";
+import AdminRangos from "./pages/admin/AdminRangos.jsx";
+import AdminRangoForm from "./pages/admin/AdminRangoForm.jsx";
 import "./index.css";
 import "./styles/main.css";
 
@@ -122,6 +124,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/admin/usuarios" element={ <RequireAdmin> <AdminUsers /> </RequireAdmin>}/>
         <Route path="/admin/usuarios/crear" element={ <RequireAdmin> <AdminUserForm /> </RequireAdmin>}/>
         <Route path="/admin/usuarios/:userId" element={ <RequireAdmin> <AdminUserForm /> </RequireAdmin>}/>
+        <Route path="/admin/rangos" element={ <RequireAdmin> <AdminRangos /> </RequireAdmin>}/>
+        <Route path="/admin/rangos/crear" element={ <RequireAdmin> <AdminRangoForm /> </RequireAdmin>}/>
+        <Route path="/admin/rangos/:rangoId" element={ <RequireAdmin> <AdminRangoForm /> </RequireAdmin>}/>
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

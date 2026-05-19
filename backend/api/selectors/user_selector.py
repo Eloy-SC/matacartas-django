@@ -27,3 +27,7 @@ def get_users_no_password_count():
 def get_user_by_id_no_password(user_id):
     UserModel = get_user_model()
     return UserModel.objects.filter(id=user_id).values("id", "username", "email", "nombre", "puntuacion", "imagen", "is_staff", "is_active").first()
+
+def get_puntos_by_user_id(user_id):
+    UserModel = get_user_model()
+    return UserModel.objects.filter(id=user_id).values("puntuacion").first().get("puntuacion", 0)

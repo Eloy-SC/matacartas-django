@@ -88,6 +88,11 @@ def me(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
     
+    try:
+        rango_id = get_rango_by_puntos(user.puntuacion).id
+    except Exception:
+        rango = None
+
     return Response(
         {
             "id": user.id,
@@ -95,10 +100,8 @@ def me(request):
             "email": getattr(user, "email", ""),
             "is_staff": getattr(user, "is_staff", False),
             "isAuthenticated": True,
-            "perfil": {
-                "nombre": getattr(user, "nombre", None),
-                "puntuacion": getattr(user, "puntuacion", None),
-                "imagen": getattr(user, "imagen", None),
-            },
+            "nombre": getattr(user, "nombre", None),
+            "puntuacion": getattr(user, "puntuacion", None),
+            "imagen": getattr(user, "imagen", None),
         }
     )
