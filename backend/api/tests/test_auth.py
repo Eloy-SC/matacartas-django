@@ -12,6 +12,7 @@ class RegisterAPITest(APITestCase):
             "password": "super-secret-123",
             "email": "alice@example.com",
             "nombre": "Alice",
+            "imagen": None,
         }
 
         response = self.client.post(url, payload, format="json")
@@ -50,6 +51,7 @@ class RegisterAPITest(APITestCase):
             "password": "another",
             "email": "alice2@example.com",
             "nombre": "Alice2",
+            "imagen": None,
         }
 
         response = self.client.post(url, payload, format="json")
@@ -63,6 +65,7 @@ class RegisterAPITest(APITestCase):
             "password": "super-secret-123",
             "email": "alice01@example.com",
             "nombre": "Alice",
+            "imagen": None,
         }
 
         response = self.client.post(url, payload, format="json")
@@ -83,6 +86,7 @@ class RegisterAPITest(APITestCase):
             "password": "super-secret-123",
             "email": "alice_01@example.com",
             "nombre": "Alice",
+            "imagen": None,
         }
 
         response = self.client.post(url, payload, format="json")
