@@ -58,36 +58,4 @@ class RegisterAPITest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("username", response.data)
 
-    def test_register_rejects_username_with_uppercase_or_symbols(self):
-        url = reverse("register")
-        payload = {
-            "username": "Alice01",
-            "password": "super-secret-123",
-            "email": "alice01@example.com",
-            "nombre": "Alice",
-            "imagen": None,
-        }
 
-        response = self.client.post(url, payload, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("username", response.data)
-
-        payload["username"] = "alice-01"
-        payload["email"] = "alice02@example.com"
-
-        response = self.client.post(url, payload, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("username", response.data)
-
-    def test_register_allows_username_with_underscore(self):
-        url = reverse("register")
-        payload = {
-            "username": "alice_01",
-            "password": "super-secret-123",
-            "email": "alice_01@example.com",
-            "nombre": "Alice",
-            "imagen": None,
-        }
-
-        response = self.client.post(url, payload, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)

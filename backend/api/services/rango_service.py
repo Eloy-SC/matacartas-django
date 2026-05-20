@@ -114,6 +114,10 @@ def editar_rango_admin(actor, rango_id, *, nombre, color, puntos_minimos, puntos
     if not actor.is_staff:
         raise PermissionError("No tienes permiso para editar un rango")
     
+    rango = Rango.objects.filter(id=rango_id).first()
+    if rango is None:
+        raise ValueError("No se encontró el rango a editar")
+
     intervalos = get_rangos_parejas_valores_exclude_rango(rango_id)
     for min_puntos, max_puntos in intervalos:
         if (puntos_minimos >= min_puntos and puntos_minimos <= max_puntos) or \
@@ -143,10 +147,6 @@ def editar_rango_admin(actor, rango_id, *, nombre, color, puntos_minimos, puntos
     rango_color_repetido = get_rango_by_color(color)
     if rango_color_repetido is not None and rango_color_repetido.id != rango_id:
         raise RegistrationError({"detail": "Ya hay un rango con ese color"})
-    
-    rango = Rango.objects.filter(id=rango_id).first()
-    if rango is None:
-        raise ValueError("No se encontró el rango a editar")
 
     rango.nombre = nombre
     rango.color = color
