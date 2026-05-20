@@ -56,16 +56,22 @@ def get_rango_de_usuario(request, user_id):
     except PermissionError as e:
         return Response({"detail": str(e)}, status=403)
 
-    if not rango:
-        return Response({"detail": "Rango no encontrado"}, status=404)
-
-    data = {
-        "id": rango.id,
-        "nombre": rango.nombre,
-        "color": rango.color,
-        "puntos_minimos": rango.puntos_minimos,
-        "puntos_maximos": rango.puntos_maximos,
-    }
+    if rango is None:
+        data = {
+            "id": None,
+            "nombre": "Sin rango",
+            "color": "blanco",
+            "puntos_minimos": None,
+            "puntos_maximos": None,
+        }
+    else:
+        data = {
+            "id": rango.id,
+            "nombre": rango.nombre,
+            "color": rango.color,
+            "puntos_minimos": rango.puntos_minimos,
+            "puntos_maximos": rango.puntos_maximos,
+        }
 
     return Response(data, status=200)
 

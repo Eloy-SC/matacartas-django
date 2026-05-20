@@ -6,7 +6,6 @@ class Rango(models.Model):
         BLANCO = "blanco", "Blanco"
         NEGRO = "negro", "Negro"
         ROSA = "rosa", "Rosa"
-        ROSA_FUXIA = "rosa_fuxia", "Rosa fuxia"
         ROJO_CLARO = "rojo_claro", "Rojo claro"
         ROJO = "rojo", "Rojo"
         ROJO_OSCURO = "rojo_oscuro", "Rojo oscuro"

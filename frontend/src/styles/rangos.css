@@ -32,67 +32,67 @@
 }
 
 .rango-color-azul {
-	--rango-color: #000000;
+	--rango-color: #0069be;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-azul-cian {
-	--rango-color: #000000;
+	--rango-color: #009165;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-amarillo {
-	--rango-color: #000000;
+	--rango-color: #fffc59;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-amarillo-naranja {
-	--rango-color: #000000;
+	--rango-color: #ecc412;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-naranja {
-	--rango-color: #000000;
+	--rango-color: #ff8800;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-morado {
-	--rango-color: #6002b8;
+	--rango-color: #8113e7;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-rojo-oscuro {
-	--rango-color: #000000;
+	--rango-color: #8b1010;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-rojo-claro {
-	--rango-color: #000000;
+	--rango-color: #c96969;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-azul-claro {
-	--rango-color: #000000;
+	--rango-color: #15d8df;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-verde-claro {
-	--rango-color: #000000;
+	--rango-color: #91c996;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-verde-esperanza {
-	--rango-color: #000000;
+	--rango-color: #71d301;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
@@ -110,7 +110,7 @@
 }
 
 .rango-color-gris {
-	--rango-color: #000000;
+	--rango-color: #747474;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
@@ -121,50 +121,38 @@
 	--rango-stroke-color: #000000;
 }
 
-.rango-color-bronce {
-	--rango-color: #000000;
-	--rango-stroke-width: 1px;
-	--rango-stroke-color: #000000;
-}
-
 .rango-color-marron-bronce {
-	--rango-color: #000000;
+	--rango-color: #925a25;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-marron {
-	--rango-color: #000000;
+	--rango-color: #55361a;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-azul-oscuro {
-	--rango-color: #000000;
+	--rango-color: #0a0099;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-rosa {
-	--rango-color: #000000;
-	--rango-stroke-width: 1px;
-	--rango-stroke-color: #000000;
-}
-
-.rango-color-rosa-fuxia {
-	--rango-color: #000000;
+	--rango-color: #ff3d9e;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-morado-oscuro {
-	--rango-color: #000000;
+	--rango-color: #39006e;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }
 
 .rango-color-morado-claro {
-	--rango-color: #000000;
+	--rango-color: #ae74c5;
 	--rango-stroke-width: 1px;
 	--rango-stroke-color: #000000;
 }

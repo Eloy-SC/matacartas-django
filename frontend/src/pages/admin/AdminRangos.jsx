@@ -7,7 +7,6 @@ const COLOR_LABELS = {
 	blanco: "BLANCO",
 	negro: "NEGRO",
 	rosa: "ROSA",
-	rosa_fuxia: "ROSA FUXIA",
 	rojo_claro: "ROJO CLARO",
 	rojo: "ROJO",
 	rojo_oscuro: "ROJO OSCURO",

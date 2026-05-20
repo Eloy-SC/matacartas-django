@@ -146,7 +146,6 @@ class Migration(migrations.Migration):
                             ("blanco", "Blanco"),
                             ("negro", "Negro"),
                             ("rosa", "Rosa"),
-                            ("rosa_fuxia", "Rosa fuxia"),
                             ("rojo_claro", "Rojo claro"),
                             ("rojo", "Rojo"),
                             ("rojo_oscuro", "Rojo oscuro"),
