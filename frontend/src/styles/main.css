@@ -1,5 +1,6 @@
 :root {
   --ui-accent: #921425;
+  --ui-accent-hover: #ad5a65;
   --ui-bg: #ffffff;
   --ui-input-bg: #ffffff;
   --ui-input-bg-disabled: #e9e9e9;
@@ -120,6 +121,24 @@ label {
   line-height: 1;
 }
 
+.clasif-inicio-button {
+  position: absolute;
+  top: 30px;
+  right: 125px;
+  appearance: none;
+  border: 2px solid var(--ui-accent);
+  background-image: var(--form-card-texture);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  color: var(--ui-accent);
+  border-radius: 0;
+  padding: 12px 18px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1;
+}
+
 .avatar-button {
   position: absolute;
   top: 30px;
@@ -191,4 +210,78 @@ label {
   width: fit-content;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+.clasif-table-wrap {
+  margin-top: 12px;
+  overflow: auto;
+}
+
+.clasif-table {
+  width: 100%;
+  min-width: 420px;
+  border-collapse: collapse;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 2px solid #000000;
+}
+
+.clasif-table th,
+.clasif-table td {
+  border: 1px solid #000000;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.clasif-row--current td {
+  background-color: #d6b1b6;
+  vertical-align: middle;
+}
+
+.clasif-separator-row td {
+  height: 12px;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.clasif-table th {
+  background-color: var(--ui-accent);
+  color: #ffffff;
+}
+
+.clasif-avatar-cell {
+  width: 52px;
+  text-align: center;
+}
+
+.clasif-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 2px solid #000000;
+  display: block;
+  margin: 0 auto;
+}
+
+.close-card-button {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  background-color: var(--ui-accent); ;
+  color: #fff;
+  border: 2px solid #000000;
+  border-radius: 8px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  font-size: 16px;
+}
+
+.close-card-button:hover {
+  background-color: var(--ui-accent-hover);
+  color: #000000;
 }

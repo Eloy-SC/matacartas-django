@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import defaultProfilePic from "../assets/default_profile_pic.png";
 import cabecera from "../assets/cabecera.png";
+import "../styles/rangos.css";
 
 export default function Inicio() {
 	const navigate = useNavigate();
@@ -10,6 +11,11 @@ export default function Inicio() {
 	const [profileImageUrl, setProfileImageUrl] = useState("");
 	const [avatarError, setAvatarError] = useState(false);
 	const [isStaff, setIsStaff] = useState(false);
+	const [showClasificacion, setShowClasificacion] = useState(false);
+	const [topUsers, setTopUsers] = useState([]);
+	const [topLoading, setTopLoading] = useState(false);
+	const [topError, setTopError] = useState("");
+	const [currentUserId, setCurrentUserId] = useState(null);
 
 	const avatarSrc = profileImageUrl && !avatarError ? profileImageUrl : defaultProfilePic;
 
@@ -24,17 +30,75 @@ export default function Inicio() {
 				const imagen = data?.imagen;
 				setProfileImageUrl(typeof imagen === "string" ? imagen : "");
 				setIsStaff(Boolean(data?.is_staff));
+				setCurrentUserId(data?.id ?? null);
 			})
 			.catch(() => {
 				if (cancelled) return;
 				setProfileImageUrl("");
 				setIsStaff(false);
+				setCurrentUserId(null);
 			});
 
 		return () => {
 			cancelled = true;
 		};
 	}, []);
+
+	useEffect(() => {
+		if (!showClasificacion) return;
+		let cancelled = false;
+		setTopLoading(true);
+		setTopError("");
+
+		fetch("/api/users/top/", { method: "GET", credentials: "include" })
+			.then(async (res) => {
+				const data = await res.json().catch(() => ([]));
+				if (!res.ok) {
+					const detail = data?.detail || "No se pudo cargar la clasificación";
+					throw new Error(detail);
+				}
+				const items = Array.isArray(data) ? data : [];
+
+				const itemsWithRango = await Promise.all(
+					items.map(async (user) => {
+						if (!user?.id) return { ...user, rango_nombre: "" };
+						try {
+							const rangoRes = await fetch(`/api/rangos/usuario/${user.id}/`, {
+								method: "GET",
+								credentials: "include",
+							});
+							const rangoData = await rangoRes.json().catch(() => ({}));
+							if (!rangoRes.ok) {
+								return { ...user, rango_nombre: "" };
+							}
+							return {
+								...user,
+								rango_nombre: rangoData?.nombre ?? "",
+								rango_color: rangoData?.color ?? "",
+							};
+						} catch (e) {
+							return { ...user, rango_nombre: "" };
+						}
+					})
+				);
+
+				if (cancelled) return;
+				setTopUsers(itemsWithRango);
+			})
+			.catch((e) => {
+				if (cancelled) return;
+				setTopError(e instanceof Error ? e.message : "Error cargando clasificación");
+				setTopUsers([]);
+			})
+			.finally(() => {
+				if (cancelled) return;
+				setTopLoading(false);
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [showClasificacion]);
 
 	async function handleLogout() {
 		setLoading(true);
@@ -85,6 +149,14 @@ export default function Inicio() {
 			<img src={cabecera} alt="Matacartas" style={{maxWidth: "100%", height: "auto"}} />
 			<button
 				type="button"
+				className="clasif-inicio-button"
+				onClick={() => setShowClasificacion(true)}
+				aria-label="Ver clasificación"
+			>
+				🏆
+			</button>
+			<button
+				type="button"
 				className="avatar-button"
 				onClick={() => navigate("/perfil?mode=view")}
 				aria-label="Ir al perfil"
@@ -98,6 +170,107 @@ export default function Inicio() {
 					}}
 				/>
 			</button>
+			{showClasificacion && (
+				<div
+					className="form-card"
+					style={{
+						position: "fixed",
+						top: "50%",
+						left: "50%",
+						transform: "translate(-50%, -50%)",
+						zIndex: 10,
+					}}
+				>
+					<button
+						type="button"
+						onClick={() => setShowClasificacion(false)}
+						aria-label="Cerrar"
+						className="close-card-button"
+					>
+						X
+					</button>
+					<h2>Clasificacion</h2>
+					{topLoading ? (
+						<p style={{ fontWeight: "bold" }}>Cargando...</p>
+					) : topError ? (
+						<p role="alert">{topError}</p>
+					) : (
+						<div className="clasif-table-wrap">
+							<table className="clasif-table">
+								<thead>
+									<tr>
+										<th aria-hidden="true"></th>
+										<th aria-hidden="true"></th>
+										<th>Nombre</th>
+										<th>Rango</th>
+										<th>Puntuación</th>
+									</tr>
+								</thead>
+								<tbody>
+									{topUsers.length === 0 ? (
+										<tr>
+											<td colSpan={5}>No hay datos.</td>
+										</tr>
+									) : (
+										topUsers.flatMap((user, index) => {
+											const rowKey = user.id ?? user.username ?? user.nombre ?? index;
+											const isCurrentUser =
+												currentUserId !== null && user.id === currentUserId;
+											const hasSeparator =
+												typeof user?.posicion === "number" && user.posicion > 10;
+
+											const row = (
+												<tr
+													key={`row-${rowKey}`}
+													className={isCurrentUser ? "clasif-row--current" : undefined}
+												>
+													<td>{user.posicion}</td>
+													<td className="clasif-avatar-cell">
+														<img
+															className="clasif-avatar"
+															src={user.imagen || defaultProfilePic}
+															alt={`Foto de ${user.nombre ?? "usuario"}`}
+															onError={(event) => {
+																event.currentTarget.src = defaultProfilePic;
+															}}
+														/>
+													</td>
+													<td>{user.nombre ?? ""}</td>
+													<td>
+														<span
+															className={`rango-text rango-color-${(user.rango_color ?? "")
+																.replace(/_/g, "-")
+																.toLowerCase()}`}
+														>
+															{user.rango_nombre ?? ""}
+														</span>
+													</td>
+													<td>
+														{typeof user.puntuacion === "number"
+															? user.puntuacion
+															: user.puntuacion ?? ""}
+													</td>
+												</tr>
+											);
+
+											if (hasSeparator && index > 0) {
+												return [
+													<tr key={`sep-${rowKey}`} className="clasif-separator-row" aria-hidden="true">
+														<td colSpan={5}></td>
+													</tr>,
+													row,
+												];
+											}
+
+											return row;
+										})
+									)}
+								</tbody>
+							</table>
+						</div>
+					)}
+				</div>
+			)}
 			<div className="form-card">
 				<p>Esta es una página protegida: sólo accesible si has iniciado sesión.</p>
 				<button type="button" onClick={handleLogout} disabled={loading}>

@@ -169,3 +169,24 @@ def crear_usuario_admin(request):
         status=status.HTTP_201_CREATED,
     )
 
+@api_view(["GET"])
+@permission_classes([])
+def listar_top_usuarios(request):
+    try:
+        usuarios = user_service.listar_top_usuarios(request.user)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    
+    data = [
+        {
+            "id": usuario["id"],
+            "username": usuario["username"],
+            "email": usuario["email"],
+            "nombre": usuario["nombre"],
+            "puntuacion": usuario["puntuacion"],
+            "imagen": usuario["imagen"],
+            "posicion": usuario["posicion"],
+        }
+        for usuario in usuarios
+    ]
+    return Response(data, status=200)

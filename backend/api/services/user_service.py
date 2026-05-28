@@ -2,6 +2,8 @@ from django.db import IntegrityError, transaction
 from django.contrib.auth import get_user_model
 from ..utils.exceptions import ActualizarPerfilError, RegistrationError
 from ..selectors.user_selector import (
+    get_posicion_top_usuario,
+    get_top_users_by_puntos,
     get_users_no_password_count,
     get_users_no_password_paginated,
     get_user_by_id_no_password,
@@ -157,3 +159,26 @@ def eliminar_usuario_admin(actor, user_id):
         user.delete()
     except Exception as e:
         raise ValueError("No se pudo eliminar el usuario")
+    
+def listar_top_usuarios(actor):
+    """
+    Devuelve una lista de los 10 usuarios con mayor puntuación. 
+    Puede ser utilizado por cualquier usuario autenticado.
+    Si el actor no está entre esos 10 usuarios, también se incluye su usuario al final de la lista.
+    """
+
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para listar los usuarios")
+
+    usuarios = list(get_top_users_by_puntos(10))
+    for u in usuarios:
+        u["posicion"] = usuarios.index(u) + 1
+    if not any(u["id"] == actor.id for u in usuarios):
+        actor_data = get_user_by_id_no_password(actor.id)
+        if actor_data:
+            actor_data["posicion"] = get_posicion_top_usuario(actor.id)
+            usuarios.append(actor_data)
+        else:
+            raise ValueError("No se encontró el usuario autenticado")
+    
+    return usuarios

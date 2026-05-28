@@ -6,6 +6,7 @@ from .views.user_view import (
     editar_usuario_admin,
     eliminar_usuario_admin,
     get_usuario_admin,
+    listar_top_usuarios,
     listar_usuarios_admin,
     perfil_actualizar,
 )
@@ -40,6 +41,7 @@ urlpatterns = [
         eliminar_usuario_admin,
         name="eliminar-usuario-admin",
     ),
+    path("users/top/", listar_top_usuarios, name="listar-top-usuarios"),
     path("rangos/listar/", listar_rangos, name="listar-rangos"),
     path("rangos/admin/crear/", crear_rango_admin, name="crear-rango-admin"),
     path("rangos/<int:rango_id>/", get_rango, name="get-rango"),

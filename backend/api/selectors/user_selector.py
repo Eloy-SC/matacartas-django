@@ -31,3 +31,15 @@ def get_user_by_id_no_password(user_id):
 def get_puntos_by_user_id(user_id):
     UserModel = get_user_model()
     return UserModel.objects.filter(id=user_id).values("puntuacion").first().get("puntuacion", 0)
+
+def get_top_users_by_puntos(limit):
+    UserModel = get_user_model()
+    return UserModel.objects.all().values("id", "username", "email", "nombre", "puntuacion", "imagen").order_by("-puntuacion")[:limit]
+
+def get_posicion_top_usuario(user_id):
+    UserModel = get_user_model()
+    users = UserModel.objects.all().values("id", "puntuacion").order_by("-puntuacion")
+    for index, user in enumerate(users, start=1):
+        if user["id"] == user_id:
+            return index
+    return None
