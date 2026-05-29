@@ -1,5 +1,9 @@
 from django.urls import path
 
+from .views.partida_view import (
+    listar_partidas_publicas
+)
+
 from .views.auth_view import csrf, me, register, session_login, session_logout
 from .views.user_view import (
     crear_usuario_admin,
@@ -56,4 +60,5 @@ urlpatterns = [
         eliminar_rango_admin,
         name="eliminar-rango-admin",
     ),
+    path("partidas/publicas/", listar_partidas_publicas, name="listar-partidas-publicas"),
 ]

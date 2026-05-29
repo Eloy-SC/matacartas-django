@@ -17,7 +17,7 @@ class Partida(models.Model):
     fecha_fin = models.DateTimeField(null=True, blank=True)
     
     longitud = models.CharField(max_length=20, choices=LongitudPartida.choices, default=LongitudPartida.NORMAL)
-    cartas_invencibles = models.BooleanField(default=False)
+    cartas_invencibles = models.BooleanField(default=True)  # Indica si las cartas invencibles están habilitadas
     tiempo_max_turno = models.IntegerField(null=False, default=90)  # Tiempo máximo por turno en segundos
 
     rango_minimo = models.ForeignKey("Rango", 

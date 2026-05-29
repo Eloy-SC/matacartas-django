@@ -34,7 +34,7 @@ def perfil_actualizar(request):
     )
 
 @api_view(["GET"])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def listar_usuarios_admin(request):
     page_param = request.query_params.get("page", "1")
     try:
@@ -78,7 +78,7 @@ def listar_usuarios_admin(request):
     )
 
 @api_view(["GET"])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def get_usuario_admin(request, user_id):
     try:
         usuario = user_service.get_usuario_admin(request.user, user_id)
@@ -102,7 +102,7 @@ def get_usuario_admin(request, user_id):
     return Response(data, status=200)
 
 @api_view(["PUT"])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def editar_usuario_admin(request, user_id):
     UserModel = get_user_model()
     target_user = UserModel.objects.filter(id=user_id).first()
@@ -136,7 +136,7 @@ def editar_usuario_admin(request, user_id):
     )
 
 @api_view(["DELETE"])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def eliminar_usuario_admin(request, user_id):
     try:
         user_service.eliminar_usuario_admin(request.user, user_id)
@@ -148,7 +148,7 @@ def eliminar_usuario_admin(request, user_id):
     return Response({"detail": "Usuario eliminado"}, status=status.HTTP_200_OK)
 
 @api_view(["POST"])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def crear_usuario_admin(request):
     serializer = UserSerializer(data=request.data, context={"user": request.user})
 
@@ -170,7 +170,7 @@ def crear_usuario_admin(request):
     )
 
 @api_view(["GET"])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def listar_top_usuarios(request):
     try:
         usuarios = user_service.listar_top_usuarios(request.user)

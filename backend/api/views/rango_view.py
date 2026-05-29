@@ -1,4 +1,5 @@
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from api.utils.exceptions import RegistrationError
@@ -7,7 +8,7 @@ from ..serializers.rango_serializer import RangoSerializer
 from ..services import rango_service
 
 @api_view(["GET"])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def listar_rangos(request):
     try:
         rangos = rango_service.listar_rangos(request.user)
@@ -28,7 +29,7 @@ def listar_rangos(request):
 
 
 @api_view(["GET"])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def get_rango(request, rango_id):
     try:
         rango = rango_service.get_rango(request.user, rango_id)
@@ -49,7 +50,7 @@ def get_rango(request, rango_id):
     return Response(data, status=200)
 
 @api_view(["GET"])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def get_rango_de_usuario(request, user_id):
     try:
         rango = rango_service.get_rango_de_usuario(request.user, user_id)
@@ -76,7 +77,7 @@ def get_rango_de_usuario(request, user_id):
     return Response(data, status=200)
 
 @api_view(["POST"])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def crear_rango_admin(request):
     serializer = RangoSerializer(data=request.data)
 
@@ -101,7 +102,7 @@ def crear_rango_admin(request):
 
 
 @api_view(["PUT"])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def editar_rango_admin(request, rango_id):
     target_rango = Rango.objects.filter(id=rango_id).first()
     if target_rango is None:
@@ -134,7 +135,7 @@ def editar_rango_admin(request, rango_id):
 
 
 @api_view(["DELETE"])
-@permission_classes([])
+@permission_classes([IsAuthenticated])
 def eliminar_rango_admin(request, rango_id):
     try:
         rango_service.eliminar_rango_admin(request.user, rango_id)

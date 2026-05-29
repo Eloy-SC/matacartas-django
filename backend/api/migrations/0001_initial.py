@@ -177,4 +177,89 @@ class Migration(migrations.Migration):
                 ("puntos_maximos", models.IntegerField(null=False, unique=True)),
             ],
         ),
+        migrations.CreateModel(
+            name="Partida",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nombre", models.CharField(max_length=40, unique=True, null=False, blank=False)),
+                ("num_jugadores", models.IntegerField(min=2, max=6)),
+                ("privada", models.BooleanField(default=False)),
+                ("clave", models.CharField(max_length=20, null=True, blank=True)),
+                ("fecha_creacion", models.DateTimeField(auto_now_add=True)),
+                ("fecha_inicio", models.DateTimeField(null=True, blank=True)),
+                ("fecha_fin", models.DateTimeField(null=True, blank=True)),
+                (
+                    "longitud",
+                    models.CharField(
+                        max_length=20,
+                        choices=[
+                            ("corta", "Corta"),
+                            ("normal", "Normal"),
+                            ("larga", "Larga"),
+                        ],
+                        null=False,
+                        blank=False,
+                    ),
+                ),
+                ("cartas_invencibles", models.BooleanField(default=True)),
+                ("tiempo_max_turno", models.IntegerField(null=False, default=90)),
+                (
+                    "rango_minimo",
+                    models.ForeignKey(
+                        blank=True,
+                        default=None,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="api.rango",
+                    ),
+                ),
+                (
+                    "rango_maximo",
+                    models.ForeignKey(
+                        blank=True,
+                        default=None,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="api.rango",
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="PartidaUsuario",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "partida",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="api.partida",
+                    ),
+                ),
+                (
+                    "usuario",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="api.usuario",
+                    ),
+                ),
+                ("creador", models.BooleanField(default=False)),
+            ],
+        ),
     ]
