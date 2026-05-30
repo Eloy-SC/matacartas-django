@@ -10,6 +10,7 @@ import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminUserForm from "./pages/admin/AdminUserForm.jsx";
 import AdminRangos from "./pages/admin/AdminRangos.jsx";
 import AdminRangoForm from "./pages/admin/AdminRangoForm.jsx";
+import ListaPartidas from "./pages/partidas/ListaPartidas.jsx";
 import "./index.css";
 import "./styles/main.css";
 
@@ -118,6 +119,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         {/* Necesario iniciar sesión */}
         <Route path="/inicio" element={ <RequireAuth> <Inicio /> </RequireAuth>}/>
         <Route path="/perfil" element={ <RequireAuth> <Perfil /> </RequireAuth>}/>
+        <Route path="/partidas" element={ <RequireAuth> <ListaPartidas /> </RequireAuth>}/>
 
         {/* Necesario ser administrador */}
         <Route path="/admin" element={ <RequireAdmin> <Admin /> </RequireAdmin>}/>

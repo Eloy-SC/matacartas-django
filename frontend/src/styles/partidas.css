@@ -1,0 +1,171 @@
+:root {
+  --partidas-accent: var(--ui-accent);
+  --partidas-accent-hover: var(--ui-accent-hover);
+}
+
+.partidas-title-card {
+  background-image: var(--form-card-texture);
+  background-repeat: repeat;
+  background-size: 220px 220px;
+  background-position: center;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 3px solid #000000;
+  margin: 20px auto 30px;
+  width: fit-content;
+  max-width: 100%;
+  height: fit-content;
+  max-height: 100%;
+  box-sizing: border-box;
+  color: #000000;
+}
+
+.partidas-volver-button {
+  position: absolute;
+  top: 45px;
+  left: 200px;
+  margin-bottom: 0;
+  color: #000000;
+  font-weight: bold;
+  background-image: var(--form-card-texture);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  background-position: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 3px solid #000000;
+  width: fit-content;
+  max-width: 100%;
+  height: fit-content;
+  max-height: 100%;
+  box-sizing: border-box;
+}
+
+.partidas-volver-button:hover {
+  background: var(--partidas-accent);
+  color: #ffffff;
+}
+
+.partidas-table-wrap {
+  overflow-x: auto;
+  background-image: var(--form-card-texture);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  background-position: center;
+  padding: 16px;
+  border-radius: 12px;
+  border: 3px solid #000000;
+}
+
+.partidas-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: transparent;
+}
+
+.partidas-table th {
+  background-color: var(--partidas-accent);
+  color: #ffffff;
+  text-align: center;
+  padding: 12px 14px;
+}
+
+.partidas-table td {
+  color: #000000;
+  font-weight: bold;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.partidas-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.partidas-toolbar-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  background-image: var(--form-card-texture);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  background-position: center;
+  padding: 16px;
+  border-radius: 12px;
+  border: 3px solid #000000;
+  margin-bottom: 18px;
+  color: var(--partidas-accent);
+}
+
+.partidas-search-input {
+  flex: 1 1 260px;
+  min-width: 220px;
+  padding: 10px 12px;
+  border: 2px solid var(--partidas-accent);
+  border-radius: 8px;
+  color: var(--partidas-accent);
+}
+
+.partidas-search-input::placeholder {
+  color: var(--partidas-accent);
+  opacity: 0.7;
+}
+
+.partidas-primary-button,
+.partidas-secondary-button {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 2px solid #000000;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  color: var(--partidas-accent);
+  background-color: #ffffff;
+}
+
+.partidas-primary-button:hover,
+.partidas-secondary-button:hover {
+  background-color: var(--partidas-accent-hover);
+  color: #000000;
+}
+
+.partidas-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.partidas-pagination__info {
+  font-weight: bold;
+  color: #000000;
+}
+
+.partidas-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 2px solid #000000;
+  font-weight: bold;
+}
+
+.partidas-status--en-juego {
+  background-color: #c8e6c9;
+  color: #1b5e20;
+}
+
+.partidas-status--sala-espera {
+  background-color: #fff3cd;
+  color: #8a6d3b;
+}
+
+.partidas-status--desconocido {
+  background-color: #e2e3e5;
+  color: #4e545a;
+}

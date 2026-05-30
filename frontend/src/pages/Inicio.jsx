@@ -272,8 +272,16 @@ export default function Inicio() {
 				</div>
 			)}
 			<div className="form-card">
-				<p>Esta es una página protegida: sólo accesible si has iniciado sesión.</p>
-				<button type="button" onClick={handleLogout} disabled={loading}>
+				<div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+					<button type="button" className="main-primary-button" onClick={() => navigate("/partidas")}>
+						Busca partida
+					</button>
+					<p style={{ margin: "12px 0", fontWeight: "bold" }}>o</p>
+					<button type="button" className="main-primary-button" onClick={() => navigate("/partidas")}>
+						Crea una partida
+					</button>
+				</div>
+				<button type="button" className="main-primary-button" onClick={handleLogout} disabled={loading}>
 					{loading ? "Cerrando sesión..." : "Cerrar sesión"}
 				</button>
 				{error && (

@@ -190,7 +190,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("nombre", models.CharField(max_length=40, unique=True, null=False, blank=False)),
-                ("num_jugadores", models.IntegerField(min=2, max=6)),
+                ("num_jugadores", models.IntegerField(null=False, default=2)),
                 ("privada", models.BooleanField(default=False)),
                 ("clave", models.CharField(max_length=20, null=True, blank=True)),
                 ("fecha_creacion", models.DateTimeField(auto_now_add=True)),
