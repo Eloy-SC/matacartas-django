@@ -136,6 +136,7 @@ export default function ListaPartidas() {
 								<th>Rango minimo</th>
 								<th>Rango maximo</th>
 								<th>Estado</th>
+								<th> </th>
 							</tr>
 						</thead>
 						<tbody>
@@ -169,6 +170,26 @@ export default function ListaPartidas() {
 												<span className={getEstadoClass(partida?.estado)}>
 													{getEstadoLabel(partida?.estado)}
 												</span>
+											</td>
+											<td>
+												{partida?.estado === "sala_espera" ? (
+													<button
+														type="button"
+														className="partidas-primary-button"
+														onClick={() => navigate(`/partidas/${partida.id}`)}
+														disabled={jugadoresActuales >= jugadoresMaximos}
+													>
+														Unirse
+													</button>
+												) : (
+													<button
+														type="button"
+														className="partidas-primary-button"
+														onClick={() => navigate(`/partidas/${partida.id}`)}
+													>
+														Ver
+													</button>
+												)}
 											</td>
 										</tr>
 									);

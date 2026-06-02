@@ -23,3 +23,9 @@ def get_estado_de_partida(id):
         return "sala_espera"
     else:
         return "desconocido"
+
+def get_partidas_by_nombre(nombre):
+    return Partida.objects.filter(nombre=nombre)
+
+def get_partidas_by_clave(clave):
+    return Partida.objects.filter(clave=clave)

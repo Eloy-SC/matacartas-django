@@ -3,6 +3,9 @@ from ..models.rango import Rango
 def get_rango_by_puntos(puntos):
     return Rango.objects.filter(puntos_minimos__lte=puntos, puntos_maximos__gte=puntos).first()
 
+def get_rango_by_id(rango_id):
+    return Rango.objects.filter(id=rango_id).first()
+
 def get_rango_by_min_puntos(puntos):
     return Rango.objects.filter(puntos_minimos=puntos).first()
 

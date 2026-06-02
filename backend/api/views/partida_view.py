@@ -1,6 +1,9 @@
+from ..serializers.partida_serializer import CrearPartidaSerializer
+from ..utils.exceptions import RegistrationError
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import status
 from ..services import partida_service
 
 @api_view(["GET"])
@@ -44,4 +47,47 @@ def listar_partidas_publicas(request):
             "total_pages": paged["total_pages"],
         },
         status=200,
+    )
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def crear_partida(request):
+    serializer = CrearPartidaSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=400)
+    
+    try:
+        partida = partida_service.crear_partida(
+            actor=request.user,
+            nombre=serializer.validated_data["nombre"],
+            num_jugadores=serializer.validated_data["num_jugadores"],
+            privada=serializer.validated_data["privada"],
+            clave=serializer.validated_data["clave"],
+            longitud=serializer.validated_data["longitud"],
+            cartas_invencibles=serializer.validated_data["cartas_invencibles"],
+            tiempo_max_turno=serializer.validated_data["tiempo_max_turno"],
+            rango_minimo_id=serializer.validated_data["rango_minimo_id"],
+            rango_maximo_id=serializer.validated_data["rango_maximo_id"],
+        )
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except RegistrationError as e:
+        return Response(e.errors, status=400)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    return Response(
+        {
+            "id": partida.id,
+            "nombre": partida.nombre,
+            "num_jugadores": partida.num_jugadores,
+            "privada": partida.privada,
+            "clave": partida.clave,
+            "longitud": partida.longitud,
+            "cartas_invencibles": partida.cartas_invencibles,
+            "tiempo_max_turno": partida.tiempo_max_turno,
+            "rango_minimo_id": partida.rango_minimo.id if partida.rango_minimo else None,
+            "rango_maximo_id": partida.rango_maximo.id if partida.rango_maximo else None,
+        },
+        status=status.HTTP_201_CREATED,
     )

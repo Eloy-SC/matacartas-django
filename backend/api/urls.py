@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views.partida_view import (
+    crear_partida,
     listar_partidas_publicas
 )
 
@@ -61,4 +62,5 @@ urlpatterns = [
         name="eliminar-rango-admin",
     ),
     path("partidas/publicas/", listar_partidas_publicas, name="listar-partidas-publicas"),
+    path("partidas/crear/", crear_partida, name="crear-partida"),
 ]

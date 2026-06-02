@@ -276,8 +276,8 @@ export default function Inicio() {
 					<button type="button" className="main-primary-button" onClick={() => navigate("/partidas")}>
 						Busca partida
 					</button>
-					<p style={{ margin: "12px 0", fontWeight: "bold" }}>o</p>
-					<button type="button" className="main-primary-button" onClick={() => navigate("/partidas")}>
+					<p style={{ margin: "12px 0", fontWeight: "bold" }}>     o      </p>
+					<button type="button" className="main-primary-button" onClick={() => navigate("/crear-partida")}>
 						Crea una partida
 					</button>
 				</div>
