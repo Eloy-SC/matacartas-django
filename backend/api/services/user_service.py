@@ -8,6 +8,7 @@ from ..selectors.user_selector import (
     get_users_no_password_paginated,
     get_user_by_id_no_password,
 )
+from ..selectors.rango_selector import get_rango_by_id
 
 @transaction.atomic
 def actualizar_perfil(user, *, username, email, nombre, imagen=None, password=None):
@@ -35,7 +36,18 @@ def actualizar_perfil(user, *, username, email, nombre, imagen=None, password=No
 
     return user
 
-def listar_usuarios_admin(actor, *, page, page_size):
+def listar_usuarios_admin(
+    actor,
+    *,
+    page,
+    page_size,
+    search=None,
+    is_active=None,
+    is_staff=None,
+    rango_id=None,
+    order_by="id",
+    order_dir="asc",
+):
     """
     Devuelve una lista de todos los usuarios y todos sus atributos a excepción de la contraseña. 
     Sólo puede ser utilizado por administradores.
@@ -44,9 +56,50 @@ def listar_usuarios_admin(actor, *, page, page_size):
     if not actor.is_staff:
         raise PermissionError("No tienes permiso para listar los usuarios")
 
-    total = get_users_no_password_count()
+    rango_interval = None
+    if rango_id is not None:
+        rango = get_rango_by_id(rango_id)
+        if rango is None:
+            return {
+                "items": [],
+                "page": page,
+                "page_size": page_size,
+                "total": 0,
+                "total_pages": 1,
+            }
+        rango_interval = (rango.puntos_minimos, rango.puntos_maximos)
+
+    allowed_order_fields = {
+        "id",
+        "username",
+        "email",
+        "nombre",
+        "puntuacion",
+        "is_active",
+        "is_staff",
+    }
+    order_field = order_by if order_by in allowed_order_fields else "id"
+    order_prefix = "-" if order_dir == "desc" else ""
+    ordering = f"{order_prefix}{order_field}"
+
+    total = get_users_no_password_count(
+        search=search,
+        is_active=is_active,
+        is_staff=is_staff,
+        rango_interval=rango_interval,
+    )
     offset = (page - 1) * page_size
-    items = list(get_users_no_password_paginated(offset, page_size))
+    items = list(
+        get_users_no_password_paginated(
+            offset,
+            page_size,
+            search=search,
+            is_active=is_active,
+            is_staff=is_staff,
+            rango_interval=rango_interval,
+            ordering=ordering,
+        )
+    )
     total_pages = max(1, (total + page_size - 1) // page_size)
 
     return {

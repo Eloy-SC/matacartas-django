@@ -272,13 +272,13 @@ export default function Inicio() {
 				</div>
 			)}
 			<div className="form-card">
-				<div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+				<div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 16 }}>
 					<button type="button" className="main-primary-button" onClick={() => navigate("/partidas")}>
-						Busca partida
+						BUSCA PARTIDA
 					</button>
 					<p style={{ margin: "12px 0", fontWeight: "bold" }}>     o      </p>
 					<button type="button" className="main-primary-button" onClick={() => navigate("/crear-partida")}>
-						Crea una partida
+						CREA UNA PARTIDA
 					</button>
 				</div>
 				<button type="button" className="main-primary-button" onClick={handleLogout} disabled={loading}>

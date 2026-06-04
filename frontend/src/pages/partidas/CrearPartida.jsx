@@ -249,7 +249,7 @@ export default function CrearPartida() {
 					<div style={{ marginTop: 16 }}>
 						<button
 							type="submit"
-							className="main-primary-button"
+							className="partidas-primary-button"
 							disabled={loading || rangosLoading}
 						>
 							{loading ? "Creando..." : "Crear"}

@@ -11,6 +11,16 @@ from ..serializers.user_serializer import (
 )
 from ..services import user_service
 
+def _parse_bool_param(value):
+    if value is None:
+        return None
+    normalized = str(value).strip().lower()
+    if normalized in {"true", "1", "yes", "si", "y"}:
+        return True
+    if normalized in {"false", "0", "no", "n"}:
+        return False
+    return None
+
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def perfil_actualizar(request):
@@ -43,11 +53,41 @@ def listar_usuarios_admin(request):
         page = 1
     page_size = 10
 
+    search = (request.query_params.get("search") or "").strip()
+    if not search:
+        search = None
+
+    rango_id = None
+    rango_param = (request.query_params.get("rango_id") or "").strip()
+    if rango_param:
+        try:
+            rango_id = int(rango_param)
+            if rango_id <= 0:
+                rango_id = None
+        except (TypeError, ValueError):
+            rango_id = None
+
+    is_active = _parse_bool_param(request.query_params.get("is_active"))
+    is_staff = _parse_bool_param(request.query_params.get("is_staff"))
+
+    ordering_param = (request.query_params.get("ordering") or "id").strip()
+    order_dir = "asc"
+    order_by = ordering_param
+    if ordering_param.startswith("-"):
+        order_dir = "desc"
+        order_by = ordering_param[1:] or "id"
+
     try:
         paged = user_service.listar_usuarios_admin(
             request.user,
             page=page,
             page_size=page_size,
+            search=search,
+            is_active=is_active,
+            is_staff=is_staff,
+            rango_id=rango_id,
+            order_by=order_by,
+            order_dir=order_dir,
         )
     except PermissionError as e:
         return Response({"detail": str(e)}, status=403)

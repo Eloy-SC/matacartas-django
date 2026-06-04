@@ -3,22 +3,84 @@ import { useNavigate } from "react-router-dom";
 import "../../styles/admin.css";
 import "../../styles/rangos.css";
 
+const ORDER_FIELDS = [
+  { value: "username", label: "Nombre de usuario" },
+  { value: "nombre", label: "Nombre de perfil" },
+  { value: "email", label: "Correo electrónico" },
+  { value: "puntuacion", label: "Puntuación" },
+  { value: "is_active", label: "Baneado" },
+  { value: "is_staff", label: "Administrador" },
+];
+
 export default function AdminUsers() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
+  const [rangos, setRangos] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState(null);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedRango, setSelectedRango] = useState("");
+  const [isActiveFilter, setIsActiveFilter] = useState("");
+  const [isStaffFilter, setIsStaffFilter] = useState("");
+  const [orderBy, setOrderBy] = useState("username");
+  const [orderDir, setOrderDir] = useState("asc");
 
-  const loadUsers = useCallback((pageNumber = 1) => {
+  const loadRangos = useCallback(() => {
+    let cancelled = false;
+
+    fetch("/api/rangos/listar/", {
+      method: "GET",
+      credentials: "include",
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => []);
+        if (cancelled) return;
+        if (!res.ok) {
+          throw new Error(data?.detail || "No se pudo cargar la lista de rangos");
+        }
+        setRangos(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setRangos([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const loadUsers = useCallback(
+    (pageNumber = 1) => {
     let cancelled = false;
     setLoading(true);
     setError("");
 
-    fetch(`/api/users/admin/listar/?page=${pageNumber}`, {
+    const params = new URLSearchParams();
+    params.set("page", String(pageNumber));
+    if (debouncedSearch.trim()) {
+      params.set("search", debouncedSearch.trim());
+    }
+    if (selectedRango) {
+      params.set("rango_id", selectedRango);
+    }
+    if (isActiveFilter) {
+      params.set("is_active", isActiveFilter);
+    }
+    if (isStaffFilter) {
+      params.set("is_staff", isStaffFilter);
+    }
+    if (orderBy) {
+      const orderingValue = orderDir === "desc" ? `-${orderBy}` : orderBy;
+      params.set("ordering", orderingValue);
+    }
+
+    fetch(`/api/users/admin/listar/?${params.toString()}`, {
       method: "GET",
       credentials: "include",
     })
@@ -75,7 +137,36 @@ export default function AdminUsers() {
     return () => {
       cancelled = true;
     };
-  }, []);
+    },
+    [
+      debouncedSearch,
+      selectedRango,
+      isActiveFilter,
+      isStaffFilter,
+      orderBy,
+      orderDir,
+    ]
+  );
+
+  useEffect(() => {
+    const cancel = loadRangos();
+    return () => {
+      if (typeof cancel === "function") cancel();
+    };
+  }, [loadRangos]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, selectedRango, isActiveFilter, isStaffFilter, orderBy, orderDir]);
 
   useEffect(() => {
     const cancel = loadUsers(page);
@@ -114,7 +205,7 @@ export default function AdminUsers() {
         throw new Error(data?.detail || "No se pudo eliminar el usuario");
       }
 
-      loadUsers();
+      loadUsers(page);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error eliminando usuario");
     } finally {
@@ -136,8 +227,69 @@ export default function AdminUsers() {
           className="admin-search-input"
           placeholder="Buscar usuario..."
           aria-label="Buscar usuario"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           disabled={loading}
         />
+        <select
+          className="admin-search-input"
+          value={selectedRango}
+          onChange={(e) => setSelectedRango(e.target.value)}
+          aria-label="Filtrar por rango"
+          disabled={loading}
+        >
+          <option value="">Todos los rangos</option>
+          {rangos.map((rango) => (
+            <option key={rango.id ?? rango.nombre} value={rango.id ?? ""}>
+              {rango.nombre ?? ""}
+            </option>
+          ))}
+        </select>
+        <select
+          className="admin-search-input"
+          value={isActiveFilter}
+          onChange={(e) => setIsActiveFilter(e.target.value)}
+          aria-label="Filtrar por baneado"
+          disabled={loading}
+        >
+          <option value="">Todos</option>
+          <option value="false">Baneados</option>
+          <option value="true">No baneados</option>
+        </select>
+        <select
+          className="admin-search-input"
+          value={isStaffFilter}
+          onChange={(e) => setIsStaffFilter(e.target.value)}
+          aria-label="Filtrar por administrador"
+          disabled={loading}
+        >
+          <option value="">Todos</option>
+          <option value="true">Administradores</option>
+          <option value="false">No administradores</option>
+        </select>
+        <select
+          className="admin-search-input"
+          value={orderBy}
+          onChange={(e) => setOrderBy(e.target.value)}
+          aria-label="Ordenar por"
+          disabled={loading}
+        >
+          {ORDER_FIELDS.map((field) => (
+            <option key={field.value} value={field.value}>
+              Ordenar: {field.label}
+            </option>
+          ))}
+        </select>
+        <select
+          className="admin-search-input"
+          value={orderDir}
+          onChange={(e) => setOrderDir(e.target.value)}
+          aria-label="Ordenar direccion"
+          disabled={loading}
+        >
+          <option value="asc">Ascendente</option>
+          <option value="desc">Descendente</option>
+        </select>
         <button
           type="button"
           className="admin-primary-button"
@@ -162,6 +314,7 @@ export default function AdminUsers() {
                 <th>Nombre de perfil</th>
                 <th>Correo electrónico</th>
                 <th>Rango</th>
+                <th>Puntuación</th>
                 <th>Baneado</th>
                 <th>Administrador</th>
                 <th>Acciones</th>
@@ -170,7 +323,7 @@ export default function AdminUsers() {
             <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>No hay usuarios.</td>
+                  <td colSpan={8}>No hay usuarios.</td>
                 </tr>
               ) : (
                 users.map((user) => (
@@ -187,6 +340,7 @@ export default function AdminUsers() {
                         {user.rango_nombre ?? ""}
                       </span>
                     </td>
+                    <td>{typeof user.puntuacion === "number" ? user.puntuacion : ""}</td>
                     <td>{user.is_active ? "❌" : "🟩"}</td>
                     <td>{user.is_staff ? "🟩" : "❌"}</td>
                     <td>
