@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import cabecera from "../../assets/cabecera.png";
 import "../../styles/partidas.css";
@@ -15,6 +15,14 @@ const ESTADO_CLASS = {
 	desconocido: "partidas-status partidas-status--desconocido",
 };
 
+const ORDER_FIELDS = [
+	{ value: "nombre", label: "Nombre" },
+	{ value: "num_jugadores", label: "Jugadores maximos" },
+	{ value: "rango_minimo_id", label: "Rango minimo" },
+	{ value: "rango_maximo_id", label: "Rango maximo" },
+	{ value: "fecha_creacion", label: "Fecha de creacion" },
+];
+
 function getEstadoLabel(estado) {
 	if (!estado) return ESTADO_LABELS.desconocido;
 	return ESTADO_LABELS[estado] ?? ESTADO_LABELS.desconocido;
@@ -25,22 +33,80 @@ function getEstadoClass(estado) {
 	return ESTADO_CLASS[estado] ?? ESTADO_CLASS.desconocido;
 }
 
+function formatFecha(value) {
+	if (!value) return "-";
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return `${value}`;
+	return date.toLocaleString();
+}
+
 export default function ListaPartidas() {
 	const navigate = useNavigate();
 	const [partidas, setPartidas] = useState([]);
+	const [rangos, setRangos] = useState([]);
 	const [page, setPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(1);
 	const [totalPartidas, setTotalPartidas] = useState(0);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 	const [search, setSearch] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
+	const [selectedNumJugadores, setSelectedNumJugadores] = useState("");
+	const [selectedRangoMin, setSelectedRangoMin] = useState("");
+	const [selectedRangoMax, setSelectedRangoMax] = useState("");
+	const [orderBy, setOrderBy] = useState("id");
+	const [orderDir, setOrderDir] = useState("asc");
+
+	const loadRangos = useCallback(() => {
+		let cancelled = false;
+
+		fetch("/api/rangos/listar/", {
+			method: "GET",
+			credentials: "include",
+		})
+			.then(async (res) => {
+				const data = await res.json().catch(() => []);
+				if (cancelled) return;
+				if (!res.ok) {
+					throw new Error(data?.detail || "No se pudo cargar la lista de rangos");
+				}
+				setRangos(Array.isArray(data) ? data : []);
+			})
+			.catch(() => {
+				if (cancelled) return;
+				setRangos([]);
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	const loadPartidas = useCallback((pageNumber = 1) => {
 		let cancelled = false;
 		setLoading(true);
 		setError("");
 
-		fetch(`/api/partidas/publicas/?page=${pageNumber}`, {
+		const params = new URLSearchParams();
+		params.set("page", String(pageNumber));
+		if (debouncedSearch.trim()) {
+			params.set("search", debouncedSearch.trim());
+		}
+		if (selectedNumJugadores) {
+			params.set("num_jugadores", selectedNumJugadores);
+		}
+		if (selectedRangoMin) {
+			params.set("rango_minimo_id", selectedRangoMin);
+		}
+		if (selectedRangoMax) {
+			params.set("rango_maximo_id", selectedRangoMax);
+		}
+		if (orderBy) {
+			const orderingValue = orderDir === "desc" ? `-${orderBy}` : orderBy;
+			params.set("ordering", orderingValue);
+		}
+
+		fetch(`/api/partidas/publicas/?${params.toString()}`, {
 			method: "GET",
 			credentials: "include",
 		})
@@ -74,7 +140,14 @@ export default function ListaPartidas() {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [debouncedSearch, selectedNumJugadores, selectedRangoMin, selectedRangoMax, orderBy, orderDir]);
+
+	useEffect(() => {
+		const cancel = loadRangos();
+		return () => {
+			if (typeof cancel === "function") cancel();
+		};
+	}, [loadRangos]);
 
 	useEffect(() => {
 		const cancel = loadPartidas(page);
@@ -83,19 +156,20 @@ export default function ListaPartidas() {
 		};
 	}, [loadPartidas, page]);
 
-	const filteredPartidas = useMemo(() => {
-		const normalized = search.trim().toLowerCase();
-		if (!normalized) return partidas;
+	useEffect(() => {
+		const timeoutId = setTimeout(() => {
+			setDebouncedSearch(search);
+		}, 300);
+		return () => {
+			clearTimeout(timeoutId);
+		};
+	}, [search]);
 
-		return partidas.filter((partida) => {
-			const nombre = `${partida?.nombre ?? ""}`.toLowerCase();
-			const id = `${partida?.id ?? ""}`;
-			const estado = `${partida?.estado ?? ""}`.toLowerCase();
-			return nombre.includes(normalized) || id.includes(normalized) || estado.includes(normalized);
-		});
-	}, [partidas, search]);
+	useEffect(() => {
+		setPage(1);
+	}, [debouncedSearch, selectedNumJugadores, selectedRangoMin, selectedRangoMax, orderBy, orderDir]);
 
-	const emptyMessage = search.trim()
+	const emptyMessage = debouncedSearch.trim()
 		? "No hay partidas que coincidan con la busqueda."
 		: "No hay partidas.";
 
@@ -109,8 +183,75 @@ export default function ListaPartidas() {
 					className="partidas-search-input"
 					placeholder="Buscar partida..."
 					aria-label="Buscar partida"
+					value={search}
+					onChange={(e) => setSearch(e.target.value)}
 					disabled={loading}
 				/>
+				<select
+					className="partidas-search-input"
+					value={selectedNumJugadores}
+					onChange={(e) => setSelectedNumJugadores(e.target.value)}
+					aria-label="Filtrar por jugadores"
+					disabled={loading}
+				>
+					<option value="">Todos los jugadores</option>
+					{[2, 3, 4, 5, 6].map((value) => (
+						<option key={value} value={String(value)}>
+							{value} jugadores
+						</option>
+					))}
+				</select>
+				<select
+					className="partidas-search-input"
+					value={selectedRangoMin}
+					onChange={(e) => setSelectedRangoMin(e.target.value)}
+					aria-label="Filtrar por rango minimo"
+					disabled={loading}
+				>
+					<option value="">Rango minimo</option>
+					{rangos.map((rango) => (
+						<option key={rango.id ?? rango.nombre} value={rango.id ?? ""}>
+							{rango.nombre ?? ""}
+						</option>
+					))}
+				</select>
+				<select
+					className="partidas-search-input"
+					value={selectedRangoMax}
+					onChange={(e) => setSelectedRangoMax(e.target.value)}
+					aria-label="Filtrar por rango maximo"
+					disabled={loading}
+				>
+					<option value="">Rango maximo</option>
+					{rangos.map((rango) => (
+						<option key={rango.id ?? rango.nombre} value={rango.id ?? ""}>
+							{rango.nombre ?? ""}
+						</option>
+					))}
+				</select>
+				<select
+					className="partidas-search-input"
+					value={orderBy}
+					onChange={(e) => setOrderBy(e.target.value)}
+					aria-label="Ordenar por"
+					disabled={loading}
+				>
+					{ORDER_FIELDS.map((field) => (
+						<option key={field.value} value={field.value}>
+							Ordenar: {field.label}
+						</option>
+					))}
+				</select>
+				<select
+					className="partidas-search-input"
+					value={orderDir}
+					onChange={(e) => setOrderDir(e.target.value)}
+					aria-label="Ordenar direccion"
+					disabled={loading}
+				>
+					<option value="asc">Ascendente</option>
+					<option value="desc">Descendente</option>
+				</select>
 				<button
 					type="button"
 					className="partidas-secondary-button"
@@ -133,19 +274,20 @@ export default function ListaPartidas() {
 							<tr>
 								<th>Nombre</th>
 								<th>Jugadores</th>
-								<th>Rango minimo</th>
-								<th>Rango maximo</th>
+								<th>Rango mínimo</th>
+								<th>Rango máximo</th>
+								<th>Fecha de creación</th>
 								<th>Estado</th>
 								<th> </th>
 							</tr>
 						</thead>
 						<tbody>
-							{filteredPartidas.length === 0 ? (
+							{partidas.length === 0 ? (
 								<tr>
-									<td colSpan={6}>{emptyMessage}</td>
+									<td colSpan={7}>{emptyMessage}</td>
 								</tr>
 							) : (
-								filteredPartidas.map((partida, index) => {
+								partidas.map((partida, index) => {
 									const rowKey = partida?.id ?? `${partida?.nombre ?? "partida"}-${index}`;
 									const jugadoresActuales =
 										typeof partida?.jugadores_actuales === "number"
@@ -159,6 +301,7 @@ export default function ListaPartidas() {
 										jugadoresActuales !== "" || jugadoresMaximos !== ""
 											? `${jugadoresActuales}/${jugadoresMaximos}`
 											: "";
+									const fechaCreacion = formatFecha(partida?.fecha_creacion);
 
 									return (
 										<tr key={rowKey}>
@@ -166,6 +309,7 @@ export default function ListaPartidas() {
 											<td>{jugadoresTexto}</td>
 											<td>{partida?.rango_minimo ?? "-"}</td>
 											<td>{partida?.rango_maximo ?? "-"}</td>
+											<td>{fechaCreacion}</td>
 											<td>
 												<span className={getEstadoClass(partida?.estado)}>
 													{getEstadoLabel(partida?.estado)}

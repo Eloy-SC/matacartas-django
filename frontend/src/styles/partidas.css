@@ -127,7 +127,7 @@
 .partidas-primary-button:hover,
 .partidas-secondary-button:hover {
   background-color: var(--partidas-accent-hover);
-  color: #ffffff;
+  color: #000000;
 }
 
 .partidas-pagination {

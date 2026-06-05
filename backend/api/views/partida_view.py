@@ -6,6 +6,16 @@ from rest_framework.response import Response
 from rest_framework import status
 from ..services import partida_service
 
+def _parse_bool_param(value):
+    if value is None:
+        return None
+    normalized = str(value).strip().lower()
+    if normalized in {"true", "1", "yes", "si", "y"}:
+        return True
+    if normalized in {"false", "0", "no", "n"}:
+        return False
+    return None
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def listar_partidas_publicas(request):
@@ -16,11 +26,59 @@ def listar_partidas_publicas(request):
         page = 1
     page_size = 10
 
+    search = (request.query_params.get("search") or "").strip()
+    if not search:
+        search = None
+
+    nombre = (request.query_params.get("nombre") or "").strip()
+    if not nombre:
+        nombre = None
+    num_jugadores = request.query_params.get("num_jugadores")
+    if num_jugadores is not None:
+        try:
+            num_jugadores = int(num_jugadores)
+            if num_jugadores <= 0:
+                num_jugadores = None
+        except (TypeError, ValueError):
+            num_jugadores = None
+    rango_minimo_id = request.query_params.get("rango_minimo_id")
+    if rango_minimo_id is not None:
+        try:
+            rango_minimo_id = int(rango_minimo_id)
+            if rango_minimo_id <= 0:
+                rango_minimo_id = None
+        except (TypeError, ValueError):
+            rango_minimo_id = None
+    rango_maximo_id = request.query_params.get("rango_maximo_id")
+    if rango_maximo_id is not None:
+        try:
+            rango_maximo_id = int(rango_maximo_id)
+            if rango_maximo_id <= 0:
+                rango_maximo_id = None
+        except (TypeError, ValueError):
+            rango_maximo_id = None
+    empezada = _parse_bool_param(request.query_params.get("empezada"))
+    
+    ordering_param = (request.query_params.get("ordering") or "id").strip()
+    order_dir = "asc"
+    order_by = ordering_param
+    if ordering_param.startswith("-"):
+        order_dir = "desc"
+        order_by = ordering_param[1:] or "id"
+
     try:
         paged = partida_service.listar_partidas_publicas(
             request.user,
             page=page,
             page_size=page_size,
+            search=search,
+            nombre = nombre,
+            num_jugadores = num_jugadores,
+            rango_minimo_id = rango_minimo_id,
+            rango_maximo_id = rango_maximo_id,
+            empezada = empezada,
+            order_by=order_by,
+            order_dir=order_dir,
         )
     except PermissionError as e:
         return Response({"detail": str(e)}, status=403)

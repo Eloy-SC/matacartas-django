@@ -7,7 +7,20 @@ from ..models.partida import Partida
 from ..selectors.partida_selector import get_estado_de_partida, get_jugadores_actuales_de_partida, get_partidas_by_clave, get_partidas_by_nombre, get_partidas_publicas_count, get_partidas_publicas_paginated
 
 
-def listar_partidas_publicas(actor, *, page, page_size):
+def listar_partidas_publicas(
+        actor, 
+        *, 
+        page, 
+        page_size,
+    search=None,
+        nombre=None,
+        num_jugadores=None,
+        rango_minimo_id=None,
+        rango_maximo_id=None,
+        empezada=None,
+        order_by="id",
+        order_dir="asc",
+        ):
     """
     Devuelve una lista paginada de partidas públicas en juego o en sala de espera.
     """
@@ -15,21 +28,58 @@ def listar_partidas_publicas(actor, *, page, page_size):
     if not actor.is_authenticated:
         raise PermissionError("No tienes permiso para listar las partidas públicas")
     
-    total = get_partidas_publicas_count()
+    allowed_order_fields = {"id", "nombre", "num_jugadores", "rango_minimo_id", "rango_maximo_id", "fecha_creacion", "fecha_inicio", "fecha_fin"}
+    order_field = order_by if order_by in allowed_order_fields else "id"
+    order_prefix = "-" if order_dir == "desc" else ""
+    ordering = f"{order_prefix}{order_field}"
+    
+    total = get_partidas_publicas_count(
+        search=search,
+        nombre=nombre,
+        num_jugadores=num_jugadores,
+        rango_minimo_id=rango_minimo_id,
+        rango_maximo_id=rango_maximo_id,
+        empezada=empezada
+    )
     offset = (page - 1) * page_size
-    items = list(get_partidas_publicas_paginated(offset, page_size))
+    items = list(
+        get_partidas_publicas_paginated(
+            offset, 
+            page_size,
+            search=search,
+            nombre=nombre,
+            num_jugadores=num_jugadores,
+            rango_minimo_id=rango_minimo_id,
+            rango_maximo_id=rango_maximo_id,
+            empezada=empezada,
+            ordering=ordering
+        )
+    )
     total_pages = max(1, (total + page_size - 1) // page_size)
+
+    rango_nombre_cache = {}
+
+    def _get_rango_nombre(rango_id):
+        if rango_id is None:
+            return None
+        if rango_id not in rango_nombre_cache:
+            rango = get_rango_by_id(rango_id)
+            rango_nombre_cache[rango_id] = rango.nombre if rango else None
+        return rango_nombre_cache[rango_id]
 
     items_payload = []
     for partida in items:
-        id_partida = partida.id
+        id_partida = partida.get("id")
+        rango_minimo_nombre = _get_rango_nombre(partida.get("rango_minimo_id"))
+        rango_maximo_nombre = _get_rango_nombre(partida.get("rango_maximo_id"))
+
         items_payload.append(
             {
                 "id": id_partida,
-                "nombre": partida.nombre,
-                "jugadores_maximos": partida.num_jugadores,
-                "rango_minimo": partida.rango_minimo.nombre if partida.rango_minimo else None,
-                "rango_maximo": partida.rango_maximo.nombre if partida.rango_maximo else None,
+                "nombre": partida.get("nombre"),
+                "jugadores_maximos": partida.get("num_jugadores"),
+                "rango_minimo": rango_minimo_nombre,
+                "rango_maximo": rango_maximo_nombre,
                 "jugadores_actuales": get_jugadores_actuales_de_partida(id_partida),
                 "estado": get_estado_de_partida(id_partida),
             }
