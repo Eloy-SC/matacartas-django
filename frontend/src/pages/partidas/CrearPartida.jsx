@@ -136,7 +136,11 @@ export default function CrearPartida() {
 			}
 
 			setSuccessMessage("Partida creada");
-			navigate("/partidas");
+			const idPartida = data?.id;
+			if (!idPartida) {
+				throw new Error("No se pudo obtener el ID de la partida");
+			}
+			navigate(`/partidas/sala-de-espera/${idPartida}`);
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Error creando partida");
 		} finally {

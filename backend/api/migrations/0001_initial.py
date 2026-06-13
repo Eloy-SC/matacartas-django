@@ -260,6 +260,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("creador", models.BooleanField(default=False)),
+                ("listo", models.BooleanField(default=False)),
             ],
         ),
     ]

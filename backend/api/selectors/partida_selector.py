@@ -1,3 +1,4 @@
+from ..models.usuario import Usuario
 from ..models.partida import Partida
 from ..models.partida_usuario import PartidaUsuario
 from django.db.models import Q
@@ -81,11 +82,17 @@ def get_partidas_publicas_count(*, search=None, nombre=None, num_jugadores=None,
     )
     return queryset.count()
 
-def get_jugadores_actuales_de_partida(id):
+def get_jugadores_actuales_de_partida_count(id):
     partidaUsuarios = PartidaUsuario.objects.filter(partida=id)
     if not partidaUsuarios:
         return 0
     return partidaUsuarios.count()
+
+def get_jugadores_actuales_de_partida(id):
+    partidaUsuarios = PartidaUsuario.objects.filter(partida=id)
+    ids_usuarios = partidaUsuarios.values_list("usuario__id", flat=True)
+    jugadores = Usuario.objects.filter(id__in=ids_usuarios).values("id", "username", "nombre", "email", "imagen", "puntuacion")
+    return jugadores
 
 def get_estado_de_partida(id):
     partida = Partida.objects.filter(id=id).first()
@@ -103,3 +110,6 @@ def get_partidas_by_nombre(nombre):
 
 def get_partidas_by_clave(clave):
     return Partida.objects.filter(clave=clave)
+
+def get_jugador_participa_en_partida(partida_id, usuario_id):
+    return PartidaUsuario.objects.filter(partida_id=partida_id, usuario_id=usuario_id).exists()

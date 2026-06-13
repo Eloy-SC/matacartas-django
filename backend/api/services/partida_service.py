@@ -1,10 +1,12 @@
 from sqlite3 import IntegrityError
 
+from ..models.partida_usuario import PartidaUsuario
+
 from ..selectors.rango_selector import get_rango_by_id
 from ..utils.exceptions import RegistrationError
 
 from ..models.partida import Partida
-from ..selectors.partida_selector import get_estado_de_partida, get_jugadores_actuales_de_partida, get_partidas_by_clave, get_partidas_by_nombre, get_partidas_publicas_count, get_partidas_publicas_paginated
+from ..selectors.partida_selector import get_estado_de_partida, get_jugador_participa_en_partida, get_jugadores_actuales_de_partida, get_jugadores_actuales_de_partida_count, get_partidas_by_clave, get_partidas_by_nombre, get_partidas_publicas_count, get_partidas_publicas_paginated
 
 
 def listar_partidas_publicas(
@@ -80,7 +82,7 @@ def listar_partidas_publicas(
                 "jugadores_maximos": partida.get("num_jugadores"),
                 "rango_minimo": rango_minimo_nombre,
                 "rango_maximo": rango_maximo_nombre,
-                "jugadores_actuales": get_jugadores_actuales_de_partida(id_partida),
+                "jugadores_actuales": get_jugadores_actuales_de_partida_count(id_partida),
                 "estado": get_estado_de_partida(id_partida),
             }
         )
@@ -142,10 +144,45 @@ def crear_partida(actor, nombre, num_jugadores, privada, clave, longitud, cartas
         rango_minimo_id=rango_minimo_id,
         rango_maximo_id=rango_maximo_id,
     )
+
+    partida_usuario = PartidaUsuario(
+        partida=partida,
+        usuario=actor,
+        creador=True
+    )
     
     try:
         partida.save()
+        partida_usuario.save()
     except IntegrityError:
         raise RegistrationError({"detail": ["No se pudo crear la partida"]})
 
     return partida
+
+def get_partida_como_jugador(actor, partida_id):
+    """
+    Devuelve la partida con el ID especificado si el actor es un jugador de la misma.
+    """
+
+    if not get_jugador_participa_en_partida(partida_id, actor.id):
+        raise PermissionError("No tienes permiso para ver esta partida")
+    
+    partida = Partida.objects.filter(id=partida_id).first()
+    if not partida:
+        raise ValueError("La partida no existe")
+    
+    return partida
+
+def get_jugadores_partida(actor, partida_id):
+    """
+    Devuelve una lista de los jugadores que están actualmente en la partida.
+    """
+
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para ver los jugadores de esta partida")
+    
+    jugadores = get_jugadores_actuales_de_partida(partida_id)
+    if jugadores is None:
+        raise ValueError("La partida no existe")
+    
+    return jugadores

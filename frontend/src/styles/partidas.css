@@ -169,3 +169,161 @@
   background-color: #e2e3e5;
   color: #4e545a;
 }
+
+.sala-espera-page {
+  gap: 18px;
+  padding-bottom: 24px;
+}
+
+.sala-espera-card {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+}
+
+.sala-espera-title {
+  margin: 0;
+  font-size: 2rem;
+  text-align: center;
+}
+
+.sala-espera-message {
+  font-weight: bold;
+  color: #000000;
+  margin: 0;
+}
+
+.sala-espera-stats {
+  width: min(100%, 900px);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 16px;
+  background-image: var(--form-card-texture);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  background-position: center;
+  border-radius: 12px;
+  border: 3px solid #000000;
+}
+
+.sala-espera-stat {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  align-content: start;
+  padding: 10px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+.sala-espera-stat__label {
+  font-size: 0.85rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #3c3c3c;
+}
+
+.sala-espera-stat__value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #000000;
+}
+
+.sala-espera-grid {
+  width: min(100%, 980px);
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+}
+
+.sala-espera-grid__row {
+  display: grid;
+  gap: 18px;
+  justify-content: center;
+  justify-items: center;
+  width: 100%;
+}
+
+.sala-espera-player-card {
+  width: min(100%, 310px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 3px solid #000000;
+  background-image: var(--form-card-texture);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  background-position: center;
+  box-sizing: border-box;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.12);
+}
+
+.sala-espera-player-card__avatar {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: 0 0 auto;
+  border: 3px solid #000000;
+  background: #ffffff;
+}
+
+.sala-espera-player-card__content {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  text-align: left;
+}
+
+.sala-espera-player-card__name {
+  font-size: 1.05rem;
+  line-height: 1.1;
+  color: #000000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sala-espera-player-card__rango {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #3f4a5a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .sala-espera-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .sala-espera-player-card {
+    width: min(100%, 100%);
+  }
+
+  .sala-espera-player-card__avatar {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+@media (max-width: 560px) {
+  .sala-espera-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .sala-espera-grid__row {
+    gap: 12px;
+  }
+}

@@ -2,6 +2,8 @@ from django.urls import path
 
 from .views.partida_view import (
     crear_partida,
+    get_jugadores_partida,
+    get_partida_como_jugador,
     listar_partidas_publicas
 )
 
@@ -63,4 +65,6 @@ urlpatterns = [
     ),
     path("partidas/publicas/", listar_partidas_publicas, name="listar-partidas-publicas"),
     path("partidas/crear/", crear_partida, name="crear-partida"),
+    path("partidas/<int:partida_id>/jugador/", get_partida_como_jugador, name="get-partida-como-jugador"),
+    path("partidas/<int:partida_id>/jugadores/", get_jugadores_partida, name="get-jugadores-partida"),
 ]

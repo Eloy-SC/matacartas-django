@@ -149,3 +149,49 @@ def crear_partida(request):
         },
         status=status.HTTP_201_CREATED,
     )
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_partida_como_jugador(request, partida_id):
+    try:
+        partida = partida_service.get_partida_como_jugador(request.user, partida_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    data = {
+        "id": partida.id,
+        "nombre": partida.nombre,
+        "num_jugadores": partida.num_jugadores,
+        "privada": partida.privada,
+        "clave": partida.clave,
+        "longitud": partida.longitud,
+        "cartas_invencibles": partida.cartas_invencibles,
+        "tiempo_max_turno": partida.tiempo_max_turno,
+        "rango_minimo_id": partida.rango_minimo.id if partida.rango_minimo else None,
+        "rango_maximo_id": partida.rango_maximo.id if partida.rango_maximo else None,
+    }
+
+    return Response(data, status=200)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_jugadores_partida(request, partida_id):
+    try:
+        jugadores = partida_service.get_jugadores_partida(request.user, partida_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    data = [
+        {
+            "id": jugador["id"],
+            "nombre": jugador["nombre"],
+            "imagen": jugador["imagen"],
+        }
+        for jugador in jugadores
+    ]
+
+    return Response(data, status=200)
