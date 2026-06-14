@@ -1,3 +1,5 @@
+import re
+
 from rest_framework import serializers
 
 from ..selectors import partida_selector, rango_selector
@@ -97,6 +99,10 @@ class _UniquePartidaMixin:
 	def validate_clave(self, value: str) -> str:
 		if not value:
 			return value
+		if not re.fullmatch(r"[a-z0-9]+", value):
+			raise serializers.ValidationError(
+            "La clave sólo puede contener letras minúsculas y números"
+        )
 		qs = partida_selector.get_partida_by_clave(value)
 		partida = self.context.get("partida")
 		if partida is not None:

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import cabecera from "../../assets/cabecera.png";
 import "../../styles/partidas.css";
+import { formatApiError } from "../../utils/ApiErrors.jsx";
 
 const JUGADORES_OPTIONS = [2, 3, 4, 5, 6];
 
@@ -131,8 +132,7 @@ export default function CrearPartida() {
 
 			const data = await res.json().catch(() => ({}));
 			if (!res.ok) {
-				const detail = data?.detail || "No se pudo crear la partida";
-				throw new Error(detail);
+				throw new Error(formatApiError(data) || "No se pudo crear la partida");
 			}
 
 			setSuccessMessage("Partida creada");

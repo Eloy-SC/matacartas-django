@@ -4,6 +4,7 @@ import "../styles/main.css";
 import defaultProfilePic from "../assets/default_profile_pic.png";
 import cabecera from "../assets/cabecera.png";
 import fondoContenedores from "../assets/fondo_contenedores.png";
+import { formatApiError } from "../utils/ApiErrors.jsx";
 
 export default function Login() {
   const location = useLocation();
@@ -24,27 +25,6 @@ export default function Login() {
   const showProfilePreviewWarning = Boolean(imgUrl) && imgPreviewError;
   const profilePreviewWarningText =
     "No se ha podido encontrar la imagen, se asignará esta por defecto";
-
-  function formatApiError(data) {
-    if (!data) return "";
-    if (typeof data === "string") return data;
-
-    if (typeof data.detail === "string") return data.detail;
-
-    if (typeof data === "object") {
-      const parts = [];
-      for (const [field, value] of Object.entries(data)) {
-        if (Array.isArray(value)) {
-          parts.push(`${value.join(" ")}`);
-        } else if (typeof value === "string") {
-          parts.push(`${value}`);
-        }
-      }
-      return parts.join("\n");
-    }
-
-    return "";
-  }
 
   const initialModeFromQuery = useMemo(() => {
     const params = new URLSearchParams(location.search);
