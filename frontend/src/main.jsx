@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import Login from "./pages/Login.jsx";
 import Inicio from "./pages/Inicio.jsx";
 import Perfil from "./pages/Perfil.jsx";
@@ -110,6 +110,58 @@ function RedirectIfAuthed({ children }) {
   return children;
 }
 
+function RequireParticipating({ children }) {
+  const location = useLocation();
+  const { partidaId } = useParams();
+  const [status, setStatus] = React.useState("checking"); // checking | participating | not-participating
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    if (!partidaId) {
+      setStatus("not-participating");
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    fetch(`/api/partidas/${partidaId}/participa/`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then(async (res) => {
+        if (cancelled) return;
+
+        if (res.status === 401) {
+          setStatus("not-participating");
+          return;
+        }
+
+        if (!res.ok) {
+          setStatus("not-participating");
+          return;
+        }
+
+        const data = await res.json().catch(() => ({}));
+        setStatus(Boolean(data?.participa) ? "participating" : "not-participating");
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setStatus("not-participating");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [partidaId]);
+
+  if (status === "checking") return null;
+  if (status === "not-participating") {
+    return <Navigate to="/partidas" replace state={{ from: location }} />;
+  }
+
+  return children;
+}
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -123,7 +175,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/perfil" element={ <RequireAuth> <Perfil /> </RequireAuth>}/>
         <Route path="/partidas" element={ <RequireAuth> <ListaPartidas /> </RequireAuth>}/>
         <Route path="/crear-partida" element={ <RequireAuth> <CrearPartida /> </RequireAuth>}/>
-        <Route path="/partidas/sala-de-espera/:partidaId" element={ <RequireAuth> <SalaEsperaPartida /> </RequireAuth>}/>
+
+        {/* Necesario iniciar sesión y participar en la partida */}
+        <Route path="/partidas/sala-de-espera/:partidaId" element={ <RequireParticipating> <SalaEsperaPartida /> </RequireParticipating>}/>
 
         {/* Necesario ser administrador */}
         <Route path="/admin" element={ <RequireAdmin> <Admin /> </RequireAdmin>}/>

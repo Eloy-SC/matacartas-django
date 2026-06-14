@@ -105,11 +105,18 @@ def get_estado_de_partida(id):
     else:
         return "desconocido"
 
-def get_partidas_by_nombre(nombre):
+def get_partida_by_id(id):
+    return Partida.objects.filter(id=id)
+
+def get_partida_by_nombre(nombre):
     return Partida.objects.filter(nombre=nombre)
 
-def get_partidas_by_clave(clave):
+def get_partida_by_clave(clave):
     return Partida.objects.filter(clave=clave)
 
 def get_jugador_participa_en_partida(partida_id, usuario_id):
     return PartidaUsuario.objects.filter(partida_id=partida_id, usuario_id=usuario_id).exists()
+
+def get_partida_usuario_by_partida_and_usuario(partida_id, usuario_id):
+    return PartidaUsuario.objects.filter(partida_id=partida_id, usuario_id=usuario_id).first()
+    

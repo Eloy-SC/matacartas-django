@@ -195,3 +195,57 @@ def get_jugadores_partida(request, partida_id):
     ]
 
     return Response(data, status=200)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_jugador_participa_en_partida(request, partida_id):
+    try:
+        jugadores = partida_service.get_jugadores_partida(request.user, partida_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    if request.user.id in [jugador["id"] for jugador in jugadores]:
+        participa = True
+    else:
+        participa = False
+
+    return Response({"participa": participa}, status=200)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def abandonar_partida(request, partida_id):
+    try:
+        partida_service.abandonar_partida(request.user, partida_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    return Response({"detail": "Abandonada la partida correctamente."}, status=200)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def unirse_a_partida_publica(request, partida_id):
+    try:
+        partida_service.unirse_a_partida_publica(request.user, partida_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    return Response({"detail": "Unido a la partida correctamente."}, status=200)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def unirse_a_partida_privada(request, clave):
+    try:
+        partida_service.unirse_a_partida_privada(request.user, clave)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    return Response({"detail": "Unido a la partida correctamente."}, status=200)

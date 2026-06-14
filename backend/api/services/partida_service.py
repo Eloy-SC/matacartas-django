@@ -6,7 +6,7 @@ from ..selectors.rango_selector import get_rango_by_id
 from ..utils.exceptions import RegistrationError
 
 from ..models.partida import Partida
-from ..selectors.partida_selector import get_estado_de_partida, get_jugador_participa_en_partida, get_jugadores_actuales_de_partida, get_jugadores_actuales_de_partida_count, get_partidas_by_clave, get_partidas_by_nombre, get_partidas_publicas_count, get_partidas_publicas_paginated
+from ..selectors.partida_selector import *
 
 
 def listar_partidas_publicas(
@@ -103,13 +103,13 @@ def crear_partida(actor, nombre, num_jugadores, privada, clave, longitud, cartas
     if not actor.is_authenticated:
         raise PermissionError("No tienes permiso para crear una partida")
     
-    if get_partidas_by_nombre(nombre).exists():
+    if get_partida_by_nombre(nombre):
         raise RegistrationError({"nombre": ["El nombre ya existe"]})
     if privada:
         if not clave:
             raise RegistrationError({"clave": ["Falta la clave para la partida privada"]})
         else:
-            if get_partidas_by_clave(clave).exists():
+            if get_partida_by_clave(clave):
                 raise RegistrationError({"clave": ["La clave ya existe"]})
     if not privada:
         if clave:
@@ -132,6 +132,9 @@ def crear_partida(actor, nombre, num_jugadores, privada, clave, longitud, cartas
     rango_maximo = get_rango_by_id(rango_maximo_id) if rango_maximo_id is not None else None
     if rango_minimo and rango_maximo and rango_minimo.puntos_minimos > rango_maximo.puntos_minimos:
         raise ValueError("El rango mínimo no puede ser mayor que el rango máximo")
+    
+    if actor.puntuacion > rango_maximo.puntos_maximos or actor.puntuacion < rango_minimo.puntos_minimos:
+        raise PermissionError("Tu rango se encuentra fuera del intervalo permitido para esta partida")
     
     partida = Partida(
         nombre=nombre,
@@ -186,3 +189,81 @@ def get_jugadores_partida(actor, partida_id):
         raise ValueError("La partida no existe")
     
     return jugadores
+
+def abandonar_partida(actor, partida_id):
+    """
+    Permite a un jugador abandonar una partida en la que está participando.
+    """
+    
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    if not partida_usuario:
+        raise ValueError("No estás participando en esta partida")
+    
+    partida_usuario.delete()
+
+def unirse_a_partida_publica(actor, partida_id):
+    """
+    Permite a un jugador unirse a una partida pública en la que aún hay plazas disponibles.
+    """
+
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para unirte a esta partida")
+    
+    partida = get_partida_by_id(partida_id).first()
+    if not partida:
+        raise ValueError("La partida no existe")
+    
+    if get_jugador_participa_en_partida(partida_id, actor.id):
+        raise ValueError("Ya estás participando en esta partida")
+    
+    jugadores_actuales = get_jugadores_actuales_de_partida_count(partida_id)
+    if jugadores_actuales >= partida.num_jugadores:
+        raise ValueError("La partida ya está llena")
+    
+    rango_minimo_puntos = partida.rango_minimo.puntos_minimos if partida.rango_minimo else None
+    rango_maximo_puntos = partida.rango_maximo.puntos_maximos if partida.rango_maximo else None
+    if rango_minimo_puntos is not None and actor.puntuacion < rango_minimo_puntos:
+        raise PermissionError("Tu rango es demasiado bajo para unirte a esta partida")
+    if rango_maximo_puntos is not None and actor.puntuacion > rango_maximo_puntos:
+        raise PermissionError("Tu rango es demasiado alto para unirte a esta partida")
+    
+    partida_usuario = PartidaUsuario(
+        partida=partida,
+        usuario=actor,
+        creador=False
+    )
+    
+    try:
+        partida_usuario.save()
+    except IntegrityError:
+        raise RegistrationError({"detail": ["No se pudo unir a la partida"]})
+    
+def unirse_a_partida_privada(actor, clave):
+    """
+    Permite a un jugador unirse a una partida privada con la clave correcta.
+    """
+
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para unirte a esta partida")
+    
+    partida = get_partida_by_clave(clave).first()
+    if not partida:
+        raise ValueError("La partida no existe. Revisa que la clave sea correcta")
+    
+    if get_jugador_participa_en_partida(partida.id, actor.id):
+        raise ValueError("Ya estás participando en esta partida")
+    
+    jugadores_actuales = get_jugadores_actuales_de_partida_count(partida.id)
+    if jugadores_actuales >= partida.num_jugadores:
+        raise ValueError("La partida ya está llena")
+    
+    partida_usuario = PartidaUsuario(
+        partida=partida,
+        usuario=actor,
+        creador=False
+    )
+    
+    try:
+        partida_usuario.save()
+    except IntegrityError:
+        raise RegistrationError({"detail": ["No se pudo unir a la partida"]})

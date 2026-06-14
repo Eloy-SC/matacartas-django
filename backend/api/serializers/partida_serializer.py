@@ -86,7 +86,7 @@ def _rango_id_field(*, field_label: str) -> serializers.IntegerField:
 
 class _UniquePartidaMixin:
 	def validate_nombre(self, value: str) -> str:
-		qs = partida_selector.get_partidas_by_nombre(value)
+		qs = partida_selector.get_partida_by_nombre(value)
 		partida = self.context.get("partida")
 		if partida is not None:
 			qs = qs.exclude(id=partida.id)
@@ -97,7 +97,7 @@ class _UniquePartidaMixin:
 	def validate_clave(self, value: str) -> str:
 		if not value:
 			return value
-		qs = partida_selector.get_partidas_by_clave(value)
+		qs = partida_selector.get_partida_by_clave(value)
 		partida = self.context.get("partida")
 		if partida is not None:
 			qs = qs.exclude(id=partida.id)

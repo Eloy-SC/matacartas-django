@@ -1,10 +1,14 @@
 from django.urls import path
 
 from .views.partida_view import (
+    abandonar_partida,
     crear_partida,
+    get_jugador_participa_en_partida,
     get_jugadores_partida,
     get_partida_como_jugador,
-    listar_partidas_publicas
+    listar_partidas_publicas,
+    unirse_a_partida_privada,
+    unirse_a_partida_publica
 )
 
 from .views.auth_view import csrf, me, register, session_login, session_logout
@@ -67,4 +71,8 @@ urlpatterns = [
     path("partidas/crear/", crear_partida, name="crear-partida"),
     path("partidas/<int:partida_id>/jugador/", get_partida_como_jugador, name="get-partida-como-jugador"),
     path("partidas/<int:partida_id>/jugadores/", get_jugadores_partida, name="get-jugadores-partida"),
+    path("partidas/<int:partida_id>/participa/", get_jugador_participa_en_partida, name="get-jugador-participa-en-partida"),
+    path("partidas/<int:partida_id>/abandonar/", abandonar_partida, name="abandonar-partida"),
+    path("partidas/<int:partida_id>/unirse/", unirse_a_partida_publica, name="unirse-a-partida-publica"),
+    path("partidas/<str:clave>/unirse/", unirse_a_partida_privada, name="unirse-a-partida-privada"),
 ]

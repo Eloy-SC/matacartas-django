@@ -56,6 +56,69 @@ export default function ListaPartidas() {
 	const [selectedRangoMax, setSelectedRangoMax] = useState("");
 	const [orderBy, setOrderBy] = useState("id");
 	const [orderDir, setOrderDir] = useState("asc");
+	const [joiningPartidaId, setJoiningPartidaId] = useState(null);
+
+	const handleUnirse = async (partidaId) => {
+		if (joiningPartidaId) return; // Prevenir múltiples clics
+
+		setJoiningPartidaId(partidaId);
+
+		try {
+			// Primero verificar si ya participa en la partida
+			const participaRes = await fetch(`/api/partidas/${partidaId}/participa/`, {
+				method: "GET",
+				credentials: "include",
+			});
+
+			if (!participaRes.ok) {
+				throw new Error("No se pudo verificar la participación");
+			}
+
+			const participaData = await participaRes.json().catch(() => ({}));
+
+			if (participaData?.participa) {
+				// Ya participa, ir directamente a la sala de espera
+				navigate(`/partidas/sala-de-espera/${partidaId}`);
+				return;
+			}
+
+			// No participa, intentar unirse
+			const csrfRes = await fetch("/api/auth/csrf/", {
+				method: "GET",
+				credentials: "include",
+			});
+
+			if (!csrfRes.ok) {
+				throw new Error("No se pudo obtener el token CSRF");
+			}
+
+			const { csrfToken } = await csrfRes.json().catch(() => ({}));
+			if (!csrfToken) {
+				throw new Error("Token CSRF no disponible");
+			}
+
+			const unirseRes = await fetch(`/api/partidas/${partidaId}/unirse/`, {
+				method: "POST",
+				credentials: "include",
+				headers: {
+					"Content-Type": "application/json",
+					"X-CSRFToken": csrfToken,
+				},
+			});
+
+			if (!unirseRes.ok) {
+				const unirseData = await unirseRes.json().catch(() => ({}));
+				throw new Error(unirseData?.detail || "No se pudo unir a la partida");
+			}
+
+			// Unión exitosa, ir a la sala de espera
+			navigate(`/partidas/sala-de-espera/${partidaId}`);
+		} catch (e) {
+			alert(e instanceof Error ? e.message : "Error al procesar la unión");
+		} finally {
+			setJoiningPartidaId(null);
+		}
+	};
 
 	const loadRangos = useCallback(() => {
 		let cancelled = false;
@@ -320,16 +383,16 @@ export default function ListaPartidas() {
 													<button
 														type="button"
 														className="partidas-primary-button"
-														onClick={() => navigate(`/partidas/${partida.id}`)}
-														disabled={jugadoresActuales >= jugadoresMaximos}
+														onClick={() => handleUnirse(partida.id)}
+														disabled={jugadoresActuales >= jugadoresMaximos || joiningPartidaId === partida.id}
 													>
-														Unirse
+														{joiningPartidaId === partida.id ? "Uniéndose..." : "Unirse"}
 													</button>
 												) : (
 													<button
 														type="button"
 														className="partidas-primary-button"
-														onClick={() => navigate(`/partidas/${partida.id}`)}
+														/*onClick={() => navigate(`/partidas/sala-de-espera/${partida.id}`)}*/
 													>
 														Ver
 													</button>

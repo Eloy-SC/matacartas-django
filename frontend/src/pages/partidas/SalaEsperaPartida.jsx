@@ -31,6 +31,63 @@ export default function SalaEsperaPartida() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 
+	const handleAbandonarSala = async (partidaId) => {
+		try {
+			// Primero verificar si ya participa en la partida
+			const participaRes = await fetch(`/api/partidas/${partidaId}/participa/`, {
+				method: "GET",
+				credentials: "include",
+			});
+
+			if (!participaRes.ok) {
+				navigate("/partidas");
+				return;
+			}
+
+			const participaData = await participaRes.json().catch(() => ({}));
+
+			if (!participaData?.participa) {
+				// No participa, ir a lista de partidas
+				navigate("/partidas");
+				return;
+			}
+
+			// Participa, intentar abandonar
+			const csrfRes = await fetch("/api/auth/csrf/", {
+				method: "GET",
+				credentials: "include",
+			});
+
+			if (!csrfRes.ok) {
+				throw new Error("No se pudo obtener el token CSRF");
+			}
+
+			const { csrfToken } = await csrfRes.json().catch(() => ({}));
+			if (!csrfToken) {
+				throw new Error("Token CSRF no disponible");
+			}
+
+			const abandonarRes = await fetch(`/api/partidas/${partidaId}/abandonar/`, {
+				method: "POST",
+				credentials: "include",
+				headers: {
+					"Content-Type": "application/json",
+					"X-CSRFToken": csrfToken,
+				},
+			});
+
+			if (!abandonarRes.ok) {
+				const abandonarData = await abandonarRes.json().catch(() => ({}));
+				throw new Error(abandonarData?.detail || "No se pudo abandonar la partida");
+			}
+
+			// Abandono exitoso, ir a la lista de partidas
+			navigate("/partidas");
+		} catch (e) {
+			alert(e instanceof Error ? e.message : "Error al procesar el abandono");
+		}
+	};
+
 	useEffect(() => {
 		let cancelled = false;
 
@@ -124,10 +181,11 @@ export default function SalaEsperaPartida() {
 			<button
 				type="button"
 				className="partidas-volver-button"
-				onClick={() => navigate(-1)}
+				onClick={() => handleAbandonarSala(partidaId)}
 				aria-label="Volver"
+				disabled={loading}
 			>
-				⮜
+				Abandonar sala de espera
 			</button>
 			<img src={cabecera} alt="Matacartas" style={{ maxWidth: "100%", height: "auto" }} />
 
