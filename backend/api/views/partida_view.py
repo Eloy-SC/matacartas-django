@@ -213,6 +213,23 @@ def get_jugador_participa_en_partida(request, partida_id):
 
     return Response({"participa": participa}, status=200)
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_jugador_participa_en_partida_privada(request, clave):
+    try:
+        partida = partida_service.get_partida_by_clave(clave).first()
+        jugadores = partida_service.get_jugadores_partida(request.user, partida.id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    if request.user.id in [jugador["id"] for jugador in jugadores]:
+        participa = True
+    else:
+        participa = False
+
+    return Response({"participa": participa, "id": partida.id}, status=200)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])

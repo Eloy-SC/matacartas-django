@@ -56,33 +56,41 @@ export default function ListaPartidas() {
 	const [selectedRangoMax, setSelectedRangoMax] = useState("");
 	const [orderBy, setOrderBy] = useState("id");
 	const [orderDir, setOrderDir] = useState("asc");
+	const [clave, setClave] = useState("");
 	const [joiningPartidaId, setJoiningPartidaId] = useState(null);
 
-	const handleUnirse = async (partidaId) => {
+	const handleUnirse = async (id, key, privada) => {
+		const partidaKey = privada ? key : id;
+		if (partidaKey === undefined || partidaKey === null || partidaKey === "") {
+			alert("Falta el identificador de la partida");
+			return;
+		}
+
 		if (joiningPartidaId) return; // Prevenir múltiples clics
 
-		setJoiningPartidaId(partidaId);
+		setJoiningPartidaId(partidaKey);
 
 		try {
-			// Primero verificar si ya participa en la partida
-			const participaRes = await fetch(`/api/partidas/${partidaId}/participa/`, {
-				method: "GET",
-				credentials: "include",
-			});
+			const participaRes = await fetch(
+				privada ? `/api/partidas/${partidaKey}/participa/` : `/api/partidas/${partidaKey}/participa/`,
+				{
+					method: "GET",
+					credentials: "include",
+				}
+			);
 
 			if (!participaRes.ok) {
 				throw new Error("No se pudo verificar la participación");
 			}
 
 			const participaData = await participaRes.json().catch(() => ({}));
+			const partidaIdDestino = participaData?.id ?? id ?? partidaKey;
 
 			if (participaData?.participa) {
-				// Ya participa, ir directamente a la sala de espera
-				navigate(`/partidas/sala-de-espera/${partidaId}`);
+				navigate(`/partidas/sala-de-espera/${partidaIdDestino}`);
 				return;
 			}
 
-			// No participa, intentar unirse
 			const csrfRes = await fetch("/api/auth/csrf/", {
 				method: "GET",
 				credentials: "include",
@@ -97,22 +105,24 @@ export default function ListaPartidas() {
 				throw new Error("Token CSRF no disponible");
 			}
 
-			const unirseRes = await fetch(`/api/partidas/${partidaId}/unirse/`, {
-				method: "POST",
-				credentials: "include",
-				headers: {
-					"Content-Type": "application/json",
-					"X-CSRFToken": csrfToken,
-				},
-			});
+			const unirseRes = await fetch(
+				privada ? `/api/partidas/${partidaKey}/unirse/` : `/api/partidas/${partidaKey}/unirse/`,
+				{
+					method: "POST",
+					credentials: "include",
+					headers: {
+						"Content-Type": "application/json",
+						"X-CSRFToken": csrfToken,
+					},
+				}
+			);
 
 			if (!unirseRes.ok) {
 				const unirseData = await unirseRes.json().catch(() => ({}));
 				throw new Error(unirseData?.detail || "No se pudo unir a la partida");
 			}
 
-			// Unión exitosa, ir a la sala de espera
-			navigate(`/partidas/sala-de-espera/${partidaId}`);
+			navigate(`/partidas/sala-de-espera/${partidaIdDestino}`);
 		} catch (e) {
 			alert(e instanceof Error ? e.message : "Error al procesar la unión");
 		} finally {
@@ -292,6 +302,22 @@ export default function ListaPartidas() {
 						</option>
 					))}
 				</select>
+				<input
+					className="partidas-search-input"
+					placeholder="Introduce la clave de la partida"
+					aria-label="Clave de partida privada"
+					disabled={loading}
+					value={clave}
+					onChange={(e) => setClave(e.target.value)}
+				/>
+				<button
+					type="button"
+					className="partidas-secondary-button"
+					onClick={() => handleUnirse(undefined, clave, true)}
+					disabled={loading || joiningPartidaId === clave}
+				>
+					{joiningPartidaId === clave ? "Uniéndose..." : "Unirse a partida privada"}
+				</button>
 				<select
 					className="partidas-search-input"
 					value={orderBy}
@@ -383,7 +409,7 @@ export default function ListaPartidas() {
 													<button
 														type="button"
 														className="partidas-primary-button"
-														onClick={() => handleUnirse(partida.id)}
+														onClick={() => handleUnirse(partida.id, undefined, false)}
 														disabled={jugadoresActuales >= jugadoresMaximos || joiningPartidaId === partida.id}
 													>
 														{joiningPartidaId === partida.id ? "Uniéndose..." : "Unirse"}

@@ -130,11 +130,11 @@ def crear_partida(actor, nombre, num_jugadores, privada, clave, longitud, cartas
     
     rango_minimo = get_rango_by_id(rango_minimo_id) if rango_minimo_id is not None else None
     rango_maximo = get_rango_by_id(rango_maximo_id) if rango_maximo_id is not None else None
-    if rango_minimo and rango_maximo and rango_minimo.puntos_minimos > rango_maximo.puntos_minimos:
-        raise ValueError("El rango mínimo no puede ser mayor que el rango máximo")
-    
-    if actor.puntuacion > rango_maximo.puntos_maximos or actor.puntuacion < rango_minimo.puntos_minimos:
-        raise PermissionError("Tu rango se encuentra fuera del intervalo permitido para esta partida")
+    if rango_minimo and rango_maximo:
+        if rango_minimo.puntos_minimos > rango_maximo.puntos_minimos:
+            raise ValueError("El rango mínimo no puede ser mayor que el rango máximo")
+        if actor.puntuacion > rango_maximo.puntos_maximos or actor.puntuacion < rango_minimo.puntos_minimos:
+            raise PermissionError("Tu rango se encuentra fuera del intervalo permitido para esta partida")
     
     partida = Partida(
         nombre=nombre,
@@ -256,6 +256,13 @@ def unirse_a_partida_privada(actor, clave):
     jugadores_actuales = get_jugadores_actuales_de_partida_count(partida.id)
     if jugadores_actuales >= partida.num_jugadores:
         raise ValueError("La partida ya está llena")
+    
+    rango_minimo_puntos = partida.rango_minimo.puntos_minimos if partida.rango_minimo else None
+    rango_maximo_puntos = partida.rango_maximo.puntos_maximos if partida.rango_maximo else None
+    if rango_minimo_puntos is not None and actor.puntuacion < rango_minimo_puntos:
+        raise PermissionError("Tu rango es demasiado bajo para unirte a esta partida")
+    if rango_maximo_puntos is not None and actor.puntuacion > rango_maximo_puntos:
+        raise PermissionError("Tu rango es demasiado alto para unirte a esta partida")
     
     partida_usuario = PartidaUsuario(
         partida=partida,
