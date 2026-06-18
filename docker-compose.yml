@@ -22,7 +22,10 @@ services:
     command: >
       sh -c "python manage.py migrate --noinput &&
              python manage.py collectstatic --noinput &&
-             gunicorn matacartas.wsgi:application --bind 0.0.0.0:8000 --reload"
+             gunicorn matacartas.asgi:application \
+             --bind 0.0.0.0:8000 \
+             -k uvicorn.workers.UvicornWorker \
+             --reload"
     volumes:
       - ./backend:/app
     ports:

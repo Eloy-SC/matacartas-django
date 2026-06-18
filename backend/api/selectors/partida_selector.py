@@ -89,9 +89,21 @@ def get_jugadores_actuales_de_partida_count(id):
     return partidaUsuarios.count()
 
 def get_jugadores_actuales_de_partida(id):
-    partidaUsuarios = PartidaUsuario.objects.filter(partida=id)
-    ids_usuarios = partidaUsuarios.values_list("usuario__id", flat=True)
-    jugadores = Usuario.objects.filter(id__in=ids_usuarios).values("id", "username", "nombre", "email", "imagen", "puntuacion")
+    partidaUsuarios = PartidaUsuario.objects.filter(partida=id).select_related('usuario')
+    if not partidaUsuarios:
+        return []
+    
+    jugadores = []
+    for pu in partidaUsuarios:
+        jugadores.append({
+            'id': pu.usuario.id,
+            'username': pu.usuario.username,
+            'nombre': pu.usuario.nombre,
+            'email': pu.usuario.email,
+            'imagen': pu.usuario.imagen,
+            'puntuacion': pu.usuario.puntuacion,
+            'listo': pu.listo
+        })
     return jugadores
 
 def get_estado_de_partida(id):

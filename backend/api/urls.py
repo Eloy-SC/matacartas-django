@@ -8,6 +8,7 @@ from .views.partida_view import (
     get_jugadores_partida,
     get_partida_como_jugador,
     listar_partidas_publicas,
+    toggle_listo,
     unirse_a_partida_privada,
     unirse_a_partida_publica
 )
@@ -77,4 +78,5 @@ urlpatterns = [
     path("partidas/<int:partida_id>/abandonar/", abandonar_partida, name="abandonar-partida"),
     path("partidas/<int:partida_id>/unirse/", unirse_a_partida_publica, name="unirse-a-partida-publica"),
     path("partidas/<str:clave>/unirse/", unirse_a_partida_privada, name="unirse-a-partida-privada"),
+    path("partidas/<int:partida_id>/toggle-listo/", toggle_listo, name="toggle-listo")
 ]

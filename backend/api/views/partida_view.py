@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from ..services import partida_service
+from ..utils.web_sockets import notificar_sala_actualizada
 
 def _parse_bool_param(value):
     if value is None:
@@ -190,6 +191,7 @@ def get_jugadores_partida(request, partida_id):
             "id": jugador["id"],
             "nombre": jugador["nombre"],
             "imagen": jugador["imagen"],
+            "listo": jugador["listo"],
         }
         for jugador in jugadores
     ]
@@ -241,6 +243,8 @@ def abandonar_partida(request, partida_id):
     except ValueError as e:
         return Response({"detail": str(e)}, status=404)
     
+    notificar_sala_actualizada(partida_id)
+    
     return Response({"detail": "Abandonada la partida correctamente."}, status=200)
 
 @api_view(["POST"])
@@ -252,6 +256,8 @@ def unirse_a_partida_publica(request, partida_id):
         return Response({"detail": str(e)}, status=403)
     except ValueError as e:
         return Response({"detail": str(e)}, status=404)
+    
+    notificar_sala_actualizada(partida_id)
     
     return Response({"detail": "Unido a la partida correctamente."}, status=200)
 
@@ -265,4 +271,21 @@ def unirse_a_partida_privada(request, clave):
     except ValueError as e:
         return Response({"detail": str(e)}, status=404)
     
+    partida_id = partida_service.get_partida_by_clave(clave).first().id
+    notificar_sala_actualizada(partida_id)
+    
     return Response({"detail": "Unido a la partida correctamente."}, status=200)
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def toggle_listo(request, partida_id):
+    try:
+        partida_service.toggle_listo(request.user, partida_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    notificar_sala_actualizada(partida_id)
+
+    return Response({"detail": "Estado listo cambiado correctamente."}, status=200)

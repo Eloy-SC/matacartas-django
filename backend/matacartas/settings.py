@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "corsheaders",
     # Local
     "api",
+    "channels",
 ]
 
 MIDDLEWARE = [
@@ -56,6 +57,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "matacartas.wsgi.application"
+ASGI_APPLICATION = "matacartas.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}
 
 DATABASES = {
     "default": {

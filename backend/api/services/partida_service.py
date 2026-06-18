@@ -190,6 +190,20 @@ def get_jugadores_partida(actor, partida_id):
     
     return jugadores
 
+def get_partida_jugador(actor, partida_id):
+    """
+    Devuelve la relación entre el jugador y la partida si el jugador está participando en la misma.
+    """
+
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para ver esta partida")
+    
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    if not partida_usuario:
+        raise ValueError("No estás participando en esta partida")
+    
+    return partida_usuario
+
 def abandonar_partida(actor, partida_id):
     """
     Permite a un jugador abandonar una partida en la que está participando.
@@ -274,3 +288,18 @@ def unirse_a_partida_privada(actor, clave):
         partida_usuario.save()
     except IntegrityError:
         raise RegistrationError({"detail": ["No se pudo unir a la partida"]})
+
+def toggle_listo(actor, partida_id):
+    """
+    Permite a un jugador marcarse como listo en una partida en la que está participando.
+    """
+
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    if not partida_usuario:
+        raise ValueError("No estás participando en esta partida")
+    
+    if partida_usuario.listo:
+        partida_usuario.listo = False
+    else:
+        partida_usuario.listo = True
+    partida_usuario.save()
