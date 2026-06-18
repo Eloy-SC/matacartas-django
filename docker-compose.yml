@@ -22,10 +22,7 @@ services:
     command: >
       sh -c "python manage.py migrate --noinput &&
              python manage.py collectstatic --noinput &&
-             gunicorn matacartas.asgi:application \
-             --bind 0.0.0.0:8000 \
-             -k uvicorn.workers.UvicornWorker \
-             --reload"
+             gunicorn matacartas.asgi:application --bind 0.0.0.0:8000 -k uvicorn.workers.UvicornWorker --reload"
     volumes:
       - ./backend:/app
     ports:
@@ -35,6 +32,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   frontend:
     build:
@@ -53,6 +52,10 @@ services:
       - "5173:5173"
     depends_on:
       - backend
+    
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
 
 volumes:
   postgres_data:
