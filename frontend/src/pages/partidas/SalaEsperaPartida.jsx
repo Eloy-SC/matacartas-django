@@ -30,6 +30,39 @@ export default function SalaEsperaPartida() {
 	const [jugadores, setJugadores] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
+	const [userId, setUserId] = useState(null);
+
+	useEffect(() => {
+		let cancelled = false;
+
+		const loadCurrentUser = async () => {
+			try {
+				const res = await fetch("/api/auth/me/", {
+					method: "GET",
+					credentials: "include",
+				});
+				const data = await res.json().catch(() => ({}));
+
+				if (!res.ok) {
+					throw new Error(data?.detail || "No se pudo cargar el usuario actual");
+				}
+
+				if (!cancelled) {
+					setUserId(data?.id ?? null);
+				}
+			} catch {
+				if (!cancelled) {
+					setUserId(null);
+				}
+			}
+		};
+
+		loadCurrentUser();
+
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	const loadSalaEspera = async ({ showLoading = true } = {}) => {
 		if (showLoading) {
@@ -51,6 +84,8 @@ export default function SalaEsperaPartida() {
 
 			const partidaData = await partidaRes.json().catch(() => ({}));
 			const jugadoresData = await jugadoresRes.json().catch(() => ([]));
+
+			console.log("JUGADORES:", jugadoresData);
 
 			if (!partidaRes.ok) {
 				throw new Error(partidaData?.detail || "No se pudo cargar la partida");
@@ -223,44 +258,60 @@ export default function SalaEsperaPartida() {
 	};
 
 	useEffect(() => {
-		let cancelled = false;
-
 		const loadInitial = async () => {
 			await loadSalaEspera({ showLoading: true });
 		};
 
 		loadInitial();
-
-		return () => {
-			cancelled = true;
-		};
 	}, [partidaId]);
 
 	useEffect(() => {
-		const protocol =
-			window.location.protocol === "https:" ? "wss:" : "ws:";
+		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+		let socket;
+		let reconnectTimer;
+		let shouldReconnect = true;
 
-		const socket = new WebSocket(
-			`${protocol}//${window.location.host}/ws/partidas/${partidaId}/`
-		);
+		const connect = () => {
+			socket = new WebSocket(
+				`${protocol}//${window.location.host}/ws/partidas/${partidaId}/`
+			);
 
-		socket.onmessage = async (event) => {
-			const data = JSON.parse(event.data);
+			socket.onopen = () => {
+				console.log("WS conectado");
+			};
 
-			if (data.type === "room_updated") {
-				await loadSalaEspera({ showLoading: false });
-			}
+			socket.onmessage = async (event) => {
+				const data = JSON.parse(event.data);
 
-			if (data.type === "game_started") {
-				navigate(`/partida/${partidaId}`);
-			}
+				if (data.type === "room_updated") {
+					await loadSalaEspera({ showLoading: false });
+				}
+			};
+
+			socket.onclose = () => {
+				if (!shouldReconnect) {
+					return;
+				}
+
+				console.log("WS cerrado, reintentando...");
+				reconnectTimer = setTimeout(connect, 3000);
+			};
 		};
 
-		return () => socket.close();
+		connect();
+
+		return () => {
+			shouldReconnect = false;
+			clearTimeout(reconnectTimer);
+			socket?.close();
+		};
 	}, [partidaId]);
 
 	const playerRows = useMemo(() => splitPlayersIntoRows(jugadores), [jugadores]);
-	//const jugadorActual = jugadores.find((jugador) => jugador.id === userId);
+	const jugadorActual = useMemo(
+		() => jugadores.find((jugador) => jugador.id === userId),
+		[jugadores, userId]
+	);
 
 	return (
 		<div className="app sala-espera-page">
@@ -304,7 +355,12 @@ export default function SalaEsperaPartida() {
 									style={{ gridTemplateColumns: `repeat(${row.length}, max-content)` }}
 								>
 									{row.map((jugador) => (
-										<article key={jugador.id ?? jugador.nombre} className="sala-espera-player-card">
+										<article
+											key={jugador.id ?? jugador.nombre}
+											className={`sala-espera-player-card ${
+												jugador.id === userId ? "sala-espera-player-card--me" : ""
+											}`}
+										>
 											<img
 												className="sala-espera-player-card__avatar"
 												src={jugador.imagen || defaultProfilePic}
@@ -314,11 +370,14 @@ export default function SalaEsperaPartida() {
 												}}
 											/>
 											<div className="sala-espera-player-card__content">
-												<strong className="sala-espera-player-card__name">{jugador.nombre ?? "Sin nombre"}</strong>
+												<strong className="sala-espera-player-card__name">
+													{jugador.nombre ?? "Sin nombre"}
+													{jugador.creador ? " 👑" : ""}
+												</strong>
 												<span className="sala-espera-player-card__rango">
 													{jugador.rango_nombre || "Sin rango"}
 												</span>
-												<span className="sala-espera-player-card__listo" style={{ color: jugador.listo ? "green" : "red" }}>
+												<span className="sala-espera-player-card__listo" style={{ fontWeight: "bold", color: jugador.listo ? "green" : "red" }}>
 													{jugador.listo ? "Listo" : "No listo"}
 												</span>
 											</div>
@@ -344,7 +403,7 @@ export default function SalaEsperaPartida() {
 								aria-label="Marcar como listo"
 								disabled={loading}
 							>
-								{"Listo"}
+									{jugadorActual?.listo ? "Marcar \"no listo\"" : "Marcar \"listo\""}
 							</button>
 						</div>
 					</>

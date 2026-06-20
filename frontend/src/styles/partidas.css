@@ -276,6 +276,11 @@
   box-shadow: 0 6px 0 rgba(0, 0, 0, 0.12);
 }
 
+.sala-espera-player-card--me {
+    background-image: none;
+    background-color: #ca969d;
+}
+
 .sala-espera-player-card__avatar {
   width: 76px;
   height: 76px;

@@ -135,6 +135,9 @@ def crear_partida(actor, nombre, num_jugadores, privada, clave, longitud, cartas
             raise ValueError("El rango mínimo no puede ser mayor que el rango máximo")
         if actor.puntuacion > rango_maximo.puntos_maximos or actor.puntuacion < rango_minimo.puntos_minimos:
             raise PermissionError("Tu rango se encuentra fuera del intervalo permitido para esta partida")
+        
+    if get_usuario_participa_en_partida_activa(actor.id):
+        raise ValueError("Ya estás participando en una partida activa")
     
     partida = Partida(
         nombre=nombre,
@@ -212,8 +215,44 @@ def abandonar_partida(actor, partida_id):
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
     if not partida_usuario:
         raise ValueError("No estás participando en esta partida")
+    if partida_usuario.creador:
+        aux_asignar_nuevo_creador(partida_id, actor.id)
     
     partida_usuario.delete()
+
+    if get_jugadores_actuales_de_partida_count(partida_id) <= 0:
+        partida = get_partida_by_id(partida_id).first()
+        if partida:
+            partida.delete()
+
+def aux_asignar_nuevo_creador(partida_id, usuario_id):
+    """
+    Asigna un nuevo creador a la partida si el creador actual abandona la misma.
+    """
+
+    partida = get_partida_by_id(partida_id).first()
+    if not partida:
+        raise ValueError("La partida no existe")
+    
+    jugadores = get_jugadores_actuales_de_partida(partida_id)
+    if not jugadores:
+        return
+    
+    nuevo_creador = None
+    for jugador in jugadores:
+        if jugador["id"] != usuario_id:
+            nuevo_creador = jugador
+            break
+    
+    if not nuevo_creador:
+        return
+    
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, nuevo_creador["id"])
+    if not partida_usuario:
+        raise ValueError("El nuevo creador no está participando en esta partida")
+    
+    partida_usuario.creador = True
+    partida_usuario.save()
 
 def unirse_a_partida_publica(actor, partida_id):
     """
@@ -240,6 +279,9 @@ def unirse_a_partida_publica(actor, partida_id):
         raise PermissionError("Tu rango es demasiado bajo para unirte a esta partida")
     if rango_maximo_puntos is not None and actor.puntuacion > rango_maximo_puntos:
         raise PermissionError("Tu rango es demasiado alto para unirte a esta partida")
+    
+    if get_usuario_participa_en_partida_activa(actor.id):
+        raise ValueError("Ya estás participando en una partida activa")
     
     partida_usuario = PartidaUsuario(
         partida=partida,
@@ -278,6 +320,9 @@ def unirse_a_partida_privada(actor, clave):
     if rango_maximo_puntos is not None and actor.puntuacion > rango_maximo_puntos:
         raise PermissionError("Tu rango es demasiado alto para unirte a esta partida")
     
+    if get_usuario_participa_en_partida_activa(actor.id):
+        raise ValueError("Ya estás participando en una partida activa")
+    
     partida_usuario = PartidaUsuario(
         partida=partida,
         usuario=actor,
@@ -291,7 +336,7 @@ def unirse_a_partida_privada(actor, clave):
 
 def toggle_listo(actor, partida_id):
     """
-    Permite a un jugador marcarse como listo en una partida en la que está participando.
+    Permite a un jugador marcarse como listo/no listo en una partida en la que está participando.
     """
 
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
