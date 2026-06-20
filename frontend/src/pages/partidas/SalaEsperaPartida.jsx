@@ -180,7 +180,7 @@ export default function SalaEsperaPartida() {
 			}
 
 			const abandonarRes = await fetch(`/api/partidas/${partidaId}/abandonar/`, {
-				method: "POST",
+				method: "DELETE",
 				credentials: "include",
 				headers: {
 					"Content-Type": "application/json",
@@ -257,6 +257,44 @@ export default function SalaEsperaPartida() {
 		}
 	};
 
+	const handleExpulsarJugador = async (jugadorId) => {
+		try {
+			// Expulsar al jugador
+			const csrfRes = await fetch("/api/auth/csrf/", {
+				method: "GET",
+				credentials: "include",
+			});
+
+			if (!csrfRes.ok) {
+				throw new Error("No se pudo obtener el token CSRF");
+			}
+
+			const { csrfToken } = await csrfRes.json().catch(() => ({}));
+			if (!csrfToken) {
+				throw new Error("Token CSRF no disponible");
+			}
+
+			const expulsarRes = await fetch(`/api/partidas/${partidaId}/expulsar-jugador/${jugadorId}/`, {
+				method: "DELETE",
+				credentials: "include",
+				headers: {
+					"Content-Type": "application/json",
+					"X-CSRFToken": csrfToken,
+				},
+			});
+
+			if (!expulsarRes.ok) {
+				const expulsarData = await expulsarRes.json().catch(() => ({}));
+				throw new Error(expulsarData?.detail || "No se pudo expulsar al jugador");
+			}
+
+			// Expulsión exitosa, refrescar la sala de espera
+			await loadSalaEspera({ showLoading: false });
+		} catch (e) {
+			alert(e instanceof Error ? e.message : "Error al procesar la expulsión del jugador");
+		}
+	};
+
 	useEffect(() => {
 		const loadInitial = async () => {
 			await loadSalaEspera({ showLoading: true });
@@ -327,6 +365,7 @@ export default function SalaEsperaPartida() {
 				) : (
 					<>
 						<h1 className="sala-espera-title">Sala de espera: {partida?.nombre}</h1>
+						{partida?.privada && (<h2 className="sala-espera-subtitle">Clave de la partida: {partida?.clave}</h2>)}
 						<div className="sala-espera-stats">
 							
 							<div className="sala-espera-stat">
@@ -361,6 +400,15 @@ export default function SalaEsperaPartida() {
 												jugador.id === userId ? "sala-espera-player-card--me" : ""
 											}`}
 										>
+											{jugadorActual?.creador && jugador.id !== userId && (
+												<button
+													type="button"
+													aria-label="Expulsar jugador"
+													onClick={() => handleExpulsarJugador(jugador.id)}
+													className="kick-player-button"
+												>
+													X
+											</button>)}
 											<img
 												className="sala-espera-player-card__avatar"
 												src={jugador.imagen || defaultProfilePic}

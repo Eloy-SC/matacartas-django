@@ -151,6 +151,50 @@ def crear_partida(request):
         status=status.HTTP_201_CREATED,
     )
 
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def editar_partida(request, partida_id):
+    serializer = CrearPartidaSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=400)
+    
+    try:
+        partida = partida_service.editar_partida(
+            actor=request.user,
+            partida_id=partida_id,
+            nombre=serializer.validated_data["nombre"],
+            num_jugadores=serializer.validated_data["num_jugadores"],
+            privada=serializer.validated_data["privada"],
+            clave=serializer.validated_data["clave"],
+            longitud=serializer.validated_data["longitud"],
+            cartas_invencibles=serializer.validated_data["cartas_invencibles"],
+            tiempo_max_turno=serializer.validated_data["tiempo_max_turno"],
+            rango_minimo_id=serializer.validated_data["rango_minimo_id"],
+            rango_maximo_id=serializer.validated_data["rango_maximo_id"],
+        )
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except RegistrationError as e:
+        return Response(e.errors, status=400)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    return Response(
+        {
+            "id": partida.id,
+            "nombre": partida.nombre,
+            "num_jugadores": partida.num_jugadores,
+            "privada": partida.privada,
+            "clave": partida.clave,
+            "longitud": partida.longitud,
+            "cartas_invencibles": partida.cartas_invencibles,
+            "tiempo_max_turno": partida.tiempo_max_turno,
+            "rango_minimo_id": partida.rango_minimo.id if partida.rango_minimo else None,
+            "rango_maximo_id": partida.rango_maximo.id if partida.rango_maximo else None,
+        },
+        status=status.HTTP_200_OK,
+    )
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_partida_como_jugador(request, partida_id):
@@ -234,7 +278,7 @@ def get_jugador_participa_en_partida_privada(request, clave):
 
     return Response({"participa": participa, "id": partida.id}, status=200)
 
-@api_view(["POST"])
+@api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def abandonar_partida(request, partida_id):
     try:
@@ -290,3 +334,17 @@ def toggle_listo(request, partida_id):
     notificar_sala_actualizada(partida_id)
 
     return Response({"detail": "Estado listo cambiado correctamente."}, status=200)
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def expulsar_jugador(request, partida_id, jugador_id):
+    try:
+        partida_service.expulsar_jugador(request.user, partida_id, jugador_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    notificar_sala_actualizada(partida_id)
+
+    return Response({"detail": "Jugador expulsado correctamente."}, status=200)

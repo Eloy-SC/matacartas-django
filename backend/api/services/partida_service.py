@@ -165,6 +165,70 @@ def crear_partida(actor, nombre, num_jugadores, privada, clave, longitud, cartas
 
     return partida
 
+def editar_partida(actor, partida_id, nombre, num_jugadores, privada, clave, longitud, cartas_invencibles, tiempo_max_turno, rango_minimo_id=None, rango_maximo_id=None):
+    """
+    Edita una partida existente con los nuevos parámetros especificados.
+    """
+
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para editar una partida")
+    
+    partida = Partida.objects.filter(id=partida_id).first()
+    if not partida:
+        raise ValueError("La partida no existe")
+    
+    partida_usuario_actor = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    if not partida_usuario_actor or not partida_usuario_actor.creador:
+        raise PermissionError("No tienes permiso para editar esta partida")
+
+    partida_by_nombre = get_partida_by_nombre(nombre).first()
+    if partida_by_nombre and partida_by_nombre.id != partida_id:
+        raise RegistrationError({"nombre": ["El nombre ya existe"]})
+    if privada:
+        if not clave:
+            raise RegistrationError({"clave": ["Falta la clave para la partida privada"]})
+        else:
+            partida_by_clave = get_partida_by_clave(clave).first()
+            if partida_by_clave and partida_by_clave.id != partida_id:
+                raise RegistrationError({"clave": ["La clave ya existe"]})
+    if not privada:
+        if clave:
+            raise RegistrationError({"clave": ["No se puede asignar una clave a una partida pública"]})
+    
+    if num_jugadores < 2:
+        raise ValueError("El número de jugadores debe ser al menos 2")
+    if num_jugadores > 6:
+        raise ValueError("El número de jugadores no puede ser mayor a 6")
+    if num_jugadores < get_jugadores_actuales_de_partida_count(partida_id):
+        raise ValueError("El número de jugadores no puede ser menor que el número de jugadores actuales en la partida")
+    
+    if longitud not in Partida.LongitudPartida.values:
+        raise ValueError("La longitud de la partida no es válida")
+    
+    if tiempo_max_turno < 20:
+        raise ValueError("El tiempo máximo por turno debe ser al menos 20 segundos")
+    if tiempo_max_turno > 180:
+        raise ValueError("El tiempo máximo por turno no puede ser mayor a 180 segundos (3 minutos)")
+    
+    comprobar_rangos(rango_minimo_id, rango_maximo_id, partida_id)
+    
+    try:
+        partida.save()
+    except IntegrityError:
+        raise RegistrationError({"detail": ["No se pudo crear la partida"]})
+
+    return partida
+
+def comprobar_rangos(rango_minimo_id, rango_maximo_id, partida_id):
+    rango_minimo = get_rango_by_id(rango_minimo_id) if rango_minimo_id is not None else None
+    rango_maximo = get_rango_by_id(rango_maximo_id) if rango_maximo_id is not None else None
+    if rango_minimo and rango_maximo:
+        if rango_minimo.puntos_minimos > rango_maximo.puntos_minimos:
+            raise ValueError("El rango mínimo no puede ser mayor que el rango máximo")
+        for jugador in get_jugadores_actuales_de_partida(partida_id):
+            if jugador["puntuacion"] > rango_maximo.puntos_maximos or jugador["puntuacion"] < rango_minimo.puntos_minimos:
+                raise PermissionError("Hay jugadores en la partida que se encuentran fuera del intervalo permitido por los nuevos rangos")
+
 def get_partida_como_jugador(actor, partida_id):
     """
     Devuelve la partida con el ID especificado si el actor es un jugador de la misma.
@@ -348,3 +412,27 @@ def toggle_listo(actor, partida_id):
     else:
         partida_usuario.listo = True
     partida_usuario.save()
+
+def expulsar_jugador(actor, partida_id, jugador_id):
+    """
+    Permite al creador de la partida expulsar a un jugador de la misma.
+    """
+
+    partida_usuario_actor = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    if not partida_usuario_actor or not partida_usuario_actor.creador:
+        raise PermissionError("No tienes permiso para expulsar jugadores de esta partida")
+    
+    partida_usuario_jugador = get_partida_usuario_by_partida_and_usuario(partida_id, jugador_id)
+    if not partida_usuario_jugador:
+        raise ValueError("El jugador no está participando en esta partida")
+    
+    if partida_usuario_jugador.creador:
+        raise ValueError("No puedes expulsar al creador de la partida")
+    
+    partida = get_partida_by_id(partida_id).first()
+    if not partida:
+        raise ValueError("La partida no existe")
+    if partida.fecha_inicio is not None:
+        raise ValueError("No puedes expulsar jugadores de una partida que ya ha comenzado")
+    
+    partida_usuario_jugador.delete()

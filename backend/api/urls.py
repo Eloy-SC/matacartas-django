@@ -3,6 +3,8 @@ from django.urls import path
 from .views.partida_view import (
     abandonar_partida,
     crear_partida,
+    editar_partida,
+    expulsar_jugador,
     get_jugador_participa_en_partida,
     get_jugador_participa_en_partida_privada,
     get_jugadores_partida,
@@ -71,6 +73,7 @@ urlpatterns = [
     ),
     path("partidas/publicas/", listar_partidas_publicas, name="listar-partidas-publicas"),
     path("partidas/crear/", crear_partida, name="crear-partida"),
+    path("partidas/<int:partida_id>/", editar_partida, name="editar-partida"),
     path("partidas/<int:partida_id>/jugador/", get_partida_como_jugador, name="get-partida-como-jugador"),
     path("partidas/<int:partida_id>/jugadores/", get_jugadores_partida, name="get-jugadores-partida"),
     path("partidas/<int:partida_id>/participa/", get_jugador_participa_en_partida, name="get-jugador-participa-en-partida"),
@@ -78,5 +81,6 @@ urlpatterns = [
     path("partidas/<int:partida_id>/abandonar/", abandonar_partida, name="abandonar-partida"),
     path("partidas/<int:partida_id>/unirse/", unirse_a_partida_publica, name="unirse-a-partida-publica"),
     path("partidas/<str:clave>/unirse/", unirse_a_partida_privada, name="unirse-a-partida-privada"),
-    path("partidas/<int:partida_id>/toggle-listo/", toggle_listo, name="toggle-listo")
+    path("partidas/<int:partida_id>/toggle-listo/", toggle_listo, name="toggle-listo"),
+    path("partidas/<int:partida_id>/expulsar-jugador/<int:jugador_id>/", expulsar_jugador, name="expulsar-jugador")
 ]
