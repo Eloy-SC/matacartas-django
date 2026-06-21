@@ -126,7 +126,7 @@ class _UniquePartidaMixin:
 		return value
 
 
-class CrearPartidaSerializer(_UniquePartidaMixin, serializers.Serializer):
+class _BasePartidaSerializer(serializers.Serializer):
 	nombre = _nombre_field()
 	num_jugadores = _num_jugadores_field()
 	longitud = _longitud_field()
@@ -136,6 +136,38 @@ class CrearPartidaSerializer(_UniquePartidaMixin, serializers.Serializer):
 	clave = _clave_field()
 	rango_minimo_id = _rango_id_field(field_label="rango minimo")
 	rango_maximo_id = _rango_id_field(field_label="rango maximo")
+
+
+class CrearPartidaSerializer(_UniquePartidaMixin, _BasePartidaSerializer):
+	def validate(self, attrs):
+		privada = attrs.get("privada", False)
+		clave = attrs.get("clave")
+		rango_minimo_id = attrs.get("rango_minimo_id")
+		rango_maximo_id = attrs.get("rango_maximo_id")
+
+		if privada and not clave:
+			raise serializers.ValidationError({"clave": "Falta la clave para la partida privada"})
+
+		if not privada:
+			attrs["clave"] = None
+
+		if rango_minimo_id is not None and rango_maximo_id is not None:
+			rango_minimo = rango_selector.get_rango_by_id(rango_minimo_id)
+			rango_maximo = rango_selector.get_rango_by_id(rango_maximo_id)
+			if rango_minimo and rango_maximo:
+				if rango_minimo.puntos_minimos > rango_maximo.puntos_minimos:
+					raise serializers.ValidationError(
+						{"rango_minimo_id": "El rango minimo no puede ser mayor que el rango maximo"}
+					)
+
+		return attrs
+
+class EditarPartidaSerializer(_UniquePartidaMixin, _BasePartidaSerializer):
+	def validate_nombre(self, value: str) -> str:
+		return super().validate_nombre(value)
+
+	def validate_clave(self, value: str) -> str:
+		return super().validate_clave(value)
 
 	def validate(self, attrs):
 		privada = attrs.get("privada", False)

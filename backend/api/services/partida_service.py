@@ -212,6 +212,16 @@ def editar_partida(actor, partida_id, nombre, num_jugadores, privada, clave, lon
     
     comprobar_rangos(rango_minimo_id, rango_maximo_id, partida_id)
     
+    partida.nombre = nombre
+    partida.num_jugadores = num_jugadores
+    partida.privada = privada
+    partida.clave = clave
+    partida.longitud = longitud
+    partida.cartas_invencibles = cartas_invencibles
+    partida.tiempo_max_turno = tiempo_max_turno
+    partida.rango_minimo_id = rango_minimo_id
+    partida.rango_maximo_id = rango_maximo_id
+
     try:
         partida.save()
     except IntegrityError:
@@ -225,9 +235,14 @@ def comprobar_rangos(rango_minimo_id, rango_maximo_id, partida_id):
     if rango_minimo and rango_maximo:
         if rango_minimo.puntos_minimos > rango_maximo.puntos_minimos:
             raise ValueError("El rango mínimo no puede ser mayor que el rango máximo")
+    if rango_minimo or rango_maximo:
         for jugador in get_jugadores_actuales_de_partida(partida_id):
-            if jugador["puntuacion"] > rango_maximo.puntos_maximos or jugador["puntuacion"] < rango_minimo.puntos_minimos:
-                raise PermissionError("Hay jugadores en la partida que se encuentran fuera del intervalo permitido por los nuevos rangos")
+            if rango_maximo:
+                if jugador["puntuacion"] > rango_maximo.puntos_maximos:
+                    raise PermissionError("Hay jugadores en la partida que se encuentran fuera del intervalo permitido por los nuevos rangos")
+            if rango_minimo:
+                if jugador["puntuacion"] < rango_minimo.puntos_minimos:
+                    raise PermissionError("Hay jugadores en la partida que se encuentran fuera del intervalo permitido por los nuevos rangos")
 
 def get_partida_como_jugador(actor, partida_id):
     """

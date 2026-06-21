@@ -1,4 +1,4 @@
-from ..serializers.partida_serializer import CrearPartidaSerializer
+from ..serializers.partida_serializer import CrearPartidaSerializer, EditarPartidaSerializer
 from ..utils.exceptions import RegistrationError
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -154,7 +154,8 @@ def crear_partida(request):
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def editar_partida(request, partida_id):
-    serializer = CrearPartidaSerializer(data=request.data)
+    partida = partida_service.get_partida_como_jugador(request.user, partida_id)
+    serializer = EditarPartidaSerializer(data=request.data, context={"partida": partida})
     if not serializer.is_valid():
         return Response(serializer.errors, status=400)
     

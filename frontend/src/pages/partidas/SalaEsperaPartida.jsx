@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import defaultProfilePic from "../../assets/default_profile_pic.png";
 import cabecera from "../../assets/cabecera.png";
+import EdicionPartidaSE from "./EdicionPartidaSE.jsx";
 import "../../styles/partidas.css";
 
 function formatBoolean(value) {
@@ -31,6 +32,7 @@ export default function SalaEsperaPartida() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 	const [userId, setUserId] = useState(null);
+	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -351,6 +353,20 @@ export default function SalaEsperaPartida() {
 		[jugadores, userId]
 	);
 
+	const handleOpenEditModal = () => {
+		if (partida) {
+			setIsEditModalOpen(true);
+		}
+	};
+
+	const handleCloseEditModal = () => {
+		setIsEditModalOpen(false);
+	};
+
+	const handlePartidaUpdated = async () => {
+		await loadSalaEspera({ showLoading: false });
+	};
+
 	return (
 		<div className="app sala-espera-page">
 			<img src={cabecera} alt="Matacartas" style={{ maxWidth: "100%", height: "auto" }} />
@@ -364,6 +380,12 @@ export default function SalaEsperaPartida() {
 					</p>
 				) : (
 					<>
+						<EdicionPartidaSE
+							isOpen={isEditModalOpen}
+							partida={partida}
+							onClose={handleCloseEditModal}
+							onSaved={handlePartidaUpdated}
+						/>
 						<h1 className="sala-espera-title">Sala de espera: {partida?.nombre}</h1>
 						{partida?.privada && (<h2 className="sala-espera-subtitle">Clave de la partida: {partida?.clave}</h2>)}
 						<div className="sala-espera-stats">
@@ -384,6 +406,16 @@ export default function SalaEsperaPartida() {
 								<span className="sala-espera-stat__label">Tiempo máximo de turno</span>
 								<span className="sala-espera-stat__value">{partida?.tiempo_max_turno ?? "-"} s</span>
 							</div>
+
+							{jugadorActual?.creador && (
+								<button
+									type="button"
+									className="partidas-primary-button"
+									onClick={handleOpenEditModal}
+								>
+										Editar partida
+								</button>
+							)}
 						</div>
 
 						<div className="sala-espera-grid" aria-label="Jugadores de la partida">

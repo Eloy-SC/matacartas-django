@@ -364,3 +364,77 @@
   background-color: var(--ui-accent-hover);
   color: #000000;
 }
+
+.sala-espera-edit-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.sala-espera-edit-modal {
+  width: min(100%, 760px);
+  max-height: min(100%, 90vh);
+  overflow-y: auto;
+  padding: 20px;
+  border: 3px solid #000000;
+  border-radius: 16px;
+  background-image: var(--form-card-texture);
+  background-repeat: repeat;
+  background-size: 210px 210px;
+  box-shadow: 0 12px 0 rgba(0, 0, 0, 0.18);
+}
+
+.sala-espera-edit-modal__title {
+  margin: 0 0 16px;
+  text-align: center;
+  color: #000000;
+  font-size: 1.35rem;
+}
+
+.sala-espera-edit-modal__form {
+  display: grid;
+  gap: 14px;
+}
+
+.sala-espera-edit-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sala-espera-edit-modal__field {
+  display: grid;
+  gap: 6px;
+}
+
+.sala-espera-edit-modal__field--checkbox {
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-content: start;
+}
+
+.sala-espera-edit-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.sala-espera-edit-modal__error {
+  margin: 0;
+  color: #b00020;
+  font-weight: bold;
+  white-space: pre-line;
+}
+
+@media (max-width: 700px) {
+  .sala-espera-edit-modal__grid {
+    grid-template-columns: 1fr;
+  }
+}

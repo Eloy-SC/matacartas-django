@@ -73,7 +73,7 @@ urlpatterns = [
     ),
     path("partidas/publicas/", listar_partidas_publicas, name="listar-partidas-publicas"),
     path("partidas/crear/", crear_partida, name="crear-partida"),
-    path("partidas/<int:partida_id>/", editar_partida, name="editar-partida"),
+    path("partidas/<int:partida_id>/editar/", editar_partida, name="editar-partida"),
     path("partidas/<int:partida_id>/jugador/", get_partida_como_jugador, name="get-partida-como-jugador"),
     path("partidas/<int:partida_id>/jugadores/", get_jugadores_partida, name="get-jugadores-partida"),
     path("partidas/<int:partida_id>/participa/", get_jugador_participa_en_partida, name="get-jugador-participa-en-partida"),
