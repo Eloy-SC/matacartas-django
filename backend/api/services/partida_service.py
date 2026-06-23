@@ -1,4 +1,5 @@
 from sqlite3 import IntegrityError
+from django.utils import timezone
 
 from ..models.partida_usuario import PartidaUsuario
 
@@ -451,3 +452,31 @@ def expulsar_jugador(actor, partida_id, jugador_id):
         raise ValueError("No puedes expulsar jugadores de una partida que ya ha comenzado")
     
     partida_usuario_jugador.delete()
+
+def iniciar_partida(actor, partida_id):
+    """
+    Permite al creador de la partida iniciar la misma si todos los jugadores están listos.
+    """
+
+    partida = get_partida_by_id(partida_id).first()
+    if not partida:
+        raise ValueError("La partida no existe")
+
+    partida_usuario_actor = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    if not partida_usuario_actor or not partida_usuario_actor.creador:
+        raise PermissionError("No tienes permiso para iniciar esta partida")
+    
+    jugadores_conectados = get_jugadores_actuales_de_partida_count(partida_id)
+    if jugadores_conectados < partida.num_jugadores:
+        raise ValueError(f"No hay suficientes jugadores para iniciar la partida, se necesitan {partida.num_jugadores}.")
+    
+    jugadores = get_jugadores_actuales_de_partida(partida_id)
+    for jugador in jugadores:
+        if not jugador["listo"]:
+            raise ValueError("Todos los jugadores deben estar listos para iniciar la partida")
+    
+    if partida.fecha_inicio is not None:
+        raise ValueError("La partida ya ha comenzado")
+    
+    partida.fecha_inicio = timezone.now()
+    partida.save()

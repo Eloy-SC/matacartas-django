@@ -11,3 +11,13 @@ def notificar_sala_actualizada(partida_id):
             "partida_id": partida_id
         }
     )
+
+def notificar_inicio_partida(partida_id):
+    channel_layer = get_channel_layer()
+
+    async_to_sync(channel_layer.group_send)(
+        f"partida_{partida_id}",
+        {
+            "type": "partida_iniciada"
+        }
+    )

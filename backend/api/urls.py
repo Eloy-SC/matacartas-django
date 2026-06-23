@@ -9,6 +9,7 @@ from .views.partida_view import (
     get_jugador_participa_en_partida_privada,
     get_jugadores_partida,
     get_partida_como_jugador,
+    iniciar_partida,
     listar_partidas_publicas,
     toggle_listo,
     unirse_a_partida_privada,
@@ -82,5 +83,6 @@ urlpatterns = [
     path("partidas/<int:partida_id>/unirse/", unirse_a_partida_publica, name="unirse-a-partida-publica"),
     path("partidas/<str:clave>/unirse/", unirse_a_partida_privada, name="unirse-a-partida-privada"),
     path("partidas/<int:partida_id>/toggle-listo/", toggle_listo, name="toggle-listo"),
-    path("partidas/<int:partida_id>/expulsar-jugador/<int:jugador_id>/", expulsar_jugador, name="expulsar-jugador")
+    path("partidas/<int:partida_id>/expulsar-jugador/<int:jugador_id>/", expulsar_jugador, name="expulsar-jugador"),
+    path("partidas/<int:partida_id>/iniciar/", iniciar_partida, name="iniciar-partida")
 ]

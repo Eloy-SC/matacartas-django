@@ -13,6 +13,7 @@ import AdminRangoForm from "./pages/admin/AdminRangoForm.jsx";
 import ListaPartidas from "./pages/partidas/ListaPartidas.jsx";
 import CrearPartida from "./pages/partidas/CrearPartida.jsx";
 import SalaEsperaPartida from "./pages/partidas/SalaEsperaPartida.jsx";
+import Juego from "./pages/juego/Juego.jsx";
 import "./index.css";
 import "./styles/main.css";
 
@@ -178,6 +179,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 
         {/* Necesario iniciar sesión y participar en la partida */}
         <Route path="/partidas/sala-de-espera/:partidaId" element={ <RequireParticipating> <SalaEsperaPartida /> </RequireParticipating>}/>
+        <Route path="/partidas/mesa/:partidaId" element={ <RequireParticipating> <Juego /> </RequireParticipating>}/>
 
         {/* Necesario ser administrador */}
         <Route path="/admin" element={ <RequireAdmin> <Admin /> </RequireAdmin>}/>

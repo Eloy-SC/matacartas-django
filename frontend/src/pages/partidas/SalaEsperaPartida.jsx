@@ -66,6 +66,36 @@ export default function SalaEsperaPartida() {
 		};
 	}, []);
 
+	const comprobarInicioAutomatico = async (
+		partidaActual,
+		jugadoresActuales,
+		usuarioActualId
+	) => {
+		if (partidaActual?.fecha_inicio) {
+			return;
+		}
+
+		if (jugadoresActuales.length === 0 || usuarioActualId === null || usuarioActualId === undefined) {
+			return;
+		}
+
+		const jugadorActual = jugadoresActuales.find(
+			(jugador) => jugador.id === usuarioActualId
+		);
+
+		if (!jugadorActual?.creador) {
+			return;
+		}
+
+		const todosListos = jugadoresActuales.every(
+			(jugador) => jugador.listo
+		);
+
+		if (todosListos && jugadoresActuales.length == partidaActual?.num_jugadores) {
+			await handleIniciarPartidaCreador(partidaId);
+		}
+	};
+
 	const loadSalaEspera = async ({ showLoading = true } = {}) => {
 		if (showLoading) {
 			setLoading(true);
@@ -86,8 +116,6 @@ export default function SalaEsperaPartida() {
 
 			const partidaData = await partidaRes.json().catch(() => ({}));
 			const jugadoresData = await jugadoresRes.json().catch(() => ([]));
-
-			console.log("JUGADORES:", jugadoresData);
 
 			if (!partidaRes.ok) {
 				throw new Error(partidaData?.detail || "No se pudo cargar la partida");
@@ -142,6 +170,63 @@ export default function SalaEsperaPartida() {
 			if (showLoading) {
 				setLoading(false);
 			}
+		}
+	};
+
+	useEffect(() => {
+		if (!partida || jugadores.length === 0 || userId === null || userId === undefined) {
+			return;
+		}
+
+		void comprobarInicioAutomatico(partida, jugadores, userId);
+	}, [partida, jugadores, userId]);
+
+	const handleIniciarPartidaCreador = async (partidaId) => {
+		try {
+			const csrfRes = await fetch("/api/auth/csrf/", {
+				method: "GET",
+				credentials: "include",
+			});
+
+			if (!csrfRes.ok) {
+				throw new Error("No se pudo obtener el token CSRF");
+			}
+
+			const { csrfToken } = await csrfRes.json().catch(() => ({}));
+
+			if (!csrfToken) {
+				throw new Error("Token CSRF no disponible");
+			}
+
+			const iniciarRes = await fetch(
+				`/api/partidas/${partidaId}/iniciar/`,
+				{
+					method: "PUT",
+					credentials: "include",
+					headers: {
+						"Content-Type": "application/json",
+						"X-CSRFToken": csrfToken,
+					},
+				}
+			);
+
+			if (!iniciarRes.ok) {
+				const errorData = await iniciarRes
+					.json()
+					.catch(() => ({}));
+
+				throw new Error(
+					errorData?.detail ||
+					"No se pudo iniciar la partida"
+				);
+			}
+
+		} catch (e) {
+			alert(
+				e instanceof Error
+					? e.message
+					: "Error iniciando la partida"
+			);
 		}
 	};
 
@@ -326,6 +411,11 @@ export default function SalaEsperaPartida() {
 				if (data.type === "room_updated") {
 					await loadSalaEspera({ showLoading: false });
 				}
+
+				if (data.type === "partida_iniciada") {
+					navigate(`/partidas/mesa/${partidaId}`);
+					return;
+				}
 			};
 
 			socket.onclose = () => {
@@ -407,15 +497,17 @@ export default function SalaEsperaPartida() {
 								<span className="sala-espera-stat__value">{partida?.tiempo_max_turno ?? "-"} s</span>
 							</div>
 
-							{jugadorActual?.creador && (
-								<button
-									type="button"
-									className="partidas-primary-button"
-									onClick={handleOpenEditModal}
-								>
-										Editar partida
-								</button>
-							)}
+							<div style={{ alignItems: "center", display: "flex", gap: "1rem" }}>
+								{jugadorActual?.creador && (
+									<button
+										type="button"
+										className="partidas-primary-button"
+										onClick={handleOpenEditModal}
+									>
+											Editar partida
+									</button>
+								)}
+							</div>
 						</div>
 
 						<div className="sala-espera-grid" aria-label="Jugadores de la partida">
@@ -485,6 +577,17 @@ export default function SalaEsperaPartida() {
 							>
 									{jugadorActual?.listo ? "Marcar \"no listo\"" : "Marcar \"listo\""}
 							</button>
+							{jugadorActual?.creador && (
+								<button
+									type="button"
+									className="main-primary-button"
+									onClick={() => handleIniciarPartidaCreador(partidaId)}
+									aria-label="Iniciar partida"
+									disabled={jugadores.length !== partida?.num_jugadores || loading}
+								>
+										Iniciar partida
+								</button>
+							)}
 						</div>
 					</>
 				)}

@@ -26,3 +26,8 @@ class SalaEsperaConsumer(AsyncWebsocketConsumer):
             "type": "room_updated",
             "partida_id": event["partida_id"],
         }))
+    
+    async def partida_iniciada(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "partida_iniciada"
+        }))

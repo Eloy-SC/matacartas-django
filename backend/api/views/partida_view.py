@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from ..services import partida_service
-from ..utils.web_sockets import notificar_sala_actualizada
+from ..utils.web_sockets import notificar_inicio_partida, notificar_sala_actualizada
 
 def _parse_bool_param(value):
     if value is None:
@@ -180,6 +180,8 @@ def editar_partida(request, partida_id):
     except ValueError as e:
         return Response({"detail": str(e)}, status=404)
     
+    notificar_sala_actualizada(partida_id)
+    
     return Response(
         {
             "id": partida.id,
@@ -349,3 +351,17 @@ def expulsar_jugador(request, partida_id, jugador_id):
     notificar_sala_actualizada(partida_id)
 
     return Response({"detail": "Jugador expulsado correctamente."}, status=200)
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def iniciar_partida(request, partida_id):
+    try:
+        partida_service.iniciar_partida(request.user, partida_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    notificar_inicio_partida(partida_id)
+
+    return Response({"detail": "Partida iniciada correctamente."}, status=200)
