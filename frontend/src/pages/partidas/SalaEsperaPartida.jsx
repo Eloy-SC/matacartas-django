@@ -489,24 +489,16 @@ export default function SalaEsperaPartida() {
 								<span className="sala-espera-stat__value">{partida?.longitud ?? "-"}</span>
 							</div>
 							<div className="sala-espera-stat">
-								<span className="sala-espera-stat__label">Cartas invencibles</span>
-								<span className="sala-espera-stat__value">{formatBoolean(partida?.cartas_invencibles)}</span>
+								<span className="sala-espera-stat__label">Cartas especiales</span>
+								<span className="sala-espera-stat__value">{formatBoolean(partida?.cartas_especiales)}</span>
+							</div>
+							<div className="sala-espera-stat">
+								<span className="sala-espera-stat__label">Tickets</span>
+								<span className="sala-espera-stat__value">{formatBoolean(partida?.tickets)}</span>
 							</div>
 							<div className="sala-espera-stat">
 								<span className="sala-espera-stat__label">Tiempo máximo de turno</span>
 								<span className="sala-espera-stat__value">{partida?.tiempo_max_turno ?? "-"} s</span>
-							</div>
-
-							<div style={{ alignItems: "center", display: "flex", gap: "1rem" }}>
-								{jugadorActual?.creador && (
-									<button
-										type="button"
-										className="partidas-primary-button"
-										onClick={handleOpenEditModal}
-									>
-											Editar partida
-									</button>
-								)}
 							</div>
 						</div>
 
@@ -577,6 +569,16 @@ export default function SalaEsperaPartida() {
 							>
 									{jugadorActual?.listo ? "Marcar \"no listo\"" : "Marcar \"listo\""}
 							</button>
+							{jugadorActual?.creador && (
+								<button
+									type="button"
+									className="main-primary-button"
+									onClick={handleOpenEditModal}
+									aria-label="Editar configuración"
+								>
+										Editar configuración
+								</button>
+							)}
 							{jugadorActual?.creador && (
 								<button
 									type="button"

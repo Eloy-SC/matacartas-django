@@ -209,7 +209,8 @@ class Migration(migrations.Migration):
                         blank=False,
                     ),
                 ),
-                ("cartas_invencibles", models.BooleanField(default=True)),
+                ("cartas_especiales", models.BooleanField(default=True)),
+                ("tickets", models.BooleanField(default=True)),
                 ("tiempo_max_turno", models.IntegerField(null=False, default=90)),
                 (
                     "rango_minimo",

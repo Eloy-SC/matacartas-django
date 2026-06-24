@@ -101,7 +101,8 @@ export default function CrearPartida() {
 			nombre,
 			num_jugadores,
 			longitud: formData.get("longitud") || "normal",
-			cartas_invencibles: Boolean(formData.get("cartasInvencibles")),
+			cartas_especiales: Boolean(formData.get("cartasEspeciales")),
+			tickets: Boolean(formData.get("tickets")),
 			tiempo_max_turno,
 			privada,
 			clave: privada ? claveValue || null : null,
@@ -188,8 +189,12 @@ export default function CrearPartida() {
 						</select>
 					</div>
 					<div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8 }}>
-						<input id="cartasInvencibles" name="cartasInvencibles" type="checkbox" />
-						<label htmlFor="cartasInvencibles">Cartas invencibles</label>
+						<input id="cartasEspeciales" name="cartasEspeciales" type="checkbox" />
+						<label htmlFor="cartasEspeciales">Cartas especiales</label>
+					</div>
+					<div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8 }}>
+						<input id="tickets" name="tickets" type="checkbox" />
+						<label htmlFor="tickets">Tickets</label>
 					</div>
 					<div style={{ marginTop: 12 }}>
 						<label htmlFor="tiempoMaximo">Tiempo maximo por turno (segundos)</label>

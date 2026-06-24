@@ -44,7 +44,11 @@ def _longitud_field() -> serializers.ChoiceField:
 	)
 
 
-def _cartas_invencibles_field() -> serializers.BooleanField:
+def _cartas_especiales_field() -> serializers.BooleanField:
+	return serializers.BooleanField(required=False, default=True)
+
+
+def _tickets_field() -> serializers.BooleanField:
 	return serializers.BooleanField(required=False, default=True)
 
 
@@ -130,7 +134,8 @@ class _BasePartidaSerializer(serializers.Serializer):
 	nombre = _nombre_field()
 	num_jugadores = _num_jugadores_field()
 	longitud = _longitud_field()
-	cartas_invencibles = _cartas_invencibles_field()
+	cartas_especiales = _cartas_especiales_field()
+	tickets = _tickets_field()
 	tiempo_max_turno = _tiempo_max_turno_field()
 	privada = _privada_field()
 	clave = _clave_field()

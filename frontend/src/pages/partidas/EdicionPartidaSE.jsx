@@ -23,7 +23,8 @@ export default function EdicionPartidaSE({ isOpen, partida, onClose, onSaved }) 
 	const [nombre, setNombre] = useState("");
 	const [numJugadores, setNumJugadores] = useState("2");
 	const [longitud, setLongitud] = useState("normal");
-	const [cartasInvencibles, setCartasInvencibles] = useState(true);
+	const [cartasEspeciales, setCartasEspeciales] = useState(true);
+	const [tickets, setTickets] = useState(true);
 	const [tiempoMaxTurno, setTiempoMaxTurno] = useState("90");
 	const [privada, setPrivada] = useState(false);
 	const [clave, setClave] = useState("");
@@ -51,7 +52,8 @@ export default function EdicionPartidaSE({ isOpen, partida, onClose, onSaved }) 
 		setNombre(partida?.nombre ?? "");
 		setNumJugadores(toSelectValue(partida?.num_jugadores ?? 2));
 		setLongitud(partida?.longitud ?? "normal");
-		setCartasInvencibles(Boolean(partida?.cartas_invencibles));
+		setCartasEspeciales(Boolean(partida?.cartas_especiales));
+		setTickets(Boolean(partida?.tickets));
 		setTiempoMaxTurno(toSelectValue(partida?.tiempo_max_turno ?? 90));
 		setPrivada(Boolean(partida?.privada));
 		setClave(partida?.clave ?? "");
@@ -149,7 +151,8 @@ export default function EdicionPartidaSE({ isOpen, partida, onClose, onSaved }) 
 				nombre: nombreTrimmed,
 				num_jugadores: numJugadoresNumber,
 				longitud,
-				cartas_invencibles: Boolean(cartasInvencibles),
+				cartas_especiales: Boolean(cartasEspeciales),
+				tickets: Boolean(tickets),
 				tiempo_max_turno: tiempoMaxTurnoNumber,
 				privada,
 				clave: privada ? claveTrimmed || null : null,
@@ -258,12 +261,33 @@ export default function EdicionPartidaSE({ isOpen, partida, onClose, onSaved }) 
 						</div>
 
 						<div className="sala-espera-edit-modal__field sala-espera-edit-modal__field--checkbox">
-							<label htmlFor="editarCartasInvencibles">Cartas invencibles</label>
+							<label htmlFor="editarCartasEspeciales">Cartas especiales</label>
 							<input
-								id="editarCartasInvencibles"
+								id="editarCartasEspeciales"
 								type="checkbox"
-								checked={cartasInvencibles}
-								onChange={(event) => setCartasInvencibles(event.target.checked)}
+								checked={cartasEspeciales}
+								onChange={(event) => setCartasEspeciales(event.target.checked)}
+								disabled={loading}
+							/>
+						</div>
+
+						<div className="sala-espera-edit-modal__field sala-espera-edit-modal__field--checkbox">
+							<label htmlFor="editarTickets">Tickets</label>
+							<input
+								id="editarTickets"
+								type="checkbox"
+								checked={tickets}
+								onChange={(event) => setTickets(event.target.checked)}
+								disabled={loading}
+							/>
+						</div>
+					</div>
+
+					<div className="sala-espera-edit-modal__grid">
+						<div className="sala-espera-edit-modal__field">
+							<label htmlFor="editarRangoMinimo">Rango minimo</label>
+							<select
+								id="editarRangoMinimo"
 								disabled={loading}
 							/>
 						</div>

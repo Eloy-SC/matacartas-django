@@ -96,7 +96,7 @@ def listar_partidas_publicas(
         "total_pages": total_pages,
     }
 
-def crear_partida(actor, nombre, num_jugadores, privada, clave, longitud, cartas_invencibles, tiempo_max_turno, rango_minimo_id=None, rango_maximo_id=None):
+def crear_partida(actor, nombre, num_jugadores, privada, clave, longitud, cartas_especiales, tickets, tiempo_max_turno, rango_minimo_id=None, rango_maximo_id=None):
     """
     Crea una nueva partida con los parámetros especificados.
     """
@@ -146,7 +146,8 @@ def crear_partida(actor, nombre, num_jugadores, privada, clave, longitud, cartas
         privada=privada,
         clave=clave,
         longitud=longitud,
-        cartas_invencibles=cartas_invencibles,
+        cartas_especiales=cartas_especiales,
+        tickets=tickets,
         tiempo_max_turno=tiempo_max_turno,
         rango_minimo_id=rango_minimo_id,
         rango_maximo_id=rango_maximo_id,
@@ -166,7 +167,7 @@ def crear_partida(actor, nombre, num_jugadores, privada, clave, longitud, cartas
 
     return partida
 
-def editar_partida(actor, partida_id, nombre, num_jugadores, privada, clave, longitud, cartas_invencibles, tiempo_max_turno, rango_minimo_id=None, rango_maximo_id=None):
+def editar_partida(actor, partida_id, nombre, num_jugadores, privada, clave, longitud, cartas_especiales, tickets, tiempo_max_turno, rango_minimo_id=None, rango_maximo_id=None):
     """
     Edita una partida existente con los nuevos parámetros especificados.
     """
@@ -218,7 +219,8 @@ def editar_partida(actor, partida_id, nombre, num_jugadores, privada, clave, lon
     partida.privada = privada
     partida.clave = clave
     partida.longitud = longitud
-    partida.cartas_invencibles = cartas_invencibles
+    partida.cartas_especiales = cartas_especiales
+    partida.tickets = tickets
     partida.tiempo_max_turno = tiempo_max_turno
     partida.rango_minimo_id = rango_minimo_id
     partida.rango_maximo_id = rango_maximo_id
