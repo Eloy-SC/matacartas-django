@@ -34,10 +34,31 @@ function getEstadoClass(estado) {
 }
 
 function formatFecha(value) {
-	if (!value) return "-";
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) return `${value}`;
-	return date.toLocaleString();
+  if (!value) return "-";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return `${value}`;
+
+  const now = new Date();
+  const diffMs = now - date;
+
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+  if (diffSeconds < 60) {
+    return `hace ${diffSeconds} s`;
+  }
+
+  if (diffMinutes < 60) {
+    return `hace ${diffMinutes} min`;
+  }
+
+  if (diffHours < 48) {
+	return `hace ${diffHours} h`;
+  }
+
+  return `hace varios días`;
 }
 
 export default function ListaPartidas() {
@@ -58,6 +79,12 @@ export default function ListaPartidas() {
 	const [orderDir, setOrderDir] = useState("asc");
 	const [clave, setClave] = useState("");
 	const [joiningPartidaId, setJoiningPartidaId] = useState(null);
+
+	const DURACION_MANOS = {
+		corta: "20",
+		normal: "40",
+		larga: "60",
+	};
 
 	const handleUnirse = async (id, key, privada) => {
 		const partidaKey = privada ? key : id;
@@ -365,7 +392,9 @@ export default function ListaPartidas() {
 								<th>Jugadores</th>
 								<th>Rango mínimo</th>
 								<th>Rango máximo</th>
-								<th>Fecha de creación</th>
+								<th>Creada</th>
+								<th>Manos</th>
+								<th>Competitiva</th>
 								<th>Estado</th>
 								<th> </th>
 							</tr>
@@ -373,7 +402,7 @@ export default function ListaPartidas() {
 						<tbody>
 							{partidas.length === 0 ? (
 								<tr>
-									<td colSpan={7}>{emptyMessage}</td>
+									<td colSpan={9}>{emptyMessage}</td>
 								</tr>
 							) : (
 								partidas.map((partida, index) => {
@@ -399,6 +428,8 @@ export default function ListaPartidas() {
 											<td>{partida?.rango_minimo ?? "-"}</td>
 											<td>{partida?.rango_maximo ?? "-"}</td>
 											<td>{fechaCreacion}</td>
+											<td>{DURACION_MANOS[partida?.longitud] ?? "-"}</td>
+											<td>{partida?.cartas_especiales && partida?.tickets ? "🟩" : "❌"}</td>
 											<td>
 												<span className={getEstadoClass(partida?.estado)}>
 													{getEstadoLabel(partida?.estado)}

@@ -67,6 +67,9 @@ def get_partidas_publicas_paginated(
                             "num_jugadores", 
                             "rango_minimo_id", 
                             "rango_maximo_id", 
+                            "longitud",
+                            "cartas_especiales",
+                            "tickets",
                             "fecha_creacion", 
                             "fecha_inicio", 
                             "fecha_fin").order_by(*order_fields)[offset:offset+limit]

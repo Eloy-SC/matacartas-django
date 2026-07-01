@@ -91,6 +91,10 @@ def listar_partidas_publicas(request):
             "jugadores_maximos": partida["jugadores_maximos"],
             "rango_minimo": partida["rango_minimo"],
             "rango_maximo": partida["rango_maximo"],
+            "longitud": partida["longitud"],
+            "cartas_especiales": partida["cartas_especiales"],
+            "tickets": partida["tickets"],
+            "fecha_creacion": partida["fecha_creacion"],
             "jugadores_actuales": partida["jugadores_actuales"],
             "estado": partida["estado"],
         }

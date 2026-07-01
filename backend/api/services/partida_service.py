@@ -83,6 +83,10 @@ def listar_partidas_publicas(
                 "jugadores_maximos": partida.get("num_jugadores"),
                 "rango_minimo": rango_minimo_nombre,
                 "rango_maximo": rango_maximo_nombre,
+                "longitud": partida.get("longitud"),
+                "cartas_especiales": partida.get("cartas_especiales"),
+                "tickets": partida.get("tickets"),
+                "fecha_creacion": partida.get("fecha_creacion"),
                 "jugadores_actuales": get_jugadores_actuales_de_partida_count(id_partida),
                 "estado": get_estado_de_partida(id_partida),
             }

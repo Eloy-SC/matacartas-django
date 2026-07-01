@@ -35,6 +35,12 @@ export default function SalaEsperaPartida() {
 	const [userId, setUserId] = useState(null);
 	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+	const DURACION_MANOS = {
+		corta: "20 manos",
+		normal: "40 manos",
+		larga: "60 manos",
+	};
+
 	useEffect(() => {
 		let cancelled = false;
 
@@ -477,33 +483,49 @@ export default function SalaEsperaPartida() {
 							onClose={handleCloseEditModal}
 							onSaved={handlePartidaUpdated}
 						/>
-						<h1 className="sala-espera-title">Sala de espera: {partida?.nombre}</h1>
-						{partida?.privada && (<h2 className="sala-espera-subtitle">Clave de la partida: {partida?.clave}</h2>)}
-						<div className="sala-espera-stats">
-							
-							<div className="sala-espera-stat">
-								<span className="sala-espera-stat__label">Número de jugadores</span>
-								<span className="sala-espera-stat__value">{partida?.num_jugadores ?? "-"}</span>
+						
+						<div className="form-card">
+							<h1 style={{ color: "black" }}>Sala de espera: {partida?.nombre}</h1>
+						{partida?.privada && (<h2 style={{ color: "black" }}>Clave de la partida: {partida?.clave}</h2>)}
+							<div className="sala-espera-stats">
+								<div className="sala-espera-stat">
+									<span className="sala-espera-stat__label">Número de jugadores</span>
+									<span className="sala-espera-stat__value">{partida?.num_jugadores ?? "-"}</span>
+								</div>
+								<div className="sala-espera-stat">
+									<span className="sala-espera-stat__label">Longitud</span>
+									<span className="sala-espera-stat__value">{DURACION_MANOS[partida?.longitud] ?? "-"}</span>
+								</div>
+								<div className="sala-espera-stat">
+									<span className="sala-espera-stat__label">Cartas especiales</span>
+									<span className="sala-espera-stat__value">{formatBoolean(partida?.cartas_especiales)}</span>
+								</div>
+								<div className="sala-espera-stat">
+									<span className="sala-espera-stat__label">Tickets</span>
+									<span className="sala-espera-stat__value">{formatBoolean(partida?.tickets)}</span>
+								</div>
+								<div className="sala-espera-stat">
+									<span className="sala-espera-stat__label">Tiempo máximo de turno</span>
+									<span className="sala-espera-stat__value">{partida?.tiempo_max_turno ?? "-"} s</span>
+								</div>
 							</div>
-							<div className="sala-espera-stat">
-								<span className="sala-espera-stat__label">Longitud</span>
-								<span className="sala-espera-stat__value">{partida?.longitud ?? "-"}</span>
-							</div>
-							<div className="sala-espera-stat">
-								<span className="sala-espera-stat__label">Cartas especiales</span>
-								<span className="sala-espera-stat__value">{formatBoolean(partida?.cartas_especiales)}</span>
-							</div>
-							<div className="sala-espera-stat">
-								<span className="sala-espera-stat__label">Tickets</span>
-								<span className="sala-espera-stat__value">{formatBoolean(partida?.tickets)}</span>
-							</div>
-							<div className="sala-espera-stat">
-								<span className="sala-espera-stat__label">Tiempo máximo de turno</span>
-								<span className="sala-espera-stat__value">{partida?.tiempo_max_turno ?? "-"} s</span>
-							</div>
+							<span style={{ fontSize: "1rem", fontWeight: "bold", color: "black", marginTop: "10px" }}>
+								Los puntos obtenidos en esta partida {partida?.cartas_especiales && partida?.tickets ? 
+								<span style={{ color: "green" }}>SÍ </span> : <span style={{ color: "red" }}>NO </span>} 
+								se sumarán a la puntuación total de los participantes.
+							</span>
 						</div>
 
+						
+
 						<div className="sala-espera-grid" aria-label="Jugadores de la partida">
+							{jugadores.length !== partida?.num_jugadores && (<span style={{ fontSize: "1rem", fontWeight: "bold", color: "black", marginTop: "10px" }}>
+								Faltan {<span style={{ color: "red" }}>{partida.num_jugadores - jugadores.length} </span>}
+								jugadores para poder comenzar.
+							</span>)}
+							{jugadores.length === partida?.num_jugadores && (<span style={{ fontSize: "1rem", fontWeight: "bold", color: "black", marginTop: "10px" }}>
+								Todos los jugadores están en la sala de espera.
+							</span>)}
 							{playerRows.map((row, rowIndex) => (
 								<div
 									key={`row-${rowIndex}`}
