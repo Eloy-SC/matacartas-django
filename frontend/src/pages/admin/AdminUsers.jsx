@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/admin.css";
-import "../../styles/rangos.css";
+import UserRango from "../../utils/UserRango.jsx";
 
 const ORDER_FIELDS = [
   { value: "username", label: "Nombre de usuario" },
@@ -93,31 +93,8 @@ export default function AdminUsers() {
         }
         const items = Array.isArray(data?.items) ? data.items : [];
 
-        const itemsWithRango = await Promise.all(
-          items.map(async (user) => {
-            if (!user?.id) return { ...user, rango_nombre: "" };
-            try {
-              const rangoRes = await fetch(`/api/rangos/usuario/${user.id}/`, {
-                method: "GET",
-                credentials: "include",
-              });
-              const rangoData = await rangoRes.json().catch(() => ({}));
-              if (!rangoRes.ok) {
-                return { ...user, rango_nombre: "" };
-              }
-              return {
-                ...user,
-                rango_nombre: rangoData?.nombre ?? "",
-                rango_color: rangoData?.color ?? "",
-              };
-            } catch (e) {
-              return { ...user, rango_nombre: "" };
-            }
-          })
-        );
-
         if (cancelled) return;
-        setUsers(itemsWithRango);
+        setUsers(items);
         setPage(typeof data?.page === "number" ? data.page : pageNumber);
         setTotalPages(typeof data?.total_pages === "number" ? data.total_pages : 1);
         setTotalUsers(typeof data?.total === "number" ? data.total : 0);
@@ -332,13 +309,7 @@ export default function AdminUsers() {
                     <td>{user.nombre ?? ""}</td>
                     <td>{user.email ?? ""}</td>
                     <td>
-                      <span
-                        className={`rango-text rango-color-${(user.rango_color ?? "")
-                          .replace(/_/g, "-")
-                          .toLowerCase()}`}
-                      >
-                        {user.rango_nombre ?? ""}
-                      </span>
+                      <UserRango userId={user.id} />
                     </td>
                     <td>{typeof user.puntuacion === "number" ? user.puntuacion : ""}</td>
                     <td>{user.is_active ? "❌" : "🟩"}</td>

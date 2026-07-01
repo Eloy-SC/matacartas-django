@@ -4,6 +4,7 @@ import defaultProfilePic from "../../assets/default_profile_pic.png";
 import cabecera from "../../assets/cabecera.png";
 import EdicionPartidaSE from "./EdicionPartidaSE.jsx";
 import "../../styles/partidas.css";
+import UserRango from "../../utils/UserRango.jsx";
 
 function formatBoolean(value) {
 	if (typeof value === "boolean") {
@@ -539,7 +540,7 @@ export default function SalaEsperaPartida() {
 													{jugador.creador ? " 👑" : ""}
 												</strong>
 												<span className="sala-espera-player-card__rango">
-													{jugador.rango_nombre || "Sin rango"}
+													<UserRango userId={jugador.id} />
 												</span>
 												<span className="sala-espera-player-card__listo" style={{ fontWeight: "bold", color: jugador.listo ? "green" : "red" }}>
 													{jugador.listo ? "Listo" : "No listo"}

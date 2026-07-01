@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import defaultProfilePic from "../assets/default_profile_pic.png";
 import cabecera from "../assets/cabecera.png";
 import "../styles/rangos.css";
+import UserRango from "../utils/UserRango.jsx";
 
 export default function Inicio() {
 	const navigate = useNavigate();
@@ -237,13 +238,7 @@ export default function Inicio() {
 													</td>
 													<td>{user.nombre ?? ""}</td>
 													<td>
-														<span
-															className={`rango-text rango-color-${(user.rango_color ?? "")
-																.replace(/_/g, "-")
-																.toLowerCase()}`}
-														>
-															{user.rango_nombre ?? ""}
-														</span>
+														<UserRango userId={user.id} />
 													</td>
 													<td>
 														{typeof user.puntuacion === "number"
