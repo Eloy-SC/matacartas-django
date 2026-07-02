@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractUser
 
 class Usuario(AbstractUser):
 
-    nombre = models.CharField(max_length=30, blank=False, null=False)
+    nombre = models.CharField(max_length=40, blank=False, null=False)
     puntuacion = models.IntegerField(default=0, null=False)
     imagen = models.TextField(blank=True, null=True)
 

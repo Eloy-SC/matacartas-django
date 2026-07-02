@@ -54,11 +54,24 @@ def _nombre_field(*, required: bool) -> serializers.CharField:
     return serializers.CharField(
         required=required,
         allow_blank=not required,
-        max_length=25,
+        max_length=40,
         error_messages={
             "required": "Falta el nombre",
             "blank": "Falta el nombre",
-            "max_length": "El nombre es demasiado largo (máx. 25 caracteres)",
+            "max_length": "El nombre es demasiado largo (máx. 40 caracteres)",
+        },
+    )
+
+def _puntuacion_field(*, required: bool) -> serializers.IntegerField:
+    return serializers.IntegerField(
+        required=required,
+        min_value=0,
+        max_value=99999999,
+        error_messages={
+            "required": "Falta la puntuación",
+            "invalid": "La puntuación no es válida",
+            "min_value": "La puntuación no puede ser menor que 0",
+            "max_value": "La puntuación no puede ser mayor que 99 999 999",
         },
     )
 

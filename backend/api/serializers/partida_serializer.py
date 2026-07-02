@@ -55,11 +55,13 @@ def _tickets_field() -> serializers.BooleanField:
 def _tiempo_max_turno_field() -> serializers.IntegerField:
 	return serializers.IntegerField(
 		required=False,
-		min_value=1,
+		min_value=20,
+		max_value=180,
 		default=90,
 		error_messages={
 			"invalid": "El tiempo maximo no es valido",
-			"min_value": "El tiempo maximo debe ser mayor que 0",
+			"min_value": "El tiempo maximo debe ser igual o mayor que 20",
+			"max_value": "El tiempo maximo debe ser igual o menor que 180",
 		},
 	)
 

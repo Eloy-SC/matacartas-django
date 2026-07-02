@@ -98,9 +98,9 @@
 }
 
 .rango-color-verde-oscuro {
-	--rango-color: #000000;
+	--rango-color: #054100;
 	--rango-stroke-width: 1px;
-	--rango-stroke-color: #000000;
+	--rango-stroke-color: #054100;
 }
 
 .rango-color-amarillo-dorado {
@@ -118,25 +118,25 @@
 .rango-color-gris-plata {
 	--rango-color: #adadad;
 	--rango-stroke-width: 1px;
-	--rango-stroke-color: #000000;
+	--rango-stroke-color: #adadad;
 }
 
 .rango-color-marron-bronce {
 	--rango-color: #925a25;
 	--rango-stroke-width: 1px;
-	--rango-stroke-color: #000000;
+	--rango-stroke-color: #925a25;
 }
 
 .rango-color-marron {
 	--rango-color: #55361a;
 	--rango-stroke-width: 1px;
-	--rango-stroke-color: #000000;
+	--rango-stroke-color: #55361a;
 }
 
 .rango-color-azul-oscuro {
 	--rango-color: #0a0099;
 	--rango-stroke-width: 1px;
-	--rango-stroke-color: #000000;
+	--rango-stroke-color: #0a0099;
 }
 
 .rango-color-rosa {
@@ -148,7 +148,7 @@
 .rango-color-morado-oscuro {
 	--rango-color: #39006e;
 	--rango-stroke-width: 1px;
-	--rango-stroke-color: #000000;
+	--rango-stroke-color: #39006e;
 }
 
 .rango-color-morado-claro {

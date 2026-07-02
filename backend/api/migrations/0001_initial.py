@@ -85,7 +85,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "nombre",
-                    models.CharField(max_length=30),
+                    models.CharField(max_length=40),
                 ),
                 (
                     "puntuacion",

@@ -19,9 +19,13 @@ def _nombre_field() -> serializers.CharField:
 def _puntos_field(*, field_label: str) -> serializers.IntegerField:
     return serializers.IntegerField(
         required=True,
+        max_value=99999999,
+        min_value=0,
         error_messages={
             "required": f"Faltan los puntos {field_label}",
             "invalid": f"Los puntos {field_label} no son válidos",
+            "max_value": f"Los puntos {field_label} no pueden ser mayores que 99 999 999",
+            "min_value": f"Los puntos {field_label} no pueden ser menores que 0",
         },
     )
 
