@@ -237,7 +237,7 @@
 }
 
 .sala-espera-grid {
-  width: min(100%, 980px);
+  width: 100%;
   display: grid;
   gap: 18px;
   justify-items: center;
@@ -259,7 +259,7 @@
 }
 
 .sala-espera-player-card {
-  width: min(100%, 310px);
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -285,7 +285,7 @@
   border-radius: 50%;
   object-fit: cover;
   flex: 0 0 auto;
-  border: 3px solid #000000;
+  border: 5px solid;
   background: #ffffff;
 }
 

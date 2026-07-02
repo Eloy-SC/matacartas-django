@@ -41,6 +41,15 @@ export default function SalaEsperaPartida() {
 		larga: "60 manos",
 	};
 
+	const COLORJUGADOR = {
+		rojo: "red",
+		naranja: "orange",
+		amarillo: "yellow",
+		verde: "green",
+		azul: "blue",
+		morado: "purple",
+	}
+
 	useEffect(() => {
 		let cancelled = false;
 
@@ -169,6 +178,7 @@ export default function SalaEsperaPartida() {
 
 			setPartida(partidaData);
 			setJugadores(jugadoresConRango);
+			console.log(jugadoresConRango);
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Error cargando la sala de espera");
 			setPartida(null);
@@ -550,6 +560,7 @@ export default function SalaEsperaPartida() {
 											</button>)}
 											<img
 												className="sala-espera-player-card__avatar"
+												style={{ borderColor: COLORJUGADOR[jugador?.color] || "black" }}
 												src={jugador.imagen || defaultProfilePic}
 												alt={`Foto de perfil de ${jugador.nombre ?? "jugador"}`}
 												onError={(event) => {
@@ -558,8 +569,8 @@ export default function SalaEsperaPartida() {
 											/>
 											<div className="sala-espera-player-card__content">
 												<strong className="sala-espera-player-card__name">
-													{jugador.nombre ?? "Sin nombre"}
 													{jugador.creador ? " 👑" : ""}
+													{jugador.nombre ?? "Sin nombre"}
 												</strong>
 												<span className="sala-espera-player-card__rango">
 													<UserRango userId={jugador.id} />

@@ -160,7 +160,8 @@ def crear_partida(actor, nombre, num_jugadores, privada, clave, longitud, cartas
     partida_usuario = PartidaUsuario(
         partida=partida,
         usuario=actor,
-        creador=True
+        creador=True,
+        color=PartidaUsuario.ColorJugador.ROJO # Asignar un color por defecto al creador de la partida
     )
     
     try:
@@ -369,10 +370,24 @@ def unirse_a_partida_publica(actor, partida_id):
     if get_usuario_participa_en_partida_activa(actor.id):
         raise ValueError("Ya estás participando en una partida activa")
     
+    # Asignacion de color dentro de la partida
+    colores_disponibles = get_colores_disponibles(partida.id)
+    if colores_disponibles:
+        color = colores_disponibles[0]
+    else:
+        raise ValueError("No hay colores disponibles para unirte a la partida")
+
+    # Asignacion de creador si no hay ninguno en la partida
+    if not get_creador_de_partida(partida_id):
+        creador = True
+    else:
+        creador = False
+    
     partida_usuario = PartidaUsuario(
         partida=partida,
         usuario=actor,
-        creador=False
+        creador=creador,
+        color=color
     )
     
     try:
@@ -409,10 +424,24 @@ def unirse_a_partida_privada(actor, clave):
     if get_usuario_participa_en_partida_activa(actor.id):
         raise ValueError("Ya estás participando en una partida activa")
     
+    # Asignacion de color dentro de la partida
+    colores_disponibles = get_colores_disponibles(partida.id)
+    if colores_disponibles:
+        color = colores_disponibles[0]
+    else:
+        raise ValueError("No hay colores disponibles para unirte a la partida")
+
+    # Asignacion de creador si no hay ninguno en la partida
+    if not get_creador_de_partida(partida.id):
+        creador = True
+    else:
+        creador = False
+
     partida_usuario = PartidaUsuario(
         partida=partida,
         usuario=actor,
-        creador=False
+        creador=creador,
+        color=color
     )
     
     try:

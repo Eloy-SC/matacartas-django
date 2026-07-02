@@ -262,6 +262,20 @@ class Migration(migrations.Migration):
                 ),
                 ("creador", models.BooleanField(default=False)),
                 ("listo", models.BooleanField(default=False)),
+                ("color", models.CharField(
+                        max_length=8,
+                        choices=[
+                            ("rojo", "Rojo"),
+                            ("naranja", "Naranja"),
+                            ("amarillo", "Amarillo"),
+                            ("verde", "Verde"),
+                            ("azul", "Azul"),
+                            ("morado", "Morado"),
+                        ],
+                        null=False,
+                        blank=False,
+                    ),
+                ),
             ],
         ),
     ]

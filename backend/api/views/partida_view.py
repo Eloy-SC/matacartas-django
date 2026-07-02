@@ -249,6 +249,7 @@ def get_jugadores_partida(request, partida_id):
             "imagen": jugador["imagen"],
             "creador": jugador["creador"],
             "listo": jugador["listo"],
+            "color": jugador["color"],
         }
         for jugador in jugadores
     ]

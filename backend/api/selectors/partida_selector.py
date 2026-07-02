@@ -106,7 +106,8 @@ def get_jugadores_actuales_de_partida(id):
             'imagen': pu.usuario.imagen,
             'puntuacion': pu.usuario.puntuacion,
             'listo': pu.listo,
-            'creador': pu.creador
+            'creador': pu.creador,
+            'color': pu.color
         })
     return jugadores
 
@@ -138,3 +139,12 @@ def get_partida_usuario_by_partida_and_usuario(partida_id, usuario_id):
     
 def get_usuario_participa_en_partida_activa(usuario_id):
     return PartidaUsuario.objects.filter(usuario_id=usuario_id, partida__fecha_fin__isnull=True).exists()
+
+def get_creador_de_partida(partida_id):
+    partida_usuario = PartidaUsuario.objects.filter(partida_id=partida_id, creador=True).first()
+    return Partida.objects.filter(id=partida_usuario.partida_id).first() if partida_usuario else None
+
+def get_colores_disponibles(partida_id):
+    colores_usados = PartidaUsuario.objects.filter(partida_id=partida_id).values_list('color', flat=True)
+    colores_disponibles = [color for color in PartidaUsuario.ColorJugador.values if color not in colores_usados]
+    return colores_disponibles
