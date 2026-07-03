@@ -371,17 +371,10 @@ def unirse_a_partida_publica(actor, partida_id):
         raise ValueError("Ya estás participando en una partida activa")
     
     # Asignacion de color dentro de la partida
-    colores_disponibles = get_colores_disponibles(partida.id)
-    if colores_disponibles:
-        color = colores_disponibles[0]
-    else:
-        raise ValueError("No hay colores disponibles para unirte a la partida")
+    color = aux_asignar_color_disponible(partida.id)
 
     # Asignacion de creador si no hay ninguno en la partida
-    if not get_creador_de_partida(partida_id):
-        creador = True
-    else:
-        creador = False
+    creador = aux_asignar_creador_si_no_hay(partida.id)
     
     partida_usuario = PartidaUsuario(
         partida=partida,
@@ -425,17 +418,10 @@ def unirse_a_partida_privada(actor, clave):
         raise ValueError("Ya estás participando en una partida activa")
     
     # Asignacion de color dentro de la partida
-    colores_disponibles = get_colores_disponibles(partida.id)
-    if colores_disponibles:
-        color = colores_disponibles[0]
-    else:
-        raise ValueError("No hay colores disponibles para unirte a la partida")
+    color = aux_asignar_color_disponible(partida.id)
 
     # Asignacion de creador si no hay ninguno en la partida
-    if not get_creador_de_partida(partida.id):
-        creador = True
-    else:
-        creador = False
+    creador = aux_asignar_creador_si_no_hay(partida.id)
 
     partida_usuario = PartidaUsuario(
         partida=partida,
@@ -448,6 +434,29 @@ def unirse_a_partida_privada(actor, clave):
         partida_usuario.save()
     except IntegrityError:
         raise RegistrationError({"detail": ["No se pudo unir a la partida"]})
+    
+def aux_asignar_color_disponible(partida_id):
+    """
+    Asigna un color disponible a un jugador que se une a la partida.
+    """
+
+    colores_disponibles = get_colores_disponibles(partida_id)
+    if colores_disponibles:
+        return colores_disponibles[0]
+    else:
+        raise ValueError("No hay colores disponibles para unirte a la partida")
+    
+def aux_asignar_creador_si_no_hay(partida_id):
+    """
+    Asigna el rol de creador a un jugador si no hay ningún creador en la partida.
+    """
+
+    if not get_creador_de_partida(partida_id):
+        creador = True
+    else:
+        creador = False
+    
+    return creador
 
 def toggle_listo(actor, partida_id):
     """
