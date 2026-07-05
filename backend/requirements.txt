@@ -8,3 +8,4 @@ channels==4.2.2
 channels-redis==4.2.1
 redis==5.2.1
 uvicorn[standard]
+locust>=2.32.0

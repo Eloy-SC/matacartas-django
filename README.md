@@ -87,6 +87,17 @@ cd backend
 python manage.py test --settings=matacartas.test_settings
 ```
 
+### Running Locust load tests
+
+```bash
+cd backend
+locust -f api/tests/locustfile_user.py --host http://localhost:8000
+locust -f api/tests/locustfile_partida.py --host http://localhost:8000
+locust -f api/tests/locustfile_rango.py --host http://localhost:8000
+```
+
+Por defecto usa el usuario normal `cervantes/123456` para los endpoints de usuario y partida, y `admin/123456` para los endpoints de administración. Puedes sobrescribirlos con `LOCUST_USERNAME`, `LOCUST_PASSWORD`, `LOCUST_ADMIN_USERNAME`, `LOCUST_ADMIN_PASSWORD` y `LOCUST_PARTIDA_PRIVADA_CLAVE`.
+
 ### Running the backend without Docker
 
 ```bash
