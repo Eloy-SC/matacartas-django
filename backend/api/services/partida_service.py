@@ -1,5 +1,8 @@
+from random import shuffle
 from sqlite3 import IntegrityError
 from django.utils import timezone
+
+from ..models.catalogo_cartas import CATALOGO
 
 from ..models.partida_usuario import PartidaUsuario
 
@@ -7,6 +10,8 @@ from ..selectors.rango_selector import get_rango_by_id
 from ..utils.exceptions import RegistrationError
 
 from ..models.partida import Partida
+from ..models.mano import Mano
+from ..models.ronda import Ronda
 from ..selectors.partida_selector import *
 
 
@@ -154,7 +159,7 @@ def crear_partida(actor, nombre, num_jugadores, privada, clave, longitud, cartas
         tickets=tickets,
         tiempo_max_turno=tiempo_max_turno,
         rango_minimo_id=rango_minimo_id,
-        rango_maximo_id=rango_maximo_id,
+        rango_maximo_id=rango_maximo_id
     )
 
     partida_usuario = PartidaUsuario(
@@ -522,5 +527,50 @@ def iniciar_partida(actor, partida_id):
     if partida.fecha_inicio is not None:
         raise ValueError("La partida ya ha comenzado")
     
+    # Partida
     partida.fecha_inicio = timezone.now()
+    partida.baraja = aux_generar_baraja_inicial(partida.cartas_especiales)
+    partida.disposicion_jugadores = aux_generar_disposicion_jugadores(partida_id, jugadores)
+
+    # Mano
+    mano = Mano(
+        partida=partida,
+        num=1,
+        empezador=partida.disposicion_jugadores[0]
+    )
+
+    # Ronda
+    ronda = Ronda(
+        mano=mano,
+        num=0
+    )
+
     partida.save()
+    mano.save()
+    ronda.save()
+
+def aux_generar_baraja_inicial(cartas_especiales): # POR AHORA CARTAS ESPECIALES NO TIENE EFECTO EN LA BARAJA
+    """
+    Genera la baraja inicial de cartas para una partida.
+    """
+
+    baraja = [
+        nombre
+        for nombre, datos in CATALOGO.items()
+        if datos["tipo"] == "normal"
+    ]
+
+    shuffle(baraja)
+
+    return baraja
+
+def aux_generar_disposicion_jugadores(partida_id, jugadores):
+    """
+    Genera la disposición inicial de los jugadores en la partida.
+    """
+
+    colores_no_usados = get_colores_disponibles(partida_id)
+    disposicion = [color for color in PartidaUsuario.ColorJugador.values if color not in colores_no_usados]
+    shuffle(disposicion)
+
+    return disposicion

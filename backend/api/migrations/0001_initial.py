@@ -232,6 +232,8 @@ class Migration(migrations.Migration):
                         to="api.rango",
                     ),
                 ),
+                ("baraja", models.JSONField(default=list)),
+                ("disposicion_jugadores", models.JSONField(default=list)),
             ],
         ),
         migrations.CreateModel(
@@ -276,6 +278,56 @@ class Migration(migrations.Migration):
                         blank=False,
                     ),
                 ),
+                ("puntos", models.IntegerField(null=False, default=0)),
+                ("cartas", models.JSONField(default=list)),
+                ("carta_comodin", models.CharField(max_length=25, null=True, default=None)),
+                ("acumulador_kills", models.IntegerField(null=False, default=0)),
+                ("acumulador_deaths", models.IntegerField(null=False, default=0)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Mano",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "partida",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="api.partida",
+                    ),
+                ),
+                ("num", models.IntegerField(null=False, default=1)),
+                ("empezador", models.CharField(max_length=8, null=False, blank=False)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Ronda",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "mano",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="api.mano",
+                    ),
+                ),
+                ("num", models.IntegerField(null=False, default=0)),
             ],
         ),
     ]

@@ -4,6 +4,7 @@ import defaultProfilePic from "../../assets/default_profile_pic.png";
 import cabecera from "../../assets/cabecera.png";
 import EdicionPartidaSE from "./EdicionPartidaSE.jsx";
 import "../../styles/partidas.css";
+import "../../styles/sala_espera.css";
 import UserRango from "../../utils/UserRango.jsx";
 
 function formatBoolean(value) {

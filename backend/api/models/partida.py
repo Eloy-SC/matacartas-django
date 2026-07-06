@@ -7,6 +7,9 @@ class Partida(models.Model):
         NORMAL = "normal", "Normal"
         LARGA = "larga", "Larga"
 
+
+    # Configuracion de la partida    
+
     nombre = models.CharField(max_length=40, unique=True, null=False, blank=False)
     num_jugadores = models.IntegerField(null=False, default=2)
     privada = models.BooleanField(default=False)
@@ -29,5 +32,9 @@ class Partida(models.Model):
                                      on_delete=models.SET_NULL, 
                                      null=True, blank=True, 
                                      default=None)
+    
+    # Atributos in-game
 
+    baraja = models.JSONField(default=list)  # Representación de la baraja de cartas
+    disposicion_jugadores = models.JSONField(default=list)  # Representación de la disposición de los jugadores en la partida
 

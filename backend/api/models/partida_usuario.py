@@ -19,3 +19,11 @@ class PartidaUsuario(models.Model):
         null=False,
         blank=False,
     )
+
+    # Atributos in-game
+
+    puntos = models.IntegerField(null=False, default=0)
+    cartas = models.JSONField(default=list)  # Cartas poseidas por el jugador en mano
+    carta_comodin = models.CharField(max_length=25, null=True, default=None)  # Carta que el jugador usa como comodín
+    acumulador_kills = models.IntegerField(null=False, default=0)
+    acumulador_deaths = models.IntegerField(null=False, default=0)
