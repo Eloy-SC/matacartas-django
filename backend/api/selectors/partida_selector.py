@@ -86,18 +86,18 @@ def get_partidas_publicas_count(*, search=None, nombre=None, num_jugadores=None,
     return queryset.count()
 
 def get_jugadores_actuales_de_partida_count(id):
-    partidaUsuarios = PartidaUsuario.objects.filter(partida=id)
-    if not partidaUsuarios:
+    partida_usuarios = PartidaUsuario.objects.filter(partida=id)
+    if not partida_usuarios:
         return 0
-    return partidaUsuarios.count()
+    return partida_usuarios.count()
 
 def get_jugadores_actuales_de_partida(id):
-    partidaUsuarios = PartidaUsuario.objects.filter(partida=id).select_related('usuario')
-    if not partidaUsuarios:
+    partida_usuarios = PartidaUsuario.objects.filter(partida=id).select_related('usuario')
+    if not partida_usuarios:
         return []
     
     jugadores = []
-    for pu in partidaUsuarios:
+    for pu in partida_usuarios:
         jugadores.append({
             'id': pu.usuario.id,
             'username': pu.usuario.username,

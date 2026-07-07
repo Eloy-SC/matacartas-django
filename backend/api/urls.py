@@ -1,5 +1,9 @@
 from django.urls import path
 
+from .views.mano_view import (
+    repartir_cartas,
+)
+
 from .views.partida_view import (
     abandonar_partida,
     crear_partida,
@@ -44,6 +48,8 @@ urlpatterns = [
     path("auth/logout/", session_logout, name="session-logout"),
     path("auth/me/", me, name="me"),
     path("users/perfil/actualizar/", perfil_actualizar, name="perfil-actualizar"),
+
+    # USUARIOS
     path("users/admin/listar/", listar_usuarios_admin, name="listar-usuarios-admin"),
     path("users/admin/crear/", crear_usuario_admin, name="crear-usuario-admin"),
     path("users/admin/<int:user_id>/", get_usuario_admin, name="get-usuario-admin"),
@@ -58,6 +64,8 @@ urlpatterns = [
         name="eliminar-usuario-admin",
     ),
     path("users/top/", listar_top_usuarios, name="listar-top-usuarios"),
+
+    # RANGOS
     path("rangos/listar/", listar_rangos, name="listar-rangos"),
     path("rangos/admin/crear/", crear_rango_admin, name="crear-rango-admin"),
     path("rangos/<int:rango_id>/", get_rango, name="get-rango"),
@@ -72,6 +80,8 @@ urlpatterns = [
         eliminar_rango_admin,
         name="eliminar-rango-admin",
     ),
+
+    # PARTIDAS
     path("partidas/publicas/", listar_partidas_publicas, name="listar-partidas-publicas"),
     path("partidas/crear/", crear_partida, name="crear-partida"),
     path("partidas/<int:partida_id>/editar/", editar_partida, name="editar-partida"),
@@ -84,5 +94,8 @@ urlpatterns = [
     path("partidas/<str:clave>/unirse/", unirse_a_partida_privada, name="unirse-a-partida-privada"),
     path("partidas/<int:partida_id>/toggle-listo/", toggle_listo, name="toggle-listo"),
     path("partidas/<int:partida_id>/expulsar-jugador/<int:jugador_id>/", expulsar_jugador, name="expulsar-jugador"),
-    path("partidas/<int:partida_id>/iniciar/", iniciar_partida, name="iniciar-partida")
+    path("partidas/<int:partida_id>/iniciar/", iniciar_partida, name="iniciar-partida"),
+
+    # JUEGO
+    path("partida/<int:partida_id>/mano/repartir/", repartir_cartas, name="repartir-cartas"),
 ]
