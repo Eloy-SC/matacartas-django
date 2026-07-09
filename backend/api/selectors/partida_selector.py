@@ -107,7 +107,10 @@ def get_jugadores_actuales_de_partida(id):
             'puntuacion': pu.usuario.puntuacion,
             'listo': pu.listo,
             'creador': pu.creador,
-            'color': pu.color
+            'color': pu.color,
+            'puntos': pu.puntos,
+            'cartas': pu.cartas,
+            'carta_comodin': pu.carta_comodin,
         })
     return jugadores
 

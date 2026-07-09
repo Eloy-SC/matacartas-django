@@ -188,6 +188,8 @@ def editar_partida(actor, partida_id, nombre, num_jugadores, privada, clave, lon
     partida = Partida.objects.filter(id=partida_id).first()
     if not partida:
         raise ValueError("La partida no existe")
+    if partida.fecha_inicio is not None:
+        raise ValueError("No se puede editar una partida que ya ha comenzado")
     
     partida_usuario_actor = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
     if not partida_usuario_actor or not partida_usuario_actor.creador:
@@ -507,6 +509,10 @@ def iniciar_partida(actor, partida_id):
     Permite al creador de la partida iniciar la misma si todos los jugadores están listos.
     """
 
+    partida_usuario_actor = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    if not partida_usuario_actor or not partida_usuario_actor.creador:
+        raise PermissionError("No tienes permiso para iniciar esta partida")
+
     partida = get_partida_by_id(partida_id).first()
     if not partida:
         raise ValueError("La partida no existe")
@@ -515,9 +521,9 @@ def iniciar_partida(actor, partida_id):
     if not partida_usuario_actor or not partida_usuario_actor.creador:
         raise PermissionError("No tienes permiso para iniciar esta partida")
     
-    jugadores_conectados = get_jugadores_actuales_de_partida_count(partida_id)
-    if jugadores_conectados < partida.num_jugadores:
-        raise ValueError(f"No hay suficientes jugadores para iniciar la partida, se necesitan {partida.num_jugadores}.")
+#   jugadores_conectados = get_jugadores_actuales_de_partida_count(partida_id)
+#   if jugadores_conectados < partida.num_jugadores:
+#       raise ValueError(f"No hay suficientes jugadores para iniciar la partida, se necesitan {partida.num_jugadores}.")
     
     jugadores = get_jugadores_actuales_de_partida(partida_id)
     for jugador in jugadores:
@@ -535,8 +541,7 @@ def iniciar_partida(actor, partida_id):
     # Mano
     mano = Mano(
         partida=partida,
-        num=1,
-        empezador=partida.disposicion_jugadores[0]
+        num=1
     )
 
     # Ronda

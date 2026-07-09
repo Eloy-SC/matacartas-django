@@ -16,7 +16,7 @@ def get_mesa(actor, partida_id):
     
     partida = get_partida_by_id(partida_id).first()
     mano = get_mano_actual(partida_id)
-    rondas = get_rondas_de_mano(mano.mano_id) if mano else []
+    rondas = get_rondas_de_mano(mano.id) if mano else []
 
     contrincantes_dto = []
     jugador_dto = None

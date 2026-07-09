@@ -1,3 +1,5 @@
+from ..utils.web_sockets import notificar_mesa_actualizada
+
 from ..services import mano_service
 from dataclasses import asdict
 from rest_framework.decorators import api_view, permission_classes
@@ -32,5 +34,7 @@ def repartir_cartas(request, partida_id):
         return Response({"detail": str(e)}, status=403)
     except ValueError as e:
         return Response({"detail": str(e)}, status=404)
+    
+    notificar_mesa_actualizada(partida_id)
     
     return Response({"detail": "Cartas repartidas correctamente."}, status=200)

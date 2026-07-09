@@ -234,6 +234,7 @@ class Migration(migrations.Migration):
                 ),
                 ("baraja", models.JSONField(default=list)),
                 ("disposicion_jugadores", models.JSONField(default=list)),
+                ("turno_actual", models.CharField(max_length=8, null=True)),
             ],
         ),
         migrations.CreateModel(
@@ -305,7 +306,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("num", models.IntegerField(null=False, default=1)),
-                ("empezador", models.CharField(max_length=8, null=False, blank=False)),
             ],
         ),
         migrations.CreateModel(
@@ -328,6 +328,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("num", models.IntegerField(null=False, default=0)),
+                ("cartas", models.JSONField(default=dict, null=True)),
             ],
         ),
     ]
