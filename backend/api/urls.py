@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views.mano_view import (
+    get_mesa,
     repartir_cartas,
 )
 
@@ -98,4 +99,5 @@ urlpatterns = [
 
     # JUEGO
     path("partida/<int:partida_id>/mano/repartir/", repartir_cartas, name="repartir-cartas"),
+    path("partida/<int:partida_id>/mano/mesa/", get_mesa, name="get-mesa"),
 ]

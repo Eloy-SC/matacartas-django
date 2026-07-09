@@ -37,4 +37,5 @@ class Partida(models.Model):
 
     baraja = models.JSONField(default=list)  # Representación de la baraja de cartas
     disposicion_jugadores = models.JSONField(default=list)  # Representación de la disposición de los jugadores en la partida
+    turno_actual = models.CharField(max_length=8, null=True)  # Color del jugador que tiene el turno actual
 
