@@ -1,0 +1,44 @@
+.cartas-propias {
+	width: 100%;
+	margin-top: 24px;
+	margin-bottom: 28px;
+	padding: 0 16px;
+	box-sizing: border-box;
+}
+
+.cartas-propias__titulo {
+	margin: 0 0 12px;
+	text-align: center;
+	font-size: 1.15rem;
+	font-weight: 700;
+	color: var(--ui-accent);
+}
+
+.cartas-propias__vacio {
+	margin: 0;
+	text-align: center;
+	font-weight: 600;
+	color: var(--ui-accent);
+    color: #ffffff;
+}
+
+.cartas-propias__contenedor {
+	display: flex;
+	justify-content: center;
+	align-items: flex-end;
+	flex-wrap: wrap;
+	gap: 12px;
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+.cartas-propias__carta {
+	width: clamp(76px, 11vw, 118px);
+	height: auto;
+	display: block;
+	flex: 0 0 auto;
+	user-select: none;
+	pointer-events: none;
+	filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.16));
+}

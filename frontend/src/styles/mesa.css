@@ -1,0 +1,99 @@
+.mesa-inicial {
+	background-position: center;
+}
+
+.mesa-inicial__tablero {
+	position: relative;
+	min-height: 700px;
+	overflow: hidden;
+}
+
+.mesa-inicial__contrincante {
+	position: absolute;
+}
+
+.mesa-inicial__contrincante-card {
+	display: grid;
+	position: relative;
+	place-items: center;
+	width: 92px;
+	height: 92px;
+	padding: 10px;
+	border-radius: 16px;
+	border: 3px solid #000000;
+	background-image: var(--form-card-texture);
+	background-repeat: repeat;
+	background-size: 200px 200px;
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+	box-sizing: border-box;
+}
+
+.mesa-inicial__contrincante-card:focus-visible {
+	outline: 3px solid color-mix(in srgb, var(--seat-color, #921425) 45%, transparent);
+	outline-offset: 3px;
+}
+
+.mesa-inicial__avatar {
+	width: 68px;
+	height: 68px;
+	border-radius: 50%;
+	border: 5px solid var(--seat-color, #921425);
+	object-fit: cover;
+	background: #ffffff;
+	box-sizing: border-box;
+	display: block;
+}
+
+.mesa-inicial__nombre-contrincante {
+	position: absolute;
+	inset: auto 8px 8px;
+	padding: 6px 8px;
+	border: 2px solid #000000;
+	border-radius: 10px;
+	background-image: var(--form-card-texture);
+	background-repeat: repeat;
+	background-size: 200px 200px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	line-height: 1.1;
+	text-align: center;
+	overflow: hidden;
+	color: #000000;
+	opacity: 0;
+	transform: translateY(6px);
+	transition: opacity 0.18s ease, transform 0.18s ease;
+	pointer-events: none;
+	box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+
+.mesa-inicial__contrincante-card:hover .mesa-inicial__nombre-contrincante,
+.mesa-inicial__contrincante-card:focus-visible .mesa-inicial__nombre-contrincante {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.mesa-inicial__contrincante--izquierda {
+	left: 10%;
+	top: 54%;
+}
+
+.mesa-inicial__contrincante--derecha {
+	right: 10%;
+	top: 54%;
+}
+
+.mesa-inicial__contrincante--arriba_izq {
+	left: 50%;
+	top: 15%;
+}
+
+.mesa-inicial__contrincante--arriba_centro {
+	left: 50%;
+	transform: translateX(-50%);
+	top: 12%;
+}
+
+.mesa-inicial__contrincante--arriba_dcha {
+	right: 50%;
+	top: 15%;
+}

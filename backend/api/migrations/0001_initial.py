@@ -93,7 +93,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "imagen",
-                    models.TextField(blank=True, null=True),
+                    models.TextField(blank=True, null=True, max_length=1000, default=None),
                 ),
                 (
                     "groups",

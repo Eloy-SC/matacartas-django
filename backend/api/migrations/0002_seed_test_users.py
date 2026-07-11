@@ -23,7 +23,7 @@ TEST_USERS = [
         "nombre": "Miguel de Cervantes",
         "email": "cervantes@complutum.es",
         "puntuacion": 1500,
-        "imagen": "",
+        "imagen": "https://upload.wikimedia.org/wikipedia/commons/0/09/Cervantes_J%C3%A1uregui.jpg",
     },
     {
         "username": "quevedo",
@@ -33,7 +33,7 @@ TEST_USERS = [
         "nombre": "Francisco de Quevedo",
         "email": "quevedo@cr.es",
         "puntuacion": 700,
-        "imagen": "",
+        "imagen": "https://www.biografiasyvidas.com/biografia/q/fotos/quevedo_3.jpg",
     },
     {
         "username": "gongora",
@@ -43,7 +43,7 @@ TEST_USERS = [
         "nombre": "Luis de Góngora",
         "email": "gongora@cordoba.es",
         "puntuacion": 700,
-        "imagen": "",
+        "imagen": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF3cgLzG6YGAMSD3--dvCfw1S1nauUQBdmRnnfbRVD8w&s=10",
     },
     {
         "username": "lope",
@@ -53,7 +53,7 @@ TEST_USERS = [
         "nombre": "Lope de Vega",
         "email": "lope@madrid.es",
         "puntuacion": 600,
-        "imagen": "",
+        "imagen": "https://scenamalaga.com/wp-content/uploads/2024/01/Lope-de-Vega-2.jpg",
     },
     {
         "username": "becquer",
@@ -63,7 +63,7 @@ TEST_USERS = [
         "nombre": "Gustavo Adolfo Bécquer",
         "email": "becquer@sevilla.es",
         "puntuacion": 500,
-        "imagen": "",
+        "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Portrait_of_Gustavo_Adolfo_B%C3%A9cquer%2C_by_his_brother_Valeriano_%281862%29.jpg/960px-Portrait_of_Gustavo_Adolfo_B%C3%A9cquer%2C_by_his_brother_Valeriano_%281862%29.jpg",
     },
     {
         "username": "velazquez",
@@ -73,7 +73,7 @@ TEST_USERS = [
         "nombre": "Diego de Velázquez",
         "email": "velazquez@sevilla.es",
         "puntuacion": 400,
-        "imagen": "",
+        "imagen": "https://historia-arte.com/_/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpbSI6WyJcL2FydGlzdFwvaW1hZ2VGaWxlXC9kaWVnby12ZWxhenF1ZXotYXV0b3JyZXRyYXRvLTQ1LXgtMzgtY20tY29sZWNjaW9uLXJlYWwtYWNhZGVtaWEtZGUtYmVsbGFzLWFydGVzLWRlLXNhbi1jYXJsb3M/tbXVzZW8tZGUtYmVsbGFzLWFydGVzLWRlLXZhbGVuY2lhLmpwZyIsInJlc2l6ZUNyb3AsNDAwLDQwMCxDUk9QX0VOVFJPUFkiXX0.mp__DKfdjxTtOlYE0KQ9zRGjdP0BaQkWTSuA7kqrb8I.jpg",
     },
     {
         "username": "murillo",
@@ -83,7 +83,7 @@ TEST_USERS = [
         "nombre": "Bartolomé Esteban Murillo",
         "email": "murillo@sevilla.es",
         "puntuacion": 300,
-        "imagen": "",
+        "imagen": "https://explorersevilla.com/wp-content/uploads/2016/08/Bartolome-Esteban-Murillo.png",
     },
     {
         "username": "calderon",
@@ -93,7 +93,7 @@ TEST_USERS = [
         "nombre": "Calderón de la Barca",
         "email": "calderon@madrid.es",
         "puntuacion": 250,
-        "imagen": "",
+        "imagen": "https://i0.wp.com/insulabaranaria.com/wp-content/uploads/2018/01/calderondelabarca.jpg?fit=960%2C1278&ssl=1",
     },
     {
         "username": "garcilaso",
@@ -103,7 +103,7 @@ TEST_USERS = [
         "nombre": "Garcilaso de la Vega",
         "email": "garcilaso@toledo.es",
         "puntuacion": 200,
-        "imagen": "",
+        "imagen": "https://images.ecestaticos.com/DJJ3lWDXoH5pPbT-3KikgfGHffI=/0x0:0x0/1200x1200/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2Fe47%2F5cf%2Fe5a%2Fe475cfe5a9beb82ca4080b2971e1ab77.jpg",
     },
 
 # PRUEBAS DE EXTREMOS

@@ -1,10 +1,13 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import CartasPropias from "./CartasPropias.jsx";
+import MesaInicialContrincantes from "./MesaInicialContrincantes.jsx";
 
 export default function Juego() {
   const { partidaId } = useParams();
 	const [mesa, setMesa] = useState(null);
+	const [mesaInicial, setMesaInicial] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 
@@ -36,7 +39,7 @@ export default function Juego() {
 		return "";
 	};
 
-	const loadMesa = async ({ showLoading = true } = {}) => {
+	const loadMesa = async ({ showLoading = true, guardarMesaInicial = false } = {}) => {
 		if (showLoading) {
 			setLoading(true);
 			setError("");
@@ -55,9 +58,15 @@ export default function Juego() {
 			}
 
 			setMesa(data);
+			if (guardarMesaInicial) {
+				setMesaInicial((mesaActualInicial) => mesaActualInicial ?? data);
+			}
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Error cargando la mesa");
 			setMesa(null);
+			if (guardarMesaInicial) {
+				setMesaInicial(null);
+			}
 		} finally {
 			if (showLoading) {
 				setLoading(false);
@@ -108,7 +117,8 @@ export default function Juego() {
 	};
 
 	useEffect(() => {
-		void loadMesa({ showLoading: true });
+		setMesaInicial(null);
+		void loadMesa({ showLoading: true, guardarMesaInicial: true });
 	}, [partidaId]);
 
 	useEffect(() => {
@@ -155,13 +165,22 @@ export default function Juego() {
 
   return (
     <div className="juego-container">
-      <h1>Juego</h1>
 			{loading ? (
 				<p>Cargando mesa...</p>
 			) : error ? (
 				<p role="alert">{error}</p>
 			) : (
 				<div className="juego-mesa">
+					{mesaInicial && (
+						<MesaInicialContrincantes
+							partida={mesaInicial.partida}
+							jugador={mesaInicial.jugador}
+							contrincantes={mesaInicial.contrincantes}
+						/>
+					)}
+
+					<CartasPropias cartas={jugador?.cartas} />
+
 					<section className="juego-mesa__bloque">
 						<h2>Partida</h2>
 						<p>Identificador: {partida?.partida_id ?? "-"}</p>
