@@ -1,4 +1,4 @@
-from backend.api.models.ronda import Ronda
+from ..models.ronda import Ronda
 
 from ..selectors.ronda_selector import get_ronda_cambios, get_rondas_de_mano
 from ..selectors.partida_selector import get_jugadores_actuales_de_partida, get_partida_by_id, get_partida_usuario_by_partida_and_usuario
@@ -7,6 +7,8 @@ from ..selectors.mano_selector import get_jugadores_en_mesa, get_mano_actual
 from ..models.dtos import ContrincanteDTO, JugadorDTO, MesaDTO, RondaDTO, ManoDTO, PartidaDTO
 
 from random import shuffle
+
+from ..utils.funciones_aux import aux_siguiente_turno
 
 def get_mesa(actor, partida_id):
     """
@@ -201,19 +203,6 @@ def elegir_carta_comodin(actor, partida_id, carta_comodin):
     partida_usuario.cartas.pop(partida_usuario.cartas.index(carta_comodin))  # Elimina la carta comodín de las cartas del jugador
     partida_usuario.carta_comodin = carta_comodin  # Coloca la carta elegida como carta comodín del jugador
     partida_usuario.save()
-
-def aux_siguiente_turno(partida):
-    """
-    Cambia el turno al siguiente jugador en la disposición de jugadores.
-    """
-    if not partida.turno_actual:
-        raise ValueError("No hay un turno actual definido.")
-    
-    disposicion = partida.disposicion_jugadores
-    indice_actual = disposicion.index(partida.turno_actual)
-    indice_siguiente = (indice_actual + 1) % len(disposicion)
-    partida.turno_actual = disposicion[indice_siguiente]
-    partida.save()
 
 
     
