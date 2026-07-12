@@ -25,6 +25,7 @@ class RondaDTO:
     ronda_id: int
     ronda_num: int
     cartas: list[str] | None
+    cambiando: bool
 
 @dataclass
 class ManoDTO:

@@ -100,15 +100,22 @@ export default function MesaInicialContrincantes({ partida, jugador, contrincant
 							aria-label={`Contrincante ${contrincante?.nombre ?? index + 1}`}
 						>
 							<div className="mesa-inicial__contrincante-card" tabIndex={0}>
-								<img
-									className="mesa-inicial__avatar"
-									style={{ border: `5px solid ${colorBorde}` }}
-									src={imagen}
-									alt={`Foto de perfil de ${contrincante.nombre ?? "contrincante"}`}
-									onError={(event) => {
-										event.currentTarget.src = defaultProfilePic;
-									}}
-								/>
+								<div>
+									<img
+										className="mesa-inicial__avatar"
+										style={{ border: `5px solid ${colorBorde}` }}
+										src={imagen}
+										alt={`Foto de perfil de ${contrincante.nombre ?? "contrincante"}`}
+										onError={(event) => {
+											event.currentTarget.src = defaultProfilePic;
+										}}
+									/>
+								</div>
+								<div>
+									<span className="mesa-inicial__puntos-contrincante">
+										{contrincante?.puntos ?? "?"} ptos.
+									</span>
+								</div>
 								<span className="mesa-inicial__nombre-contrincante">
 									{contrincante?.nombre ?? "Contrincante"}
 								</span>

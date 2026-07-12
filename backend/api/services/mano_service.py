@@ -1,4 +1,6 @@
-from ..selectors.ronda_selector import get_rondas_de_mano
+from backend.api.models.ronda import Ronda
+
+from ..selectors.ronda_selector import get_ronda_cambios, get_rondas_de_mano
 from ..selectors.partida_selector import get_jugadores_actuales_de_partida, get_partida_by_id, get_partida_usuario_by_partida_and_usuario
 from ..selectors.mano_selector import get_jugadores_en_mesa, get_mano_actual
 
@@ -60,7 +62,8 @@ def get_mesa(actor, partida_id):
     rondas_dto = [RondaDTO(
         ronda_id=ronda.id,
         ronda_num=ronda.num,
-        cartas=ronda.cartas
+        cartas=ronda.cartas,
+        cambiando=ronda.cambiando
     ) for ronda in rondas]
 
     mesa_dto = MesaDTO(
@@ -72,8 +75,6 @@ def get_mesa(actor, partida_id):
     )
 
     return mesa_dto
-
-
 
 def repartir_cartas(actor, partida_id):
     """
@@ -99,12 +100,120 @@ def repartir_cartas(actor, partida_id):
                 pass
         vuelta += 1
     
+    partida.turno_actual = partida.disposicion_jugadores[0]  # El primer jugador en la disposición de jugadores comienza el turno
+    
     # Guardar cambios
     for jugador in jugadores:
         jugador.save() 
     partida.save() 
 
+def jugador_quiere_cambiar(actor, partida_id):
+    """
+    Indica que un jugador quiere cambiar cartas en la mano actual.
+    """
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    if not partida_usuario:
+        raise PermissionError("No participas en la partida.")
+    if partida_usuario.color != get_partida_by_id(partida_id).first().turno_actual:
+        raise PermissionError("No es tu turno.")
+    if get_rondas_de_mano(get_mano_actual(partida_id).id)[-1].num != 0:
+        raise ValueError("Esta no es la ronda de cambios.")
 
+    partida = get_partida_by_id(partida_id).first()
+    
+    aux_siguiente_turno(partida)
+
+    if partida.turno_actual == partida.disposicion_jugadores[0]: # Si el turno es el ult (sig turno = primer jugador), procedemos al cambio
+        ronda = get_ronda_cambios(get_mano_actual(partida_id).id)
+        ronda.cambiando = True
+        ronda.save()
+    
+
+def jugador_no_quiere_cambiar(actor, partida_id):
+    """
+    Indica que un jugador no quiere cambiar cartas en la mano actual.
+    """
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    if not partida_usuario:
+        raise PermissionError("No participas en la partida.")
+    if partida_usuario.color != get_partida_by_id(partida_id).first().turno_actual:
+        raise PermissionError("No es tu turno.")
+    if get_rondas_de_mano(get_mano_actual(partida_id).id)[-1].num != 0:
+        raise ValueError("Esta no es la ronda de cambios.")
+
+    partida = get_partida_by_id(partida_id).first()
+    partida.turno_actual = partida.disposicion_jugadores[0]  # Reinicia el turno al primer jugador en la disposición de jugadores
+
+    ronda = Ronda(mano=get_mano_actual(partida_id), num=1, cartas={}, cambiando=False)  # Crea la ronda 1
+    
+    ronda.save()
+    partida.save()
+
+def cambiar_cartas(actor, partida_id, cartas_a_cambiar):
+    """
+    Cambia las cartas de un jugador en la mano actual.
+    """
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    if not partida_usuario:
+        raise PermissionError("No participas en la partida.")
+    if partida_usuario.color != get_partida_by_id(partida_id).first().turno_actual:
+        raise PermissionError("No es tu turno.")
+    if get_rondas_de_mano(get_mano_actual(partida_id).id)[-1].num != 0:
+        raise ValueError("Esta no es la ronda de cambios.")
+
+    partida = get_partida_by_id(partida_id).first()
+
+    # Cambiar las cartas del jugador
+    for carta in cartas_a_cambiar:
+        if carta in partida_usuario.cartas:
+            partida_usuario.cartas.remove(carta)
+            partida.baraja.append(carta)  # Devuelve la carta a la baraja
+        else:
+            raise ValueError(f"No tienes la carta {carta} para cambiar.")
+
+    # Repartir nuevas cartas al jugador
+    while len(partida_usuario.cartas) < 4 and len(partida.baraja) > 0:
+        nueva_carta = partida.baraja.pop(0)
+        partida_usuario.cartas.append(nueva_carta)
+
+    aux_siguiente_turno(partida)
+
+    if partida.turno_actual == partida.disposicion_jugadores[0]: # Si el turno es el ult (sig turno = primer jugador), 
+        ronda = get_ronda_cambios(get_mano_actual(partida_id).id)
+        ronda.cambiando = False
+        ronda.save()
+
+    partida_usuario.save()
+    partida.save()
+    
+def elegir_carta_comodin(actor, partida_id, carta_comodin):
+    """
+    Permite a un jugador elegir una carta comodín en la mano actual.
+    """
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    if not partida_usuario:
+        raise PermissionError("No participas en la partida.")
+    if partida_usuario.color != get_partida_by_id(partida_id).first().turno_actual:
+        raise PermissionError("No es tu turno.")
+    if get_rondas_de_mano(get_mano_actual(partida_id).id)[-1].num != 0:
+        raise ValueError("No puedes elegir carta comodin en mitad de la partida.")
+
+    partida_usuario.cartas.pop(partida_usuario.cartas.index(carta_comodin))  # Elimina la carta comodín de las cartas del jugador
+    partida_usuario.carta_comodin = carta_comodin  # Coloca la carta elegida como carta comodín del jugador
+    partida_usuario.save()
+
+def aux_siguiente_turno(partida):
+    """
+    Cambia el turno al siguiente jugador en la disposición de jugadores.
+    """
+    if not partida.turno_actual:
+        raise ValueError("No hay un turno actual definido.")
+    
+    disposicion = partida.disposicion_jugadores
+    indice_actual = disposicion.index(partida.turno_actual)
+    indice_siguiente = (indice_actual + 1) % len(disposicion)
+    partida.turno_actual = disposicion[indice_siguiente]
+    partida.save()
 
 
     

@@ -17,8 +17,8 @@
 	position: relative;
 	place-items: center;
 	width: 92px;
-	height: 92px;
-	padding: 10px;
+	height: 110px;
+	padding: 5px;
 	border-radius: 16px;
 	border: 3px solid #000000;
 	background-image: var(--form-card-texture);
@@ -42,6 +42,14 @@
 	background: #ffffff;
 	box-sizing: border-box;
 	display: block;
+}
+
+.mesa-inicial__puntos-contrincante {
+	font-size: 1.1rem;
+	font-weight: 700;
+	line-height: 1.1;
+	overflow: hidden;
+	color: #000000;
 }
 
 .mesa-inicial__nombre-contrincante {

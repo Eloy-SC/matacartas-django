@@ -9,3 +9,9 @@ def get_rondas_de_mano(mano_id):
     for ronda in rondas:
         res.append(ronda)
     return res
+
+def get_ronda_cambios(mano_id):
+    """
+    Obtiene la ronda de cambios de una mano.
+    """
+    return Ronda.objects.filter(mano_id=mano_id, num=0).first()

@@ -1,7 +1,11 @@
 from django.urls import path
 
 from .views.mano_view import (
+    cambiar_cartas,
+    elegir_carta_comodin,
     get_mesa,
+    jugador_no_quiere_cambiar,
+    jugador_quiere_cambiar,
     repartir_cartas,
 )
 
@@ -100,4 +104,10 @@ urlpatterns = [
     # JUEGO
     path("partida/<int:partida_id>/mano/repartir/", repartir_cartas, name="repartir-cartas"),
     path("partida/<int:partida_id>/mano/mesa/", get_mesa, name="get-mesa"),
+    path("partida/<int:partida_id>/mano/quiero-cambio/", jugador_quiere_cambiar, name="jugador-quiere-cambiar"),
+    path("partida/<int:partida_id>/mano/no-quiero-cambio/", jugador_no_quiere_cambiar, name="jugador-no-quiere-cambiar"),
+    path("partida/<int:partida_id>/mano/cambiar-cartas/", cambiar_cartas, name="cambiar-cartas"),
+    path("partida/<int:partida_id>/mano/elegir-carta-comodin/", elegir_carta_comodin, name="elegir-carta-comodin"),
+
+    
 ]
