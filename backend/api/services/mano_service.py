@@ -65,7 +65,7 @@ def get_mesa(actor, partida_id):
         ronda_id=ronda.id,
         ronda_num=ronda.num,
         cartas=ronda.cartas,
-        cambiando=ronda.cambiando
+        cambios=ronda.cambios
     ) for ronda in rondas]
 
     mesa_dto = MesaDTO(
@@ -78,18 +78,12 @@ def get_mesa(actor, partida_id):
 
     return mesa_dto
 
-def repartir_cartas(actor, partida_id):
+def repartir_cartas(partida_id):
     """
     Reparte cartas a los jugadores de una partida.
     """
-    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
     partida = get_partida_by_id(partida_id).first()
     jugadores = get_jugadores_en_mesa(partida_id, partida.disposicion_jugadores)
-
-    if not partida_usuario:
-        raise PermissionError("No participas en la partida.")
-    if partida.disposicion_jugadores[-1] != partida_usuario.color:
-        raise PermissionError("No eres el repartidor de cartas en esta mano.")
     
     shuffle(partida.baraja)
     vuelta = 1
@@ -127,7 +121,7 @@ def jugador_quiere_cambiar(actor, partida_id):
 
     if partida.turno_actual == partida.disposicion_jugadores[0]: # Si el turno es el ult (sig turno = primer jugador), procedemos al cambio
         ronda = get_ronda_cambios(get_mano_actual(partida_id).id)
-        ronda.cambiando = True
+        ronda.cambios = 1
         ronda.save()
     
 
@@ -146,7 +140,7 @@ def jugador_no_quiere_cambiar(actor, partida_id):
     partida = get_partida_by_id(partida_id).first()
     partida.turno_actual = partida.disposicion_jugadores[0]  # Reinicia el turno al primer jugador en la disposición de jugadores
 
-    ronda = Ronda(mano=get_mano_actual(partida_id), num=1, cartas={}, cambiando=False)  # Crea la ronda 1
+    ronda = Ronda(mano=get_mano_actual(partida_id), num=1, cartas={}, cambios=2)  # Crea la ronda 1
     
     ronda.save()
     partida.save()
@@ -182,7 +176,7 @@ def cambiar_cartas(actor, partida_id, cartas_a_cambiar):
 
     if partida.turno_actual == partida.disposicion_jugadores[0]: # Si el turno es el ult (sig turno = primer jugador), 
         ronda = get_ronda_cambios(get_mano_actual(partida_id).id)
-        ronda.cambiando = False
+        ronda.cambios = 0
         ronda.save()
 
     partida_usuario.save()

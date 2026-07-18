@@ -33,12 +33,35 @@
 	box-sizing: border-box;
 }
 
+.cartas-propias__carta-boton {
+	padding: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+	line-height: 0;
+	flex: 0 0 auto;
+}
+
 .cartas-propias__carta {
 	width: clamp(76px, 11vw, 118px);
 	height: auto;
 	display: block;
 	flex: 0 0 auto;
+	box-sizing: border-box;
+	border: 0;
+	border-radius: 10px;
 	user-select: none;
 	pointer-events: none;
 	filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.16));
+	transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cartas-propias__carta-boton:hover .cartas-propias__carta,
+.cartas-propias__carta-boton:focus-visible .cartas-propias__carta,
+.cartas-propias__carta-boton--selected .cartas-propias__carta {
+	transform: scale(1.04);
+}
+
+.cartas-propias__carta-boton--selected .cartas-propias__carta {
+	box-shadow: 0 0 0 3px #921425, 0 10px 20px rgba(146, 20, 37, 0.18), 0 8px 18px rgba(0, 0, 0, 0.16);
 }

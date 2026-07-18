@@ -43,8 +43,15 @@ function describirCarta(carta) {
 	return `${numero} de ${palo.toLowerCase()}`;
 }
 
-export default function CartasPropias({ cartas = [] }) {
+export default function CartasPropias({
+	cartas = [],
+	seleccionable = false,
+	cartasSeleccionadas = [],
+	onToggleCarta,
+}) {
 	const cartasVisibles = Array.isArray(cartas) ? cartas : [];
+	const cartasSeleccionadasVisibles = Array.isArray(cartasSeleccionadas) ? cartasSeleccionadas : [];
+	const puedeSeleccionar = seleccionable && typeof onToggleCarta === "function";
 
 	return (
 		<section className="cartas-propias" aria-label="Cartas del jugador">
@@ -59,14 +66,35 @@ export default function CartasPropias({ cartas = [] }) {
 							return null;
 						}
 
+						if (!puedeSeleccionar) {
+							return (
+								<img
+									key={`${carta}-${index}`}
+									className="cartas-propias__carta"
+									src={rutaCarta}
+									alt={describirCarta(carta)}
+									role="listitem"
+								/>
+							);
+						}
+
+						const cartaSeleccionada = cartasSeleccionadasVisibles.includes(carta);
+
 						return (
-							<img
+							<button
 								key={`${carta}-${index}`}
-								className="cartas-propias__carta"
-								src={rutaCarta}
-								alt={describirCarta(carta)}
+								type="button"
+								className={`cartas-propias__carta-boton${cartaSeleccionada ? " cartas-propias__carta-boton--selected" : ""}`}
+								aria-pressed={cartaSeleccionada}
+								onClick={() => onToggleCarta(carta)}
 								role="listitem"
-							/>
+							>
+								<img
+									className="cartas-propias__carta"
+									src={rutaCarta}
+									alt={describirCarta(carta)}
+								/>
+							</button>
 						);
 					})}
 				</div>

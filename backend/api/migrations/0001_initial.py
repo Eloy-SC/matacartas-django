@@ -329,6 +329,7 @@ class Migration(migrations.Migration):
                 ),
                 ("num", models.IntegerField(null=False, default=0)),
                 ("cartas", models.JSONField(default=dict, null=True)),
+                ("cambios", models.IntegerField(default=0)),
             ],
         ),
     ]

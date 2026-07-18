@@ -27,11 +27,13 @@ class Partida(models.Model):
     rango_minimo = models.ForeignKey("Rango", 
                                      on_delete=models.SET_NULL, 
                                      null=True, blank=True, 
-                                     default=None)
+                                     default=None,
+                                     related_name="partidas_rango_minimo")
     rango_maximo = models.ForeignKey("Rango", 
                                      on_delete=models.SET_NULL, 
                                      null=True, blank=True, 
-                                     default=None)
+                                     default=None,
+                                     related_name="partidas_rango_maximo")
     
     # Atributos in-game
 

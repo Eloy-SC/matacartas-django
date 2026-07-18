@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import CartasPropias from "./CartasPropias.jsx";
 import MesaInicialContrincantes from "./MesaInicialContrincantes.jsx";
+import "../../styles/mesa.css";
 
 export default function Juego() {
   const { partidaId } = useParams();
@@ -10,16 +11,20 @@ export default function Juego() {
 	const [mesaInicial, setMesaInicial] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
+	const [cartasSeleccionadas, setCartasSeleccionadas] = useState([]);
 
 	const partida = mesa?.partida ?? null;
 	const mano = mesa?.mano ?? null;
 	const jugador = mesa?.jugador ?? null;
 	const contrincantes = mesa?.contrincantes ?? [];
 	const rondas = mesa?.rondas ?? [];
-	const puedeRepartir =
-		jugador?.color &&
-		Array.isArray(partida?.disposicion_jugadores) &&
-		partida.disposicion_jugadores.at(-1) === jugador.color;
+	const rondaCambio = rondas.length === 1 ? rondas[0] : null;
+	const puedeSolicitarCambio =
+		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 0);
+	const puedeCambiarCartas =
+		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 1);
 
 	const formatCartas = (cartas) => {
 		if (Array.isArray(cartas)) {
@@ -116,10 +121,111 @@ export default function Juego() {
 		}
 	};
 
+	const handleEleccionCambio = async (accion) => {
+		try {
+			const csrfRes = await fetch("/api/auth/csrf/", {
+				method: "GET",
+				credentials: "include",
+			});
+
+			if (!csrfRes.ok) {
+				throw new Error("No se pudo obtener el token CSRF");
+			}
+
+			const { csrfToken } = await csrfRes.json().catch(() => ({}));
+
+			if (!csrfToken) {
+				throw new Error("Token CSRF no disponible");
+			}
+
+			const cambioRes = await fetch(`/api/partida/${partidaId}/mano/${accion}/`, {
+				method: "PUT",
+				credentials: "include",
+				headers: {
+					"Content-Type": "application/json",
+					"X-CSRFToken": csrfToken,
+				},
+			});
+
+			const cambioData = await cambioRes.json().catch(() => ({}));
+
+			if (!cambioRes.ok) {
+				throw new Error(cambioData?.detail || "Error registrando la decisión de cambio");
+			}
+
+			await loadMesa({ showLoading: false });
+		} catch (e) {
+			alert(e instanceof Error ? e.message : "Error registrando la decisión de cambio");
+		}
+	};
+
+	const handleCambiarCartas = async () => {
+		if (cartasSeleccionadas.length === 0) {
+			alert("Selecciona al menos una carta para cambiar.");
+			return;
+		}
+
+		try {
+			const csrfRes = await fetch("/api/auth/csrf/", {
+				method: "GET",
+				credentials: "include",
+			});
+
+			if (!csrfRes.ok) {
+				throw new Error("No se pudo obtener el token CSRF");
+			}
+
+			const { csrfToken } = await csrfRes.json().catch(() => ({}));
+
+			if (!csrfToken) {
+				throw new Error("Token CSRF no disponible");
+			}
+
+			const cambioRes = await fetch(`/api/partida/${partidaId}/mano/cambiar-cartas/`, {
+				method: "PUT",
+				credentials: "include",
+				headers: {
+					"Content-Type": "application/json",
+					"X-CSRFToken": csrfToken,
+				},
+				body: JSON.stringify({ cartas: cartasSeleccionadas }),
+			});
+
+			const cambioData = await cambioRes.json().catch(() => ({}));
+
+			if (!cambioRes.ok) {
+				throw new Error(cambioData?.detail || "Error cambiando cartas");
+			}
+
+			setCartasSeleccionadas([]);
+			await loadMesa({ showLoading: false });
+		} catch (e) {
+			alert(e instanceof Error ? e.message : "Error cambiando cartas");
+		}
+	};
+
+	const handleToggleCartaSeleccionada = (carta) => {
+		if (!puedeCambiarCartas) {
+			return;
+		}
+
+		setCartasSeleccionadas((cartasActuales) =>
+			cartasActuales.includes(carta)
+				? cartasActuales.filter((cartaSeleccionada) => cartaSeleccionada !== carta)
+				: [...cartasActuales, carta]
+		);
+	};
+
 	useEffect(() => {
 		setMesaInicial(null);
 		void loadMesa({ showLoading: true, guardarMesaInicial: true });
 	}, [partidaId]);
+
+	useEffect(() => {
+		if (!puedeCambiarCartas) {
+			setCartasSeleccionadas([]);
+		}
+	}, [puedeCambiarCartas]);
 
 	useEffect(() => {
 		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -179,7 +285,33 @@ export default function Juego() {
 						/>
 					)}
 
-					<CartasPropias cartas={jugador?.cartas} />
+					<div className="juego-mesa__cartas-y-acciones">
+						<div className="juego-mesa__cartas">
+							<CartasPropias
+								cartas={jugador?.cartas}
+								seleccionable={puedeCambiarCartas}
+								cartasSeleccionadas={cartasSeleccionadas}
+								onToggleCarta={handleToggleCartaSeleccionada}
+							/>
+						</div>
+
+						{puedeCambiarCartas ? (
+							<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">
+								<button type="button" className="main-primary-button" onClick={() => void handleCambiarCartas()}>
+									Cambiar cartas
+								</button>
+							</div>
+						) : puedeSolicitarCambio ? (
+							<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">
+								<button type="button" className="main-primary-button" onClick={() => void handleEleccionCambio("quiero-cambio")}>
+									Quiero cambio
+								</button>
+								<button type="button" className="main-primary-button" onClick={() => void handleEleccionCambio("no-quiero-cambio")}>
+									No quiero cambio
+								</button>
+							</div>
+						) : null}
+					</div>
 
 					<section className="juego-mesa__bloque">
 						<h2>Partida</h2>
@@ -229,7 +361,7 @@ export default function Juego() {
 							<ul>
 								{rondas.map((ronda) => (
 									<li key={ronda.ronda_id}>
-										Ronda {ronda.ronda_num}: {formatCartas(ronda.cartas) || "sin cartas"}
+										Ronda {ronda.ronda_num}: {formatCartas(ronda.cartas) || "sin cartas"}, cambios: {ronda.cambios}
 									</li>
 								))}
 							</ul>
@@ -237,17 +369,6 @@ export default function Juego() {
 					</section>
 				</div>
 			)}
-
-		{puedeRepartir && (
-			<button
-				type="button"
-				className="main-primary-button"
-						onClick={handleRepartirCartas}
-				aria-label="Repartir cartas"
-			>
-				Repartir cartas
-			</button>
-		)}
     </div>
   );
 }

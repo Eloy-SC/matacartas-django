@@ -2,6 +2,8 @@ from random import shuffle
 from sqlite3 import IntegrityError
 from django.utils import timezone
 
+from ..services.mano_service import repartir_cartas
+
 from ..models.catalogo_cartas import CATALOGO
 
 from ..models.partida_usuario import PartidaUsuario
@@ -553,6 +555,8 @@ def iniciar_partida(actor, partida_id):
     partida.save()
     mano.save()
     ronda.save()
+
+    repartir_cartas(partida_id)  # Reparte las cartas a los jugadores al iniciar la partida
 
 def aux_generar_baraja_inicial(cartas_especiales): # POR AHORA CARTAS ESPECIALES NO TIENE EFECTO EN LA BARAJA
     """
