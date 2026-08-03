@@ -1,4 +1,4 @@
-from random import shuffle
+import random
 from sqlite3 import IntegrityError
 from django.utils import timezone
 
@@ -559,7 +559,7 @@ def iniciar_partida(actor, partida_id, manual=False):
 
     repartir_cartas(partida_id)  # Reparte las cartas a los jugadores al iniciar la partida
 
-def aux_generar_baraja_inicial(cartas_especiales): # POR AHORA CARTAS ESPECIALES NO TIENE EFECTO EN LA BARAJA
+def aux_generar_baraja_inicial(cartas_especiales):
     """
     Genera la baraja inicial de cartas para una partida.
     """
@@ -570,7 +570,50 @@ def aux_generar_baraja_inicial(cartas_especiales): # POR AHORA CARTAS ESPECIALES
         if datos["tipo"] == "normal"
     ]
 
-    shuffle(baraja)
+    if cartas_especiales:
+        random.seed()  # Inicializa el generador de números aleatorios con una semilla basada en el tiempo actual
+        num_aleatorio = random.random()
+        cartas_valiosas = [
+            nombre
+            for nombre, datos in CATALOGO.items()
+            if datos["tipo"] == "especial_val"
+        ]
+        cartas_magicas = [
+            nombre
+            for nombre, datos in CATALOGO.items()
+            if datos["tipo"] == "especial_mag"
+        ]
+        cartas_unicas = [
+            nombre
+            for nombre, datos in CATALOGO.items()
+            if datos["tipo"] == "especial_uni"
+        ]
+        if num_aleatorio < 0.7:
+            valiosas_selec = random.sample(cartas_valiosas, 8)
+            magicas_selec = random.sample(cartas_magicas, 4)
+            unicas_selec = []
+        elif num_aleatorio < 0.95:
+            valiosas_selec = random.sample(cartas_valiosas, 8)
+            magicas_selec = random.sample(cartas_magicas, 3)
+            unicas_selec = random.sample(cartas_unicas, 1)
+        else:
+            valiosas_selec = random.sample(cartas_valiosas, 8)
+            magicas_selec = random.sample(cartas_magicas, 2)
+            unicas_selec = random.sample(cartas_unicas, 2)
+        cartas_especiales_selec = valiosas_selec + magicas_selec + unicas_selec
+        cartas_especiales_selec_posiciones = {
+            CATALOGO[nombre]["posicion"]
+            for nombre in cartas_especiales_selec
+        }
+
+        baraja = [
+            carta
+            for carta in baraja
+            if CATALOGO[carta]["posicion"] not in cartas_especiales_selec_posiciones
+        ]
+        baraja.extend(cartas_especiales_selec)
+
+    random.shuffle(baraja)
 
     return baraja
 
@@ -581,6 +624,6 @@ def aux_generar_disposicion_jugadores(partida_id, jugadores):
 
     colores_no_usados = get_colores_disponibles(partida_id)
     disposicion = [color for color in PartidaUsuario.ColorJugador.values if color not in colores_no_usados]
-    shuffle(disposicion)
+    random.shuffle(disposicion)
 
     return disposicion
