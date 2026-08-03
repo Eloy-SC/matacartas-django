@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import cabecera from "../../assets/cabecera.png";
 import "../../styles/partidas.css";
 import { formatApiError } from "../../utils/ApiErrors.jsx";
+import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
 
 const JUGADORES_OPTIONS = [2, 3, 4, 5, 6];
 
@@ -112,14 +113,7 @@ export default function CrearPartida() {
 
 		setLoading(true);
 		try {
-			const csrfRes = await fetch("/api/auth/csrf/", {
-				method: "GET",
-				credentials: "include",
-			});
-			if (!csrfRes.ok) {
-				throw new Error("No se pudo obtener el token CSRF");
-			}
-			const { csrfToken } = await csrfRes.json();
+			const csrfToken = await obtenerCsrfToken();
 
 			const res = await fetch("/api/partidas/crear/", {
 				method: "POST",

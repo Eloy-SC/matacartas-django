@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/admin.css";
 import "../../styles/rangos.css";
+import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
 
 const COLOR_LABELS = {
 	blanco: "BLANCO",
@@ -84,14 +85,7 @@ export default function AdminRangos() {
 		setDeletingId(rangoId);
 		setError("");
 		try {
-			const csrfRes = await fetch("/api/auth/csrf/", {
-				method: "GET",
-				credentials: "include",
-			});
-			if (!csrfRes.ok) {
-				throw new Error("No se pudo obtener el token CSRF");
-			}
-			const { csrfToken } = await csrfRes.json();
+			const csrfToken = await obtenerCsrfToken();
 
 			const res = await fetch(`/api/rangos/admin/${rangoId}/eliminar/`, {
 				method: "DELETE",

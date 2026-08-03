@@ -6,6 +6,7 @@ import EdicionPartidaSE from "./EdicionPartidaSE.jsx";
 import "../../styles/partidas.css";
 import "../../styles/sala_espera.css";
 import UserRango from "../../utils/UserRango.jsx";
+import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
 
 function formatBoolean(value) {
 	if (typeof value === "boolean") {
@@ -201,16 +202,7 @@ export default function SalaEsperaPartida() {
 
 	const handleIniciarPartidaCreador = async (partidaId) => {
 		try {
-			const csrfRes = await fetch("/api/auth/csrf/", {
-				method: "GET",
-				credentials: "include",
-			});
-
-			if (!csrfRes.ok) {
-				throw new Error("No se pudo obtener el token CSRF");
-			}
-
-			const { csrfToken } = await csrfRes.json().catch(() => ({}));
+			const csrfToken = await obtenerCsrfToken();
 
 			if (!csrfToken) {
 				throw new Error("Token CSRF no disponible");
@@ -270,16 +262,8 @@ export default function SalaEsperaPartida() {
 			}
 
 			// Participa, intentar abandonar
-			const csrfRes = await fetch("/api/auth/csrf/", {
-				method: "GET",
-				credentials: "include",
-			});
+			const csrfToken = await obtenerCsrfToken();
 
-			if (!csrfRes.ok) {
-				throw new Error("No se pudo obtener el token CSRF");
-			}
-
-			const { csrfToken } = await csrfRes.json().catch(() => ({}));
 			if (!csrfToken) {
 				throw new Error("Token CSRF no disponible");
 			}
@@ -327,16 +311,8 @@ export default function SalaEsperaPartida() {
 			}
 
 			// Participa, intentar marcar como listo
-			const csrfRes = await fetch("/api/auth/csrf/", {
-				method: "GET",
-				credentials: "include",
-			});
+			const csrfToken = await obtenerCsrfToken();
 
-			if (!csrfRes.ok) {
-				throw new Error("No se pudo obtener el token CSRF");
-			}
-
-			const { csrfToken } = await csrfRes.json().catch(() => ({}));
 			if (!csrfToken) {
 				throw new Error("Token CSRF no disponible");
 			}
@@ -365,16 +341,8 @@ export default function SalaEsperaPartida() {
 	const handleExpulsarJugador = async (jugadorId) => {
 		try {
 			// Expulsar al jugador
-			const csrfRes = await fetch("/api/auth/csrf/", {
-				method: "GET",
-				credentials: "include",
-			});
-
-			if (!csrfRes.ok) {
-				throw new Error("No se pudo obtener el token CSRF");
-			}
-
-			const { csrfToken } = await csrfRes.json().catch(() => ({}));
+			const csrfToken = await obtenerCsrfToken();
+			
 			if (!csrfToken) {
 				throw new Error("Token CSRF no disponible");
 			}

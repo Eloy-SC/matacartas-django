@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import cabecera from "../../assets/cabecera.png";
 import "../../styles/partidas.css";
+import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
 
 const ESTADO_LABELS = {
 	en_juego: "En juego",
@@ -118,19 +119,7 @@ export default function ListaPartidas() {
 				return;
 			}
 
-			const csrfRes = await fetch("/api/auth/csrf/", {
-				method: "GET",
-				credentials: "include",
-			});
-
-			if (!csrfRes.ok) {
-				throw new Error("No se pudo obtener el token CSRF");
-			}
-
-			const { csrfToken } = await csrfRes.json().catch(() => ({}));
-			if (!csrfToken) {
-				throw new Error("Token CSRF no disponible");
-			}
+			const csrfToken = await obtenerCsrfToken();
 
 			const unirseRes = await fetch(
 				privada ? `/api/partidas/${partidaKey}/unirse/` : `/api/partidas/${partidaKey}/unirse/`,

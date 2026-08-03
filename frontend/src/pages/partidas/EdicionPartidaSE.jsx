@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { formatApiError } from "../../utils/ApiErrors.jsx";
+import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
 
 const JUGADORES_OPTIONS = [2, 3, 4, 5, 6];
 
@@ -133,19 +134,7 @@ export default function EdicionPartidaSE({ isOpen, partida, onClose, onSaved }) 
 
 		setLoading(true);
 		try {
-			const csrfRes = await fetch("/api/auth/csrf/", {
-				method: "GET",
-				credentials: "include",
-			});
-
-			if (!csrfRes.ok) {
-				throw new Error("No se pudo obtener el token CSRF");
-			}
-
-			const { csrfToken } = await csrfRes.json().catch(() => ({}));
-			if (!csrfToken) {
-				throw new Error("Token CSRF no disponible");
-			}
+			const csrfToken = await obtenerCsrfToken();
 
 			const payload = {
 				nombre: nombreTrimmed,

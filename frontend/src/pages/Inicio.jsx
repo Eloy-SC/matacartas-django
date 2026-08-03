@@ -4,6 +4,7 @@ import defaultProfilePic from "../assets/default_profile_pic.png";
 import cabecera from "../assets/cabecera.png";
 import "../styles/rangos.css";
 import UserRango from "../utils/UserRango.jsx";
+import { obtenerCsrfToken } from "../utils/ObtenerCsfrToken";
 
 export default function Inicio() {
 	const navigate = useNavigate();
@@ -105,14 +106,7 @@ export default function Inicio() {
 		setLoading(true);
 		setError("");
 		try {
-			const csrfRes = await fetch("/api/auth/csrf/", {
-				method: "GET",
-				credentials: "include",
-			});
-			if (!csrfRes.ok) {
-				throw new Error("No se pudo obtener el token CSRF");
-			}
-			const { csrfToken } = await csrfRes.json();
+			const csrfToken = await obtenerCsrfToken();
 
 			const logoutRes = await fetch("/api/auth/logout/", {
 				method: "POST",

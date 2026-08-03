@@ -5,6 +5,7 @@ import defaultProfilePic from "../assets/default_profile_pic.png";
 import cabecera from "../assets/cabecera.png";
 import fondoContenedores from "../assets/fondo_contenedores.png";
 import { formatApiError } from "../utils/ApiErrors.jsx";
+import { obtenerCsrfToken } from "../utils/ObtenerCsfrToken";
 
 export default function Login() {
   const location = useLocation();
@@ -73,18 +74,9 @@ export default function Login() {
 
     setLoading(true);
     try {
-      // 1) Get CSRF token + set cookie (SessionAuthentication)
-      const csrfRes = await fetch("/api/auth/csrf/", {
-        method: "GET",
-        credentials: "include",
-      });
-      if (!csrfRes.ok) {
-        throw new Error("No se pudo obtener el token CSRF");
-      }
-      const { csrfToken } = await csrfRes.json();
+      const csrfToken = await obtenerCsrfToken();
 
       if (mode === "login") {
-        // 2) Login
         const loginRes = await fetch("/api/auth/login/", {
           method: "POST",
           credentials: "include",

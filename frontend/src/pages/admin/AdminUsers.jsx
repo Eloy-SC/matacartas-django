@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/admin.css";
 import UserRango from "../../utils/UserRango.jsx";
+import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
 
 const ORDER_FIELDS = [
   { value: "username", label: "Nombre de usuario" },
@@ -160,14 +161,7 @@ export default function AdminUsers() {
     setDeletingId(userId);
     setError("");
     try {
-      const csrfRes = await fetch("/api/auth/csrf/", {
-        method: "GET",
-        credentials: "include",
-      });
-      if (!csrfRes.ok) {
-        throw new Error("No se pudo obtener el token CSRF");
-      }
-      const { csrfToken } = await csrfRes.json();
+      const csrfToken = await obtenerCsrfToken();
 
       const res = await fetch(`/api/users/admin/${userId}/eliminar/`, {
         method: "DELETE",

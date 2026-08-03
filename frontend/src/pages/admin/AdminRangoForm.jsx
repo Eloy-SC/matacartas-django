@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
 import "../../styles/admin.css";
 import "../../styles/rangos.css";
 
@@ -90,14 +91,7 @@ export default function AdminRangoForm() {
 
 		setLoading(true);
 		try {
-			const csrfRes = await fetch("/api/auth/csrf/", {
-				method: "GET",
-				credentials: "include",
-			});
-			if (!csrfRes.ok) {
-				throw new Error("No se pudo obtener el token CSRF");
-			}
-			const { csrfToken } = await csrfRes.json();
+			const csrfToken = await obtenerCsrfToken();
 
 			const payload = {
 				nombre: nombre.trim(),

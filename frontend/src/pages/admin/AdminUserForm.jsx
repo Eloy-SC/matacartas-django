@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import defaultProfilePic from "../../assets/default_profile_pic.png";
 import "../../styles/admin.css";
+import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
 
 export default function AdminUserForm() {
 	const navigate = useNavigate();
@@ -85,14 +86,7 @@ export default function AdminUserForm() {
 
 		setLoading(true);
 		try {
-			const csrfRes = await fetch("/api/auth/csrf/", {
-				method: "GET",
-				credentials: "include",
-			});
-			if (!csrfRes.ok) {
-				throw new Error("No se pudo obtener el token CSRF");
-			}
-			const { csrfToken } = await csrfRes.json();
+			const csrfToken = await obtenerCsrfToken();
 
 			const payload = {
 				username,

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import defaultProfilePic from "../assets/default_profile_pic.png";
 import UserRango from "../utils/UserRango.jsx";
+import { obtenerCsrfToken } from "../utils/ObtenerCsfrToken";
 
 export default function Perfil() {
 	const location = useLocation();
@@ -113,14 +114,7 @@ export default function Perfil() {
 
 		setSaving(true);
 		try {
-			const csrfRes = await fetch("/api/auth/csrf/", {
-				method: "GET",
-				credentials: "include",
-			});
-			if (!csrfRes.ok) {
-				throw new Error("No se pudo obtener el token CSRF");
-			}
-			const { csrfToken } = await csrfRes.json();
+			const csrfToken = await obtenerCsrfToken();
 
 			const imagenValue = (form.imagen ?? "").trim();
 			const payload = {

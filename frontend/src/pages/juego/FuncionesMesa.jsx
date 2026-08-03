@@ -1,0 +1,117 @@
+import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
+
+export function formatCartas(cartas) {
+	if (Array.isArray(cartas)) {
+		return cartas.join(", ");
+	}
+
+	if (typeof cartas === "string") {
+		return cartas;
+	}
+
+	if (cartas && typeof cartas === "object") {
+		return Object.entries(cartas)
+			.map(([clave, valor]) => `${clave}: ${valor}`)
+			.join(", ");
+	}
+
+	return "";
+}
+
+export async function handleRepartirCartas(partidaId, loadMesa) {
+	try {
+		const csrfToken = await obtenerCsrfToken();
+
+		const repartirRes = await fetch(`/api/partida/${partidaId}/mano/repartir/`, {
+			method: "PUT",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json",
+				"X-CSRFToken": csrfToken,
+			},
+		});
+
+		const repartirData = await repartirRes.json().catch(() => ({}));
+
+		if (!repartirRes.ok) {
+			throw new Error(repartirData?.detail || "Error repartiendo cartas");
+		}
+
+		await loadMesa({ showLoading: false });
+	} catch (e) {
+		alert(
+			e instanceof Error
+				? e.message
+				: "Error repartiendo cartas"
+		);
+	}
+}
+
+export async function handleEleccionCambio(partidaId, accion, loadMesa) {
+	try {
+		const csrfToken = await obtenerCsrfToken();
+
+		const cambioRes = await fetch(`/api/partida/${partidaId}/mano/${accion}/`, {
+			method: "PUT",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json",
+				"X-CSRFToken": csrfToken,
+			},
+		});
+
+		const cambioData = await cambioRes.json().catch(() => ({}));
+
+		if (!cambioRes.ok) {
+			throw new Error(cambioData?.detail || "Error registrando la decisión de cambio");
+		}
+
+		await loadMesa({ showLoading: false });
+	} catch (e) {
+		alert(e instanceof Error ? e.message : "Error registrando la decisión de cambio");
+	}
+}
+
+export async function handleCambiarCartas(partidaId, cartasSeleccionadas, loadMesa, setCartasSeleccionadas) {
+	if (cartasSeleccionadas.length === 0) {
+		alert("Selecciona al menos una carta para cambiar.");
+		return;
+	}
+
+	try {
+		const csrfToken = await obtenerCsrfToken();
+
+		const cambioRes = await fetch(`/api/partida/${partidaId}/mano/cambiar-cartas/`, {
+			method: "PUT",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json",
+				"X-CSRFToken": csrfToken,
+			},
+			body: JSON.stringify({ cartas: cartasSeleccionadas }),
+		});
+
+		const cambioData = await cambioRes.json().catch(() => ({}));
+
+		if (!cambioRes.ok) {
+			throw new Error(cambioData?.detail || "Error cambiando cartas");
+		}
+
+		setCartasSeleccionadas([]);
+		await loadMesa({ showLoading: false });
+	} catch (e) {
+		alert(e instanceof Error ? e.message : "Error cambiando cartas");
+	}
+}
+
+export function handleToggleCartaSeleccionada(puedeCambiarCartas, setCartasSeleccionadas, carta) {
+	if (!puedeCambiarCartas) {
+		return;
+	}
+
+	setCartasSeleccionadas((cartasActuales) =>
+		cartasActuales.includes(carta)
+			? cartasActuales.filter((cartaSeleccionada) => cartaSeleccionada !== carta)
+			: [...cartasActuales, carta]
+	);
+}
