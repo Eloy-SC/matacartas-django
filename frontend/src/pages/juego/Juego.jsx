@@ -6,7 +6,9 @@ import {
 	formatCartas,
 	handleCambiarCartas,
 	handleEleccionCambio,
+	handleEleccionComodin,
 	handleToggleCartaSeleccionada,
+	handleToggleCartaSeleccionadaUnica,
 } from "./FuncionesMesa.jsx";
 import MesaInicialContrincantes from "./MesaInicialContrincantes.jsx";
 import "../../styles/mesa.css";
@@ -18,6 +20,7 @@ export default function Juego() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 	const [cartasSeleccionadas, setCartasSeleccionadas] = useState([]);
+	const [cartaComodinSeleccionada, setCartaComodinSeleccionada] = useState(null);
 
 	const partida = mesa?.partida ?? null;
 	const mano = mesa?.mano ?? null;
@@ -31,6 +34,9 @@ export default function Juego() {
 	const puedeCambiarCartas =
 		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
 		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 1);
+	const puedeElegirComodin =
+		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 2);
 
 	const loadMesa = async ({ showLoading = true, guardarMesaInicial = false } = {}) => {
 		if (showLoading) {
@@ -79,6 +85,12 @@ export default function Juego() {
 	}, [puedeCambiarCartas]);
 
 	useEffect(() => {
+		if (!puedeElegirComodin) {
+			setCartaComodinSeleccionada(null);
+		}
+	}, [puedeElegirComodin]);
+
+	useEffect(() => {
 		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 		let socket;
 		let reconnectTimer;
@@ -120,8 +132,8 @@ export default function Juego() {
 		};
 	}, [partidaId]);
 
-  return (
-    <div className="juego-container">
+	return (
+		<div className="juego-container">
 			{loading ? (
 				<p>Cargando mesa...</p>
 			) : error ? (
@@ -140,86 +152,116 @@ export default function Juego() {
 						<div className="juego-mesa__cartas">
 							<CartasPropias
 								cartas={jugador?.cartas}
-								seleccionable={puedeCambiarCartas}
-								cartasSeleccionadas={cartasSeleccionadas}
-								onToggleCarta={(carta) => handleToggleCartaSeleccionada(puedeCambiarCartas, setCartasSeleccionadas, carta)}
+								seleccionable={puedeCambiarCartas || puedeElegirComodin}
+								cartasSeleccionadas={puedeCambiarCartas ? cartasSeleccionadas : cartaComodinSeleccionada ? [cartaComodinSeleccionada] : []}
+								onToggleCarta={(carta) => {
+									if (puedeCambiarCartas) {
+										handleToggleCartaSeleccionada(puedeCambiarCartas, setCartasSeleccionadas, carta);
+										return;
+									}
+
+									handleToggleCartaSeleccionadaUnica(puedeElegirComodin, setCartaComodinSeleccionada, carta);
+								}}
 							/>
 						</div>
 
 						{puedeCambiarCartas ? (
 							<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">
-									<button type="button" className="main-primary-button" onClick={() => void handleCambiarCartas(partidaId, cartasSeleccionadas, loadMesa, setCartasSeleccionadas)}>
+								<button
+									type="button"
+									className="main-primary-button"
+									onClick={() => void handleCambiarCartas(partidaId, cartasSeleccionadas, loadMesa, setCartasSeleccionadas)}
+								>
 									Cambiar cartas
 								</button>
 							</div>
 						) : puedeSolicitarCambio ? (
 							<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">
-									<button type="button" className="main-primary-button" onClick={() => void handleEleccionCambio(partidaId, "quiero-cambio", loadMesa)}>
+								<button
+									type="button"
+									className="main-primary-button"
+									onClick={() => void handleEleccionCambio(partidaId, "quiero-cambio", loadMesa)}
+								>
 									Quiero cambio
 								</button>
-									<button type="button" className="main-primary-button" onClick={() => void handleEleccionCambio(partidaId, "no-quiero-cambio", loadMesa)}>
+								<button
+									type="button"
+									className="main-primary-button"
+									onClick={() => void handleEleccionCambio(partidaId, "no-quiero-cambio", loadMesa)}
+								>
 									No quiero cambio
+								</button>
+							</div>
+						) : puedeElegirComodin ? (
+							<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">
+								<button
+									type="button"
+									className="main-primary-button"
+									disabled={!cartaComodinSeleccionada}
+									onClick={() => void handleEleccionComodin(partidaId, cartaComodinSeleccionada, loadMesa)}
+								>
+									Elegir carta comodín
 								</button>
 							</div>
 						) : null}
 					</div>
 
-					<section className="juego-mesa__bloque">
-						<h2>Partida</h2>
-						<p>Identificador: {partida?.partida_id ?? "-"}</p>
-						<p>Cartas en la baraja: {partida?.baraja_cant ?? "-"}</p>
-						<p>Disposición de jugadores: {partida?.disposicion_jugadores?.join(", ") ?? "-"}</p>
-						<p>Turno actual: {partida?.turno_actual ?? "-"}</p>
-						<p>Tiempo máximo de turno: {partida?.tiempo_max_turno ?? "-"} s</p>
-					</section>
+						<section className="juego-mesa__bloque">
+							<h2>Partida</h2>
+							<p>Identificador: {partida?.partida_id ?? "-"}</p>
+							<p>Cartas en la baraja: {partida?.baraja_cant ?? "-"}</p>
+							<p>Disposición de jugadores: {partida?.disposicion_jugadores?.join(", ") ?? "-"}</p>
+							<p>Turno actual: {partida?.turno_actual ?? "-"}</p>
+							<p>Tiempo máximo de turno: {partida?.tiempo_max_turno ?? "-"} s</p>
+						</section>
 
-					<section className="juego-mesa__bloque">
-						<h2>Mano</h2>
-						<p>Identificador: {mano?.mano_id ?? "-"}</p>
-						<p>Número de mano: {mano?.mano_num ?? "-"}</p>
-					</section>
+						<section className="juego-mesa__bloque">
+							<h2>Mano</h2>
+							<p>Identificador: {mano?.mano_id ?? "-"}</p>
+							<p>Número de mano: {mano?.mano_num ?? "-"}</p>
+						</section>
 
-					<section className="juego-mesa__bloque">
-						<h2>Tu jugador</h2>
-						<p>Identificador: {jugador?.jugador_id ?? "-"}</p>
-						<p>Nombre: {jugador?.nombre ?? "-"}</p>
-						<p>Color: {jugador?.color ?? "-"}</p>
-						<p>Puntos: {jugador?.puntos ?? "-"}</p>
-						<p>Cartas: {jugador?.cartas}</p>
-						<p>Carta comodín: {jugador?.carta_comodin ?? "-"}</p>
-					</section>
+						<section className="juego-mesa__bloque">
+							<h2>Tu jugador</h2>
+							<p>Identificador: {jugador?.jugador_id ?? "-"}</p>
+							<p>Nombre: {jugador?.nombre ?? "-"}</p>
+							<p>Color: {jugador?.color ?? "-"}</p>
+							<p>Puntos: {jugador?.puntos ?? "-"}</p>
+							<p>Cartas: {jugador?.cartas}</p>
+							<p>Carta comodín: {jugador?.carta_comodin ?? "-"}</p>
+						</section>
 
-					<section className="juego-mesa__bloque">
-						<h2>Contrincantes</h2>
-						{contrincantes.length === 0 ? (
-							<p>No hay contrincantes cargados.</p>
-						) : (
-							<ul>
-								{contrincantes.map((contrincante) => (
-									<li key={contrincante.contrincante_id}>
-										{contrincante.nombre} - {contrincante.puntos} puntos - {contrincante.cartas_cant} cartas - comodín: {contrincante.carta_comodin ? "Sí" : "No"}
-									</li>
-								))}
-							</ul>
-						)}
-					</section>
+						<section className="juego-mesa__bloque">
+							<h2>Contrincantes</h2>
+							{contrincantes.length === 0 ? (
+								<p>No hay contrincantes cargados.</p>
+							) : (
+								<ul>
+									{contrincantes.map((contrincante) => (
+										<li key={contrincante.contrincante_id}>
+											{contrincante.nombre} - {contrincante.puntos} puntos - {contrincante.cartas_cant} cartas - comodín: {contrincante.carta_comodin ? "Sí" : "No"}
+										</li>
+									))}
+								</ul>
+							)}
+						</section>
 
-					<section className="juego-mesa__bloque">
-						<h2>Rondas</h2>
-						{rondas.length === 0 ? (
-							<p>No hay rondas cargadas.</p>
-						) : (
-							<ul>
-								{rondas.map((ronda) => (
-									<li key={ronda.ronda_id}>
-										Ronda {ronda.ronda_num}: {formatCartas(ronda.cartas) || "sin cartas"}, cambios: {ronda.cambios}
-									</li>
-								))}
-							</ul>
-						)}
-					</section>
+						<section className="juego-mesa__bloque">
+							<h2>Rondas</h2>
+							{rondas.length === 0 ? (
+								<p>No hay rondas cargadas.</p>
+							) : (
+								<ul>
+									{rondas.map((ronda) => (
+										<li key={ronda.ronda_id}>
+											Ronda {ronda.ronda_num}: {formatCartas(ronda.cartas) || "sin cartas"}, cambios: {ronda.cambios}
+										</li>
+									))}
+								</ul>
+							)}
+						</section>
 				</div>
 			)}
-    </div>
-  );
+		</div>
+	);
 }

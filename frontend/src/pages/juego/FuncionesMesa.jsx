@@ -72,6 +72,37 @@ export async function handleEleccionCambio(partidaId, accion, loadMesa) {
 	}
 }
 
+export async function handleEleccionComodin(partidaId, cartaComodin, loadMesa) {
+	if (!cartaComodin) {
+		alert("Selecciona una carta para elegirla como comodín.");
+		return;
+	}
+
+	try {
+		const csrfToken = await obtenerCsrfToken();
+
+		const comodinRes = await fetch(`/api/partida/${partidaId}/mano/elegir-carta-comodin/`, {
+			method: "PUT",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json",
+				"X-CSRFToken": csrfToken,
+			},
+			body: JSON.stringify({ carta_comodin: cartaComodin }),
+		});
+
+		const comodinData = await comodinRes.json().catch(() => ({}));
+
+		if (!comodinRes.ok) {
+			throw new Error(comodinData?.detail || "Error eligiendo carta comodín");
+		}
+
+		await loadMesa({ showLoading: false });
+	} catch (e) {
+		alert(e instanceof Error ? e.message : "Error eligiendo carta comodín");
+	}
+}
+
 export async function handleCambiarCartas(partidaId, cartasSeleccionadas, loadMesa, setCartasSeleccionadas) {
 	if (cartasSeleccionadas.length === 0) {
 		alert("Selecciona al menos una carta para cambiar.");
@@ -114,4 +145,12 @@ export function handleToggleCartaSeleccionada(puedeCambiarCartas, setCartasSelec
 			? cartasActuales.filter((cartaSeleccionada) => cartaSeleccionada !== carta)
 			: [...cartasActuales, carta]
 	);
+}
+
+export function handleToggleCartaSeleccionadaUnica(puedeSeleccionar, setCartaSeleccionada, carta) {
+	if (!puedeSeleccionar) {
+		return;
+	}
+
+	setCartaSeleccionada((cartaActual) => (cartaActual === carta ? null : carta));
 }

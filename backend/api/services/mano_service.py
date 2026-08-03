@@ -140,8 +140,8 @@ def jugador_no_quiere_cambiar(actor, partida_id):
     partida = get_partida_by_id(partida_id).first()
     partida.turno_actual = partida.disposicion_jugadores[0]  # Reinicia el turno al primer jugador en la disposición de jugadores
 
-    ronda = Ronda(mano=get_mano_actual(partida_id), num=1, cartas={}, cambios=2)  # Crea la ronda 1
-    
+    ronda = get_ronda_cambios(get_mano_actual(partida_id).id)
+    ronda.cambios = 2
     ronda.save()
     partida.save()
 
@@ -197,6 +197,13 @@ def elegir_carta_comodin(actor, partida_id, carta_comodin):
     partida_usuario.cartas.pop(partida_usuario.cartas.index(carta_comodin))  # Elimina la carta comodín de las cartas del jugador
     partida_usuario.carta_comodin = carta_comodin  # Coloca la carta elegida como carta comodín del jugador
     partida_usuario.save()
+
+    partida = get_partida_by_id(partida_id).first()
+    aux_siguiente_turno(partida)
+
+    if partida.turno_actual == partida.disposicion_jugadores[0]: # Si el turno es el ult (sig turno = primer jugador), crear ronda 1
+        ronda = Ronda(mano=get_mano_actual(partida_id), num=1, cartas={}, cambios=2)
+        ronda.save()
 
 
     
