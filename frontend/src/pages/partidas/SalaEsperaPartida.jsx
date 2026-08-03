@@ -240,6 +240,46 @@ export default function SalaEsperaPartida() {
 		}
 	};
 
+	const handleIniciarPartidaCreadorManual = async (partidaId) => {
+		try {
+			const csrfToken = await obtenerCsrfToken();
+
+			if (!csrfToken) {
+				throw new Error("Token CSRF no disponible");
+			}
+
+			const iniciarRes = await fetch(
+				`/api/partidas/${partidaId}/iniciar/manual/`,
+				{
+					method: "PUT",
+					credentials: "include",
+					headers: {
+						"Content-Type": "application/json",
+						"X-CSRFToken": csrfToken,
+					},
+				}
+			);
+
+			if (!iniciarRes.ok) {
+				const errorData = await iniciarRes
+					.json()
+					.catch(() => ({}));
+
+				throw new Error(
+					errorData?.detail ||
+					"No se pudo iniciar la partida"
+				);
+			}
+
+		} catch (e) {
+			alert(
+				e instanceof Error
+					? e.message
+					: "Error iniciando la partida"
+			);
+		}
+	};
+
 	const handleAbandonarSala = async (partidaId) => {
 		try {
 			// Primero verificar si ya participa en la partida
@@ -586,7 +626,7 @@ export default function SalaEsperaPartida() {
 								<button
 									type="button"
 									className="main-primary-button"
-									onClick={() => handleIniciarPartidaCreador(partidaId)}
+									onClick={() => handleIniciarPartidaCreadorManual(partidaId)}
 									aria-label="Iniciar partida"
 									disabled={jugadores.length !== partida?.num_jugadores || loading}
 								>

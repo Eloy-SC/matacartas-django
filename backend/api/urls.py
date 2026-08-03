@@ -19,6 +19,7 @@ from .views.partida_view import (
     get_jugadores_partida,
     get_partida_como_jugador,
     iniciar_partida,
+    iniciar_partida_manual,
     listar_partidas_publicas,
     toggle_listo,
     unirse_a_partida_privada,
@@ -100,6 +101,7 @@ urlpatterns = [
     path("partidas/<int:partida_id>/toggle-listo/", toggle_listo, name="toggle-listo"),
     path("partidas/<int:partida_id>/expulsar-jugador/<int:jugador_id>/", expulsar_jugador, name="expulsar-jugador"),
     path("partidas/<int:partida_id>/iniciar/", iniciar_partida, name="iniciar-partida"),
+    path("partidas/<int:partida_id>/iniciar/manual/", iniciar_partida_manual, name="iniciar-partida-manual"),
 
     # JUEGO
     path("partida/<int:partida_id>/mano/repartir/", repartir_cartas, name="repartir-cartas"),
