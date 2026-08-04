@@ -1,5 +1,9 @@
 from django.urls import path
 
+from .views.ronda_view import (
+    jugar_carta
+)
+
 from .views.mano_view import (
     cambiar_cartas,
     elegir_carta_comodin,
@@ -113,5 +117,5 @@ urlpatterns = [
     path("partida/<int:partida_id>/mano/cambiar-cartas/", cambiar_cartas, name="cambiar-cartas"),
     path("partida/<int:partida_id>/mano/elegir-carta-comodin/", elegir_carta_comodin, name="elegir-carta-comodin"),
 
-    #path("partida/<int:partida_id>/jugar-carta/", jugar_carta, name="jugar-carta")
+    path("partida/<int:partida_id>/mano/ronda/jugar-carta/", jugar_carta, name="jugar-carta")
 ]

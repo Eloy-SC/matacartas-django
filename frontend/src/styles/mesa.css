@@ -74,6 +74,48 @@
 	box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
 }
 
+.mesa-inicial__subcontenedor-cartas {
+	position: absolute;
+	left: calc(100% + 8px);
+	top: 50%;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	transform: translateY(-50%);
+	z-index: 1;
+}
+
+.mesa-inicial__carta-boca-abajo {
+	width: 52px;
+	height: 72px;
+	flex: 0 0 auto;
+	object-fit: cover;
+	border-radius: 8px;
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+	transform: translateY(-2px);
+}
+
+.mesa-inicial__cartas-jugadas {
+	position: relative;
+	width: 68px;
+	flex: 0 0 auto;
+	overflow: visible;
+}
+
+.mesa-inicial__cartas-jugadas--vacía {
+	height: 0;
+	width: 68px;
+}
+
+.mesa-inicial__carta-jugada {
+	position: absolute;
+	left: 0;
+	width: 68px;
+	height: 96px;
+	object-fit: cover;
+	border-radius: 9px;
+	box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+}
 .mesa-inicial__contrincante-card:hover .mesa-inicial__nombre-contrincante,
 .mesa-inicial__contrincante-card:focus-visible .mesa-inicial__nombre-contrincante {
 	opacity: 1;

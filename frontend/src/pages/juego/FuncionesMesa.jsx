@@ -103,6 +103,36 @@ export async function handleEleccionComodin(partidaId, cartaComodin, loadMesa) {
 	}
 }
 
+export async function handleJugarCarta(partidaId, carta, loadMesa) {
+	if (!carta) {
+		return;
+	}
+
+	try {
+		const csrfToken = await obtenerCsrfToken();
+
+		const jugarRes = await fetch(`/api/partida/${partidaId}/mano/ronda/jugar-carta/`, {
+			method: "PUT",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json",
+				"X-CSRFToken": csrfToken,
+			},
+			body: JSON.stringify({ carta }),
+		});
+
+		const jugarData = await jugarRes.json().catch(() => ({}));
+
+		if (!jugarRes.ok) {
+			throw new Error(jugarData?.detail || "Error jugando la carta");
+		}
+
+		await loadMesa({ showLoading: false });
+	} catch (e) {
+		alert(e instanceof Error ? e.message : "Error jugando la carta");
+	}
+}
+
 export async function handleCambiarCartas(partidaId, cartasSeleccionadas, loadMesa, setCartasSeleccionadas) {
 	if (cartasSeleccionadas.length === 0) {
 		alert("Selecciona al menos una carta para cambiar.");

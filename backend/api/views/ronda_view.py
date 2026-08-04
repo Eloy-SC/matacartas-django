@@ -17,7 +17,7 @@ def jugar_carta(request, partida_id):
         carta = request.data.get("carta")
         if not carta:
             return Response({"detail": "No se proporcionó la carta a jugar."}, status=400)
-        ronda_service.jugar_carta(request.user, partida_id)
+        ronda_service.jugar_carta(request.user, partida_id, carta)
     except PermissionError as e:
         return Response({"detail": str(e)}, status=403)
     except ValueError as e:

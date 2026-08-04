@@ -1,4 +1,6 @@
+import cartaBocaAbajo from "../../assets/cartas/carta_boca_abajo.png";
 import defaultProfilePic from "../../assets/default_profile_pic.png";
+import { describirCarta, obtenerRutaCarta } from "./RenderizadoCartas.jsx";
 import "../../styles/mesa.css";
 
 const POSICIONES_POR_CONTRINCANTES = {
@@ -25,6 +27,9 @@ const COLORJUGADOR = {
     azul: "blue",
     morado: "purple",
 }
+
+const ALTO_CARTA = 96;
+const DESPLAZAMIENTO_CARTAS = 16;
 
 function obtenerColoresContrincantesEnOrden(coloresMesa, colorJugador) {
 	if (!Array.isArray(coloresMesa) || coloresMesa.length === 0) {
@@ -71,7 +76,89 @@ function obtenerPosicionesDisponibles(cantidadContrincantes) {
 	return POSICIONES_POR_CONTRINCANTES[cantidadContrincantes] ?? POSICIONES_POR_CONTRINCANTES[5];
 }
 
-export default function MesaInicialContrincantes({ partida, jugador, contrincantes = [] }) {
+function obtenerCartasJugadasDeParticipante(rondas, colorParticipante) {
+	if (!Array.isArray(rondas) || !colorParticipante) {
+		return [];
+	}
+
+	return [...rondas]
+		.filter((ronda) => (ronda?.ronda_num ?? 0) > 0)
+		.sort((rondaA, rondaB) => (rondaA?.ronda_num ?? 0) - (rondaB?.ronda_num ?? 0))
+		.flatMap((ronda) => {
+			const cartaJugada = ronda?.cartas?.[colorParticipante];
+
+			if (Array.isArray(cartaJugada)) {
+				return cartaJugada.filter(Boolean);
+			}
+
+			if (typeof cartaJugada === "string" && cartaJugada.trim()) {
+				return [cartaJugada];
+			}
+
+			return [];
+		});
+}
+
+function tieneComodinSeleccionado(participante) {
+	if (typeof participante?.carta_comodin === "string") {
+		return participante.carta_comodin.trim().length > 0;
+	}
+
+	return Boolean(participante?.carta_comodin);
+}
+
+function renderizarPilaCartas(cartasJugadas) {
+	if (cartasJugadas.length === 0) {
+		return <div className="mesa-inicial__cartas-jugadas mesa-inicial__cartas-jugadas--vacía" />;
+	}
+
+	const alturaPila = ALTO_CARTA + (cartasJugadas.length - 1) * DESPLAZAMIENTO_CARTAS;
+
+	return (
+		<div className="mesa-inicial__cartas-jugadas" style={{ height: `${alturaPila}px` }}>
+			{cartasJugadas.map((carta, index) => {
+				const rutaCarta = obtenerRutaCarta(carta);
+
+				if (!rutaCarta) {
+					return null;
+				}
+
+				return (
+					<img
+						key={`${carta}-${index}`}
+						className="mesa-inicial__carta-jugada"
+						style={{
+							top: `${index * DESPLAZAMIENTO_CARTAS}px`,
+							zIndex: index + 1,
+						}}
+						src={rutaCarta}
+						alt={describirCarta(carta)}
+					/>
+				);
+			})}
+		</div>
+	);
+}
+
+function renderizarSubcontenedorCartas(participante) {
+	const cartasJugadas = obtenerCartasJugadasDeParticipante(participante?.rondas, participante?.color);
+	const conComodin = tieneComodinSeleccionado(participante);
+
+	return (
+		<div className="mesa-inicial__subcontenedor-cartas">
+			{conComodin ? (
+				<img
+					className="mesa-inicial__carta-boca-abajo"
+					src={cartaBocaAbajo}
+					alt="Carta boca abajo"
+				/>
+			) : null}
+			{renderizarPilaCartas(cartasJugadas)}
+		</div>
+	);
+}
+
+export default function MesaInicialContrincantes({ partida, jugador, contrincantes = [], rondas = [] }) {
 	const coloresMesa = Array.isArray(partida?.disposicion_jugadores) ? partida.disposicion_jugadores : [];
 	const coloresContrincantes = obtenerColoresContrincantesEnOrden(coloresMesa, jugador?.color);
 	const contrincantesOrdenados = ordenarContrincantes(contrincantes, coloresContrincantes);
@@ -91,6 +178,10 @@ export default function MesaInicialContrincantes({ partida, jugador, contrincant
 					};
 					const imagen = contrincante?.imagen || defaultProfilePic;
 					const colorBorde = COLORJUGADOR[contrincante?.color] || contrincante?.color || "#000000";
+					const participante = {
+						...contrincante,
+						rondas,
+					};
 
 					return (
 						<article
@@ -116,6 +207,7 @@ export default function MesaInicialContrincantes({ partida, jugador, contrincant
 										{contrincante?.puntos ?? "?"} ptos.
 									</span>
 								</div>
+								{renderizarSubcontenedorCartas(participante)}
 								<span className="mesa-inicial__nombre-contrincante">
 									{contrincante?.nombre ?? "Contrincante"}
 								</span>
