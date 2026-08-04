@@ -154,6 +154,7 @@ export default function Juego() {
 								cartas={jugador?.cartas}
 								seleccionable={puedeCambiarCartas || puedeElegirComodin}
 								cartasSeleccionadas={puedeCambiarCartas ? cartasSeleccionadas : cartaComodinSeleccionada ? [cartaComodinSeleccionada] : []}
+								partidaId={partidaId}
 								onToggleCarta={(carta) => {
 									if (puedeCambiarCartas) {
 										handleToggleCartaSeleccionada(puedeCambiarCartas, setCartasSeleccionadas, carta);

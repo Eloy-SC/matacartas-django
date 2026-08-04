@@ -185,6 +185,25 @@ class PartidaAPITest(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 		self.assertFalse(response.data["participa"])
 
+	def test_get_datos_carta_returns_details_for_owned_card(self):
+		partida_usuario = PartidaUsuario.objects.get(
+			partida=self.partida_publica,
+			usuario=self.creador,
+		)
+		partida_usuario.cartas = ["2_OROS"]
+		partida_usuario.color = PartidaUsuario.ColorJugador.ROJO
+		partida_usuario.save(update_fields=["cartas", "color"])
+
+		url = reverse("get-datos-carta", args=[self.partida_publica.id])
+		self.client.force_authenticate(user=self.creador)
+
+		response = self.client.get(url, {"carta": "2_OROS"})
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.assertEqual(response.data["nombre"], "2_OROS")
+		self.assertEqual(response.data["fuerza"], 1)
+		self.assertEqual(response.data["riqueza"], 111)
+		self.assertEqual(response.data["tipo"], "normal")
+
 	@patch("api.views.partida_view.notificar_sala_actualizada")
 	def test_unirse_a_partida_publica_adds_player(self, _notify_mock):
 		url = reverse("unirse-a-partida-publica", args=[self.partida_publica.id])

@@ -33,6 +33,14 @@
 	box-sizing: border-box;
 }
 
+.cartas-propias__carta-wrapper {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+}
+
 .cartas-propias__carta-boton {
 	padding: 0;
 	border: 0;
@@ -64,4 +72,92 @@
 
 .cartas-propias__carta-boton--selected .cartas-propias__carta {
 	box-shadow: 0 0 0 3px #921425, 0 10px 20px rgba(146, 20, 37, 0.18), 0 8px 18px rgba(0, 0, 0, 0.16);
+}
+
+.cartas-propias__tooltip {
+	position: absolute;
+	left: 50%;
+	bottom: calc(100% + 10px);
+	transform: translateX(-50%);
+	min-width: 180px;
+	padding: 10px 12px;
+	border-radius: 10px;
+	background: rgba(8, 16, 31, 0.95);
+	color: #fff;
+	font-size: 0.85rem;
+	line-height: 1.35;
+	box-shadow: 0 16px 32px rgba(0, 0, 0, 0.24);
+	z-index: 20;
+	pointer-events: none;
+}
+
+.cartas-propias__tooltip p {
+	margin: 0 0 4px;
+}
+
+.cartas-propias__tooltip p:last-child {
+	margin-bottom: 0;
+}
+
+.cartas-propias__tooltip-titulo {
+	font-weight: 700;
+	margin-bottom: 6px !important;
+}
+
+.cartas-propias__tooltip-etiqueta {
+	font-weight: 600;
+	color: #8fb9ff;
+}
+
+.cartas-propias__tooltip-tipo {
+	display: inline-block;
+	margin: 2px 0 6px;
+	padding: 2px 8px;
+	border-radius: 999px;
+	font-weight: 700;
+	font-size: 0.78rem;
+	letter-spacing: 0.02em;
+}
+
+.cartas-propias__tooltip-tipo--normal {
+	background: rgba(255, 255, 255, 0.13);
+	color: #dce7ff;
+}
+
+.cartas-propias__tooltip-tipo--especial-val {
+	background: rgba(255, 193, 7, 0.18);
+	color: #ffd166;
+}
+
+.cartas-propias__tooltip-tipo--especial-mag {
+	background: rgba(111, 76, 255, 0.2);
+	color: #c8b6ff;
+}
+
+.cartas-propias__tooltip-tipo--especial-uni {
+	background: rgba(255, 107, 107, 0.18);
+	color: #ff9999;
+}
+
+.cartas-propias__tooltip-valor {
+	font-weight: 700;
+}
+
+.cartas-propias__tooltip-valor--fuerza {
+	color: #ff6b6b;
+}
+
+.cartas-propias__tooltip-valor--riqueza {
+	color: #4ade80;
+}
+
+.cartas-propias__tooltip-efecto {
+	margin-top: 6px;
+	color: #dce7ff;
+}
+
+.cartas-propias__tooltip-cargando,
+.cartas-propias__tooltip-error {
+	font-style: italic;
+	color: #dce7ff;
 }

@@ -3,117 +3,521 @@ const CARTAS_IMAGENES = import.meta.glob("../../assets/cartas/*.png", {
 	import: "default",
 });
 
-export const CARTAS_A_IMAGEN = {
-	"2_OROS": "carta_oros_2.png",
-	"3_OROS": "carta_oros_3.png",
-	"4_OROS": "carta_oros_4.png",
-	"5_OROS": "carta_oros_5.png",
-	"6_OROS": "carta_oros_6.png",
-	"7_OROS": "carta_oros_7.png",
-	"8_OROS": "carta_oros_8.png",
-	"9_OROS": "carta_oros_9.png",
-	"10_OROS": "carta_oros_10.png",
-	"11_OROS": "carta_oros_11.png",
-	"12_OROS": "carta_oros_12.png",
-	"1_OROS": "carta_oros_1.png",
-	"2_COPAS": "carta_copas_2.png",
-	"3_COPAS": "carta_copas_3.png",
-	"4_COPAS": "carta_copas_4.png",
-	"5_COPAS": "carta_copas_5.png",
-	"6_COPAS": "carta_copas_6.png",
-	"7_COPAS": "carta_copas_7.png",
-	"8_COPAS": "carta_copas_8.png",
-	"9_COPAS": "carta_copas_9.png",
-	"10_COPAS": "carta_copas_10.png",
-	"11_COPAS": "carta_copas_11.png",
-	"12_COPAS": "carta_copas_12.png",
-	"1_COPAS": "carta_copas_1.png",
-	"2_BASTOS": "carta_bastos_2.png",
-	"3_BASTOS": "carta_bastos_3.png",
-	"4_BASTOS": "carta_bastos_4.png",
-	"5_BASTOS": "carta_bastos_5.png",
-	"6_BASTOS": "carta_bastos_6.png",
-	"7_BASTOS": "carta_bastos_7.png",
-	"8_BASTOS": "carta_bastos_8.png",
-	"9_BASTOS": "carta_bastos_9.png",
-	"10_BASTOS": "carta_bastos_10.png",
-	"11_BASTOS": "carta_bastos_11.png",
-	"12_BASTOS": "carta_bastos_12.png",
-	"1_BASTOS": "carta_bastos_1.png",
-	"2_ESPADAS": "carta_espadas_2.png",
-	"3_ESPADAS": "carta_espadas_3.png",
-	"4_ESPADAS": "carta_espadas_4.png",
-	"5_ESPADAS": "carta_espadas_5.png",
-	"6_ESPADAS": "carta_espadas_6.png",
-	"7_ESPADAS": "carta_espadas_7.png",
-	"8_ESPADAS": "carta_espadas_8.png",
-	"9_ESPADAS": "carta_espadas_9.png",
-	"10_ESPADAS": "carta_espadas_10.png",
-	"11_ESPADAS": "carta_espadas_11.png",
-	"12_ESPADAS": "carta_espadas_12.png",
-	"1_ESPADAS": "carta_espadas_1.png",
-	"3_JOYAS_REALES": "carta_joyas_3.png",
-	"4_JOYAS_REALES": "carta_joyas_4.png",
-	"5_JOYAS_REALES": "carta_joyas_5.png",
-	"6_JOYAS_REALES": "carta_joyas_6.png",
-	"7_JOYAS_REALES": "carta_joyas_7.png",
-	"8_JOYAS_REALES": "carta_joyas_8.png",
-	"9_JOYAS_REALES": "carta_joyas_9.png",
-	"3_VINOS_VIEJOS": "carta_vinos_3.png",
-	"4_VINOS_VIEJOS": "carta_vinos_4.png",
-	"5_VINOS_VIEJOS": "carta_vinos_5.png",
-	"6_VINOS_VIEJOS": "carta_vinos_6.png",
-	"7_VINOS_VIEJOS": "carta_vinos_7.png",
-	"8_VINOS_VIEJOS": "carta_vinos_8.png",
-	"9_VINOS_VIEJOS": "carta_vinos_9.png",
-	"2_BASTOS_PUNTIAGUDOS": "carta_bastospun_2.png",
-	"3_BASTOS_PUNTIAGUDOS": "carta_bastospun_3.png",
-	"4_BASTOS_PUNTIAGUDOS": "carta_bastospun_4.png",
-	"5_BASTOS_PUNTIAGUDOS": "carta_bastospun_5.png",
-	"6_BASTOS_PUNTIAGUDOS": "carta_bastospun_6.png",
-	"7_BASTOS_PUNTIAGUDOS": "carta_bastospun_7.png",
-	"8_BASTOS_PUNTIAGUDOS": "carta_bastospun_8.png",
-	"9_BASTOS_PUNTIAGUDOS": "carta_bastospun_9.png",
-	"10_BASTOS_PUNTIAGUDOS": "carta_bastospun_10.png",
-	"11_BASTOS_PUNTIAGUDOS": "carta_bastospun_11.png",
-	"12_BASTOS_PUNTIAGUDOS": "carta_bastospun_12.png",
-	"1_BASTOS_PUNTIAGUDOS": "carta_bastospun_1.png",
-	"2_ESPADAS_ESCUDOS": "carta_espesc_2.png",
-	"3_ESPADAS_ESCUDOS": "carta_espesc_3.png",
-	"4_ESPADAS_ESCUDOS": "carta_espesc_4.png",
-	"5_ESPADAS_ESCUDOS": "carta_espesc_5.png",
-	"6_ESPADAS_ESCUDOS": "carta_espesc_6.png",
-	"7_ESPADAS_ESCUDOS": "carta_espesc_7.png",
-	"8_ESPADAS_ESCUDOS": "carta_espesc_8.png",
-	"9_ESPADAS_ESCUDOS": "carta_espesc_9.png",
-	"10_ESPADAS_ESCUDOS": "carta_espesc_10.png",
-	"11_ESPADAS_ESCUDOS": "carta_espesc_11.png",
-	"12_ESPADAS_ESCUDOS": "carta_espesc_12.png",
-	"1_ESPADAS_ESCUDOS": "carta_espesc_1.png",
-	"SAQUEADOR_TUMBAS": "carta_saqueador.png",
-	"CORRUPTOR": "carta_corruptor.png",
-	"MERCADER": "carta_mercader.png",
-	"MONEDERO_PECULIAR": "carta_monedero.png",
-	"AS_EXTRANJERO": "carta_as_extranjero.png",
-	"BUFON": "carta_bufon.png",
-	"SEGADOR": "carta_segador.png",
-	"REBELDE": "carta_rebelde.png",
-	"DON_DINERO": "carta_rey_don_dinero.png",
-	"MARTIRIZADO": "carta_martirizado.png",
+export const TIPOS_CARTA = {
+	normal: { label: "Carta normal", className: "cartas-propias__tooltip-tipo--normal" },
+	especial_val: { label: "Carta valiosa", className: "cartas-propias__tooltip-tipo--especial-val" },
+	especial_mag: { label: "Carta mágica", className: "cartas-propias__tooltip-tipo--especial-mag" },
+	especial_uni: { label: "Carta única", className: "cartas-propias__tooltip-tipo--especial-uni" },
 };
+
+export const CARTAS_A_RENDERIZAR = {
+	"2_OROS": {
+        imagen: "carta_oros_2.png",
+        efecto: "",
+        nombre: "2 de oros",
+    },
+    "3_OROS": {
+        imagen: "carta_oros_3.png",
+        efecto: "",
+        nombre: "3 de oros",
+    },
+    "4_OROS": {
+        imagen: "carta_oros_4.png",
+        efecto: "",
+        nombre: "4 de oros",
+    },
+	"5_OROS": {
+        imagen: "carta_oros_5.png",
+        efecto: "",
+        nombre: "5 de oros",
+    },
+	"6_OROS": {
+        imagen: "carta_oros_6.png",
+        efecto: "",
+        nombre: "6 de oros",
+    },
+	"7_OROS": {
+        imagen: "carta_oros_7.png",
+        efecto: "",
+        nombre: "7 de oros",
+    },
+	"8_OROS": {
+        imagen: "carta_oros_8.png",
+        efecto: "",
+        nombre: "8 de oros",
+    },
+	"9_OROS": {
+        imagen: "carta_oros_9.png",
+        efecto: "",
+        nombre: "9 de oros",
+    },
+	"10_OROS": {
+        imagen: "carta_oros_10.png",
+        efecto: "",
+        nombre: "Sota de oros",
+    },
+	"11_OROS": {
+        imagen: "carta_oros_11.png",
+        efecto: "",
+        nombre: "Caballo de oros",
+    },
+	"12_OROS": {
+        imagen: "carta_oros_12.png",
+        efecto: "",
+        nombre: "Rey de oros",
+    },
+	"1_OROS": {
+        imagen: "carta_oros_1.png",
+        efecto: "",
+        nombre: "As de oros",
+    },
+	"2_COPAS": {
+        imagen: "carta_copas_2.png",
+        efecto: "",
+        nombre: "2 de copas",
+    },
+	"3_COPAS": {
+        imagen: "carta_copas_3.png",
+        efecto: "",
+        nombre: "3 de copas",
+    },
+	"4_COPAS": {
+        imagen: "carta_copas_4.png",
+        efecto: "",
+        nombre: "4 de copas",
+    },
+	"5_COPAS": {
+        imagen: "carta_copas_5.png",
+        efecto: "",
+        nombre: "5 de copas",
+    },
+	"6_COPAS": {
+        imagen: "carta_copas_6.png",
+        efecto: "",
+        nombre: "6 de copas",
+    },
+	"7_COPAS": {
+        imagen: "carta_copas_7.png",
+        efecto: "",
+        nombre: "7 de copas",
+    },
+	"8_COPAS": {
+        imagen: "carta_copas_8.png",
+        efecto: "",
+        nombre: "8 de copas",
+    },
+	"9_COPAS": {
+        imagen: "carta_copas_9.png",
+        efecto: "",
+        nombre: "9 de copas",
+    },
+	"10_COPAS": {
+        imagen: "carta_copas_10.png",
+        efecto: "",
+        nombre: "Sota de copas",
+    },
+	"11_COPAS": {
+        imagen: "carta_copas_11.png",
+        efecto: "",
+        nombre: "Caballo de copas",
+    },
+	"12_COPAS": {
+        imagen: "carta_copas_12.png",
+        efecto: "",
+        nombre: "Rey de copas",
+    },
+	"1_COPAS": {
+        imagen: "carta_copas_1.png",
+        efecto: "",
+        nombre: "As de copas",
+    },
+	"2_BASTOS": {
+        imagen: "carta_bastos_2.png",
+        efecto: "",
+        nombre: "2 de bastos",
+    },
+	"3_BASTOS": {
+        imagen: "carta_bastos_3.png",
+        efecto: "",
+        nombre: "3 de bastos",
+    },
+	"4_BASTOS": {
+        imagen: "carta_bastos_4.png",
+        efecto: "",
+        nombre: "4 de bastos",
+    },
+	"5_BASTOS": {
+        imagen: "carta_bastos_5.png",
+        efecto: "",
+        nombre: "5 de bastos",
+    },
+	"6_BASTOS": {
+        imagen: "carta_bastos_6.png",
+        efecto: "",
+        nombre: "6 de bastos",
+    },
+	"7_BASTOS": {
+        imagen: "carta_bastos_7.png",
+        efecto: "",
+        nombre: "7 de bastos",
+    },
+	"8_BASTOS": {
+        imagen: "carta_bastos_8.png",
+        efecto: "",
+        nombre: "8 de bastos",
+    },
+	"9_BASTOS": {
+        imagen: "carta_bastos_9.png",
+        efecto: "",
+        nombre: "9 de bastos",
+    },
+	"10_BASTOS": {
+        imagen: "carta_bastos_10.png",
+        efecto: "",
+        nombre: "Sota de bastos",
+    },
+	"11_BASTOS": {
+        imagen: "carta_bastos_11.png",
+        efecto: "",
+        nombre: "Caballo de bastos",
+    },
+	"12_BASTOS": {
+        imagen: "carta_bastos_12.png",
+        efecto: "",
+        nombre: "Rey de bastos",
+    },
+	"1_BASTOS": {
+        imagen: "carta_bastos_1.png",
+        efecto: "",
+        nombre: "As de bastos",
+    },
+	"2_ESPADAS": {
+        imagen: "carta_espadas_2.png",
+        efecto: "",
+        nombre: "2 de espadas",
+    },
+	"3_ESPADAS": {
+        imagen: "carta_espadas_3.png",
+        efecto: "",
+        nombre: "3 de espadas",
+    },
+	"4_ESPADAS": {
+        imagen: "carta_espadas_4.png",
+        efecto: "",
+        nombre: "4 de espadas",
+    },
+	"5_ESPADAS": {
+        imagen: "carta_espadas_5.png",
+        efecto: "",
+        nombre: "5 de espadas",
+    },
+	"6_ESPADAS": {
+        imagen: "carta_espadas_6.png",
+        efecto: "",
+        nombre: "6 de espadas",
+    },
+	"7_ESPADAS": {
+        imagen: "carta_espadas_7.png",
+        efecto: "",
+        nombre: "7 de espadas",
+    },
+	"8_ESPADAS": {
+        imagen: "carta_espadas_8.png",
+        efecto: "",
+        nombre: "8 de espadas",
+    },
+	"9_ESPADAS": {
+        imagen: "carta_espadas_9.png",
+        efecto: "",
+        nombre: "9 de espadas",
+    },
+	"10_ESPADAS": {
+        imagen: "carta_espadas_10.png",
+        efecto: "",
+        nombre: "Sota de espadas",
+    },
+	"11_ESPADAS": {
+        imagen: "carta_espadas_11.png",
+        efecto: "",
+        nombre: "Caballo de espadas",
+    },
+	"12_ESPADAS": {
+        imagen: "carta_espadas_12.png",
+        efecto: "",
+        nombre: "Rey de espadas",
+    },
+	"1_ESPADAS": {
+        imagen: "carta_espadas_1.png",
+        efecto: "",
+        nombre: "As de espadas",
+    },
+	"3_JOYAS_REALES": {
+        imagen: "carta_joyas_3.png",
+        efecto: "",
+        nombre: "3 de joyas reales",
+    },
+	"4_JOYAS_REALES": {
+        imagen: "carta_joyas_4.png",
+        efecto: "",
+        nombre: "4 de joyas reales",
+    },
+	"5_JOYAS_REALES": {
+        imagen: "carta_joyas_5.png",
+        efecto: "",
+        nombre: "5 de joyas reales",
+    },
+	"6_JOYAS_REALES": {
+        imagen: "carta_joyas_6.png",
+        efecto: "",
+        nombre: "6 de joyas reales",
+    },
+	"7_JOYAS_REALES": {
+        imagen: "carta_joyas_7.png",
+        efecto: "Otorga 3 puntos al jugador que la lanza o que la utiliza como comodín, siempre y cuando gane la mano.",
+        nombre: "7 de joyas reales",
+    },
+	"8_JOYAS_REALES": {
+        imagen: "carta_joyas_8.png",
+        efecto: "",
+        nombre: "8 de joyas reales",
+	},
+	"9_JOYAS_REALES": {
+        imagen: "carta_joyas_9.png",
+        efecto: "Otorga 3 puntos al jugador que la lanza o que la utiliza como comodín, siempre y cuando gane la mano.",
+        nombre: "9 de joyas reales",
+    },
+	"3_VINOS_VIEJOS": {
+        imagen: "carta_vinos_3.png",
+        efecto: "",
+        nombre: "3 de vinos viejos",
+    },
+	"4_VINOS_VIEJOS": {
+        imagen: "carta_vinos_4.png",
+        efecto: "",
+        nombre: "4 de vinos viejos",
+    },
+	"5_VINOS_VIEJOS": {
+        imagen: "carta_vinos_5.png",
+        efecto: "",
+        nombre: "5 de vinos viejos",
+    },
+	"6_VINOS_VIEJOS": {
+        imagen: "carta_vinos_6.png",
+        efecto: "",
+        nombre: "6 de vinos viejos",
+    },
+	"7_VINOS_VIEJOS": {
+        imagen: "carta_vinos_7.png",
+        efecto: "",
+        nombre: "7 de vinos viejos",
+    },
+	"8_VINOS_VIEJOS": {
+        imagen: "carta_vinos_8.png",
+        efecto: "",
+        nombre: "8 de vinos viejos",
+    },
+	"9_VINOS_VIEJOS": {
+        imagen: "carta_vinos_9.png",
+        efecto: "",
+        nombre: "9 de vinos viejos",
+    },
+	"2_BASTOS_PUNTIAGUDOS": {
+        imagen: "carta_bastospun_2.png",
+        efecto: "",
+        nombre: "2 de bastos puntiagudos",
+    },
+	"3_BASTOS_PUNTIAGUDOS": {
+        imagen: "carta_bastospun_3.png",
+        efecto: "",
+        nombre: "3 de bastos puntiagudos",
+    },
+	"4_BASTOS_PUNTIAGUDOS": {
+        imagen: "carta_bastospun_4.png",
+        efecto: "",
+        nombre: "4 de bastos puntiagudos",
+    },
+	"5_BASTOS_PUNTIAGUDOS": {
+        imagen: "carta_bastospun_5.png",
+        efecto: "",
+        nombre: "5 de bastos puntiagudos",
+    },
+	"6_BASTOS_PUNTIAGUDOS": {
+        imagen: "carta_bastospun_6.png",
+        efecto: "",
+        nombre: "6 de bastos puntiagudos",
+    },
+	"7_BASTOS_PUNTIAGUDOS": {
+        imagen: "carta_bastospun_7.png",
+        efecto: "",
+        nombre: "7 de bastos puntiagudos",
+    },
+	"8_BASTOS_PUNTIAGUDOS": {
+        imagen: "carta_bastospun_8.png",
+        efecto: "",
+        nombre: "8 de bastos puntiagudos",
+    },
+	"9_BASTOS_PUNTIAGUDOS": {
+        imagen: "carta_bastospun_9.png",
+        efecto: "",
+        nombre: "9 de bastos puntiagudos",
+    },
+	"10_BASTOS_PUNTIAGUDOS": {
+        imagen: "carta_bastospun_10.png",
+        efecto: "",
+        nombre: "Sota de bastos puntiagudos",
+    },
+	"11_BASTOS_PUNTIAGUDOS": {
+        imagen: "carta_bastospun_11.png",
+        efecto: "Si hay una carta que pueda matar a una carta de bastos, el jugador recibe la puntuación que obtendría el jugador que ha lanzado la carta.",
+        nombre: "Caballo de bastos puntiagudos",
+    },
+	"12_BASTOS_PUNTIAGUDOS": {
+        imagen: "carta_bastospun_12.png",
+        efecto: "",
+        nombre: "Rey de bastos puntiagudos",
+    },
+	"1_BASTOS_PUNTIAGUDOS": {
+        imagen: "carta_bastospun_1.png",
+        efecto: "Si hay una carta que pueda matar a una carta de bastos, el jugador recibe la puntuación que obtendría el jugador que ha lanzado la carta.",
+        nombre: "As de bastos puntiagudos",
+    },
+	"2_ESPADAS_ESCUDOS": {
+        imagen: "carta_espesc_2.png",
+        efecto: "",
+        nombre: "2 de espadas y escudos",
+    },
+	"3_ESPADAS_ESCUDOS": {
+        imagen: "carta_espesc_3.png",
+        efecto: "",
+        nombre: "3 de espadas y escudos",
+    },
+	"4_ESPADAS_ESCUDOS": {
+        imagen: "carta_espesc_4.png",
+        efecto: "",
+        nombre: "4 de espadas y escudos",
+    },
+	"5_ESPADAS_ESCUDOS": {
+        imagen: "carta_espesc_5.png",
+        efecto: "",
+        nombre: "5 de espadas y escudos",
+    },
+	"6_ESPADAS_ESCUDOS": {
+        imagen: "carta_espesc_6.png",
+        efecto: "",
+        nombre: "6 de espadas y escudos",
+    },
+	"7_ESPADAS_ESCUDOS": {
+        imagen: "carta_espesc_7.png",
+        efecto: "",
+        nombre: "7 de espadas y escudos",
+    },
+	"8_ESPADAS_ESCUDOS": {
+        imagen: "carta_espesc_8.png",
+        efecto: "",
+        nombre: "8 de espadas y escudos",
+    },
+	"9_ESPADAS_ESCUDOS": {
+        imagen: "carta_espesc_9.png",
+        efecto: "",
+        nombre: "9 de espadas y escudos",
+    },
+	"10_ESPADAS_ESCUDOS": {
+        imagen: "carta_espesc_10.png",
+        efecto: "",
+        nombre: "Sota de espadas y escudos",
+    },
+	"11_ESPADAS_ESCUDOS": {
+        imagen: "carta_espesc_11.png",
+        efecto: "No puede ser matada.",
+        nombre: "Caballo de espadas y escudos",
+    },
+	"12_ESPADAS_ESCUDOS": {
+        imagen: "carta_espesc_12.png",
+        efecto: "",
+        nombre: "Rey de espadas y escudos",
+    },
+	"1_ESPADAS_ESCUDOS": {
+        imagen: "carta_espesc_1.png",
+        efecto: "",
+        nombre: "As de espadas y escudos",
+    },
+	"SAQUEADOR_TUMBAS": {
+        imagen: "carta_saqueador.png",
+        efecto: "",
+        nombre: "El saqueador de tumbas",
+    },
+	"CORRUPTOR": {
+        imagen: "carta_corruptor.png",
+        efecto: "",
+        nombre: "El corruptor",
+    },
+	"MERCADER": {
+        imagen: "carta_mercader.png",
+        efecto: "",
+        nombre: "El mercader",
+    },
+	"MONEDERO_PECULIAR": {
+        imagen: "carta_monedero.png",
+        efecto: "",
+        nombre: "El monedero peculiar",
+    },
+	"AS_EXTRANJERO": {
+        imagen: "carta_as_extranjero.png",
+        efecto: "",
+        nombre: "El as extranjero",
+    },
+	"BUFON": {
+        imagen: "carta_bufon.png",
+        efecto: "",
+        nombre: "El bufón",
+    },
+	"SEGADOR": {
+        imagen: "carta_segador.png",
+        efecto: "",
+        nombre: "El segador",
+    },
+	"REBELDE": {
+        imagen: "carta_rebelde.png",
+        efecto: "Otorga 1 punto por cada carta de bastos (incluyendo “bastos puntiagudos”) que se utilice en TODA la mano.",
+        nombre: "El rebelde",
+    },
+	"DON_DINERO": {
+        imagen: "carta_rey_don_dinero.png",
+        efecto: "",
+        nombre: "El rey don Dinero",
+    },
+	"MARTIRIZADO": {
+        imagen: "carta_martirizado.png",
+        efecto: "",
+        nombre: "El martirizado",
+    },
+};
+
+export function obtenerTipoVisual(tipo) {
+	const clave = typeof tipo === "string" ? tipo.trim().toLowerCase() : "";
+	const tipoDefinido = TIPOS_CARTA[clave];
+
+	if (!tipoDefinido) {
+		return { label: tipo || "-", className: "" };
+	}
+
+	return { label: tipoDefinido.label, className: tipoDefinido.className };
+}
 
 export function obtenerRutaCarta(carta) {
 	if (typeof carta !== "string") {
 		return null;
 	}
 
-	const nombreArchivo = CARTAS_A_IMAGEN[carta.trim().toUpperCase()];
-	if (!nombreArchivo) {
+	const clave = carta.trim().toUpperCase();
+	const entrada = CARTAS_A_RENDERIZAR[clave];
+	if (!entrada?.imagen) {
 		return null;
 	}
 
-	const entrada = Object.entries(CARTAS_IMAGENES).find(([ruta]) => ruta.endsWith(nombreArchivo));
-	return entrada?.[1] ?? null;
+	const nombreArchivo = entrada.imagen;
+	const coincidencia = Object.entries(CARTAS_IMAGENES).find(([ruta]) => ruta.endsWith(nombreArchivo));
+	return coincidencia?.[1] ?? null;
 }
 
 export function describirCarta(carta) {
@@ -136,6 +540,12 @@ export function renderizarCarta({
 	seleccionable = false,
 	seleccionada = false,
 	onToggleCarta,
+	onMouseEnter,
+	onMouseLeave,
+	tooltipVisible = false,
+	tooltipData = null,
+	tooltipLoading = false,
+	tooltipError = "",
 }) {
 	const rutaCarta = obtenerRutaCarta(carta);
 
@@ -145,33 +555,86 @@ export function renderizarCarta({
 
 	const key = `${carta}-${index}`;
 	const cartaDescripcion = describirCarta(carta);
+	const claveCarta = typeof carta === "string" ? carta.trim().toUpperCase() : "";
+	const entradaCarta = CARTAS_A_RENDERIZAR[claveCarta];
+	const efectoCarta = entradaCarta?.efecto?.trim();
+	const tipoVisual = obtenerTipoVisual(tooltipData?.tipo);
+	const claseTipo = tipoVisual.className ? `cartas-propias__tooltip-tipo ${tipoVisual.className}` : "cartas-propias__tooltip-tipo";
 
-	if (!seleccionable || typeof onToggleCarta !== "function") {
-		return (
-			<img
-				key={key}
-				className="cartas-propias__carta"
-				src={rutaCarta}
-				alt={cartaDescripcion}
-				role="listitem"
-			/>
-		);
-	}
+	const contenidoCarta = (
+		<img
+			className="cartas-propias__carta"
+			src={rutaCarta}
+			alt={cartaDescripcion}
+		/>
+	);
 
-	return (
-		<button
+	const cartaElement = !seleccionable || typeof onToggleCarta !== "function" ? (
+		<div
 			key={key}
-			type="button"
-			className={`cartas-propias__carta-boton${seleccionada ? " cartas-propias__carta-boton--selected" : ""}`}
-			aria-pressed={seleccionada}
-			onClick={() => onToggleCarta(carta)}
+			className="cartas-propias__carta-wrapper"
+			onMouseEnter={onMouseEnter}
+			onMouseLeave={onMouseLeave}
 			role="listitem"
 		>
-			<img
-				className="cartas-propias__carta"
-				src={rutaCarta}
-				alt={cartaDescripcion}
-			/>
-		</button>
+			{contenidoCarta}
+			{tooltipVisible ? (
+				<div className="cartas-propias__tooltip" role="tooltip">
+					{tooltipLoading ? (
+						<p className="cartas-propias__tooltip-cargando">Cargando datos…</p>
+					) : tooltipError ? (
+						<p className="cartas-propias__tooltip-error">{tooltipError}</p>
+					) : (
+						<>
+							<p className="cartas-propias__tooltip-titulo">{tooltipData?.nombreMostrar || cartaDescripcion}</p>
+							<p className={claseTipo}>{tipoVisual.label}</p>
+							<p><span className="cartas-propias__tooltip-valor cartas-propias__tooltip-valor--fuerza">{tooltipData?.fuerza ?? "?"}</span><span className="cartas-propias__tooltip-etiqueta"> de fuerza</span></p>
+							<p><span className="cartas-propias__tooltip-valor cartas-propias__tooltip-valor--riqueza">{tooltipData?.riqueza ?? "?"}</span><span className="cartas-propias__tooltip-etiqueta"> de riqueza</span></p>
+							{efectoCarta ? (
+								<p className="cartas-propias__tooltip-efecto"><span className="cartas-propias__tooltip-etiqueta"></span>{efectoCarta}</p>
+							) : null}
+						</>
+					)}
+				</div>
+			) : null}
+		</div>
+	) : (
+		<div
+			key={key}
+			className="cartas-propias__carta-wrapper"
+			onMouseEnter={onMouseEnter}
+			onMouseLeave={onMouseLeave}
+		>
+			<button
+				type="button"
+				className={`cartas-propias__carta-boton${seleccionada ? " cartas-propias__carta-boton--selected" : ""}`}
+				aria-pressed={seleccionada}
+				onClick={() => onToggleCarta(carta)}
+				role="listitem"
+			>
+				{contenidoCarta}
+			</button>
+			{tooltipVisible ? (
+				<div className="cartas-propias__tooltip" role="tooltip">
+					{tooltipLoading ? (
+						<p className="cartas-propias__tooltip-cargando">Cargando datos…</p>
+					) : tooltipError ? (
+						<p className="cartas-propias__tooltip-error">{tooltipError}</p>
+					) : (
+						<>
+							<p className="cartas-propias__tooltip-titulo">{tooltipData?.nombreMostrar || cartaDescripcion}</p>
+							<p><span className="cartas-propias__tooltip-etiqueta">Tipo:</span> <span className={claseTipo}>{tipoVisual.label}</span></p>
+							<p><span className="cartas-propias__tooltip-etiqueta">Fuerza:</span> <span className="cartas-propias__tooltip-valor cartas-propias__tooltip-valor--fuerza">{tooltipData?.fuerza ?? "-"}</span></p>
+							<p><span className="cartas-propias__tooltip-etiqueta">Riqueza:</span> <span className="cartas-propias__tooltip-valor cartas-propias__tooltip-valor--riqueza">{tooltipData?.riqueza ?? "-"}</span></p>
+							{efectoCarta ? (
+								<p className="cartas-propias__tooltip-efecto"><span className="cartas-propias__tooltip-etiqueta">Efecto:</span> {efectoCarta}</p>
+							) : null}
+						</>
+					)}
+				</div>
+			) : null}
+		</div>
 	);
+
+	return cartaElement;
 }

@@ -1,4 +1,5 @@
 from ..models.ronda import Ronda
+from ..models.catalogo_cartas import CATALOGO
 
 from ..selectors.ronda_selector import get_ronda_cambios, get_rondas_de_mano
 from ..selectors.partida_selector import get_jugadores_actuales_de_partida, get_partida_by_id, get_partida_usuario_by_partida_and_usuario
@@ -205,7 +206,23 @@ def elegir_carta_comodin(actor, partida_id, carta_comodin):
         ronda = Ronda(mano=get_mano_actual(partida_id), num=1, cartas={}, cambios=2)
         ronda.save()
 
+def get_datos_carta(actor, carta, partida_id):
+    """
+    Obtiene los datos de la carta comodín del jugador.
+    """
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    if not partida_usuario:
+        raise PermissionError("No participas en la partida.")
+    if carta not in partida_usuario.cartas:
+        raise ValueError("No posees esa carta.")
 
-    
+    datos = {
+        "nombre": carta,
+        "fuerza": CATALOGO[carta]["fuerza"],
+        "riqueza": CATALOGO[carta]["riqueza"],
+        "tipo": CATALOGO[carta]["tipo"],
+    }
+
+    return datos
 
     

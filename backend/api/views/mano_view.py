@@ -108,3 +108,17 @@ def elegir_carta_comodin(request, partida_id):
     notificar_mesa_actualizada(partida_id)
     
     return Response({"detail": "Carta comodín elegida correctamente."}, status=200)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_datos_carta(request, partida_id):
+    """
+    Endpoint para obtener los datos de una carta específica.
+    """
+    try:
+        carta = request.GET.get("carta") or request.data.get("carta", None)
+        datos_carta = mano_service.get_datos_carta(request.user, carta, partida_id)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    return Response(datos_carta, status=200)
