@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "../../styles/cartas_propias.css";
-import { CARTAS_A_RENDERIZAR, renderizarCarta } from "./RenderizadoCartas.jsx";
+import { renderizarCarta } from "./RenderizadoCartas.jsx";
+import { CARTAS_A_RENDERIZAR } from "./DiccionarioCartasFront.jsx";
 
 export default function CartasPropias({
 	cartas = [],
