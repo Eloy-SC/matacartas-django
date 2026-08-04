@@ -3,11 +3,11 @@ from django.db import models
 class PartidaUsuario(models.Model):
     class ColorJugador(models.TextChoices):
         ROJO = "rojo", "Rojo"
-        NARANJA = "naranja", "Naranja"
-        AMARILLO = "amarillo", "Amarillo"
-        VERDE = "verde", "Verde"
         AZUL = "azul", "Azul"
+        VERDE = "verde", "Verde"
+        AMARILLO = "amarillo", "Amarillo"
         MORADO = "morado", "Morado"
+        NARANJA = "naranja", "Naranja"
 
     partida = models.ForeignKey("Partida", on_delete=models.CASCADE)
     usuario = models.ForeignKey("Usuario", on_delete=models.CASCADE)

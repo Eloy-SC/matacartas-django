@@ -473,7 +473,7 @@ export const CARTAS_A_RENDERIZAR = {
     },
 	"SEGADOR": {
         imagen: "carta_segador.png",
-        efecto: "",
+        efecto: "Las cartas valiosas que hayan sido lanzadas durante la mano serán eliminadas por completo de la baraja tras la finalización de la mano. Por cada carta eliminada serás obsequiado con un punto.",
         nombre: "El segador",
     },
 	"REBELDE": {
