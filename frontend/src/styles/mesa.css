@@ -91,15 +91,15 @@
 }
 
 .mesa-inicial__cartas-en-mesa--derecha {
-	left: calc(100% + 8px);
-	top: 50%;
-	transform: translateY(-50%);
+	left: 0;
+	top: 0%;
+	transform: translateX(-100%) rotate(270deg);
 }
 
 .mesa-inicial__cartas-en-mesa--izquierda {
-	right: calc(100% + 8px);
-	top: 50%;
-	transform: translateY(-50%);
+	right: 0;
+	top: 0%;
+	transform: translateX(100%) rotate(90deg);
 }
 
 .mesa-inicial__cartas-en-mesa--arriba_centro {
@@ -116,11 +116,13 @@
 .mesa-inicial__cartas-en-mesa--arriba_dcha {
 	top: calc(100% + 8px);
 	right: 0;
+	transform: rotate(205deg);
 }
 
 .mesa-inicial__cartas-en-mesa--arriba_izq {
 	top: calc(100% + 8px);
 	left: 0;
+	transform: rotate(155deg);
 }
 
 .juego-mesa {

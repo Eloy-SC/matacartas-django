@@ -86,8 +86,8 @@ export default function MesaInicialContrincantes({ partida, jugador, contrincant
 					const coordenadas = COORDENADAS_POR_POSICION[posicion] ?? COORDENADAS_POR_POSICION.ARRIBA_CENTRO;
 					const estiloPosicion = {
 						...coordenadas,
-						...(esPartidaDeSeisJugadores && posicion === "ARRIBA_DCHA" ? { right: "15%" } : {}),
-						...(esPartidaDeSeisJugadores && posicion === "ARRIBA_IZQ" ? { left: "15%" } : {}),
+						...(esPartidaDeSeisJugadores && posicion === "ARRIBA_DCHA" ? { right: "18%" } : {}),
+						...(esPartidaDeSeisJugadores && posicion === "ARRIBA_IZQ" ? { left: "18%" } : {}),
 					};
 					const imagen = contrincante?.imagen || defaultProfilePic;
 					const colorBorde = COLORJUGADOR[contrincante?.color] || contrincante?.color || "#000000";

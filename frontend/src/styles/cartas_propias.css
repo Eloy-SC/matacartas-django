@@ -80,12 +80,14 @@
 	bottom: calc(100% + 10px);
 	transform: translateX(-50%);
 	min-width: 180px;
+	max-width: min(320px, calc(100vw - 24px));
 	padding: 10px 12px;
 	border-radius: 10px;
 	background: rgba(8, 16, 31, 0.95);
 	color: #fff;
 	font-size: 0.85rem;
 	line-height: 1.35;
+	overflow-wrap: break-word;
 	box-shadow: 0 16px 32px rgba(0, 0, 0, 0.24);
 	z-index: 20;
 	pointer-events: none;
