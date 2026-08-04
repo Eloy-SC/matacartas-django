@@ -10,6 +10,7 @@ import {
 	handleToggleCartaSeleccionada,
 	handleToggleCartaSeleccionadaUnica,
 } from "./FuncionesMesa.jsx";
+import CartasEnMesa from "./CartasEnMesa.jsx";
 import MesaInicialContrincantes from "./MesaInicialContrincantes.jsx";
 import "../../styles/mesa.css";
 
@@ -148,10 +149,17 @@ export default function Juego() {
 							jugador={jugador}
 							contrincantes={contrincantes}
 							rondas={rondas}
+							partidaId={partidaId}
 						/>
 					)}
 
 					<div className="juego-mesa__cartas-y-acciones">
+						{jugador ? (
+							<div className="juego-mesa__cartas-jugador-propio">
+								<CartasEnMesa participante={jugador} rondas={rondas} className="cartas-en-mesa--jugador-propio" partidaId={partidaId} esJugadorPropio />
+							</div>
+						) : null}
+
 						<div className="juego-mesa__cartas">
 							<CartasPropias
 								cartas={jugador?.cartas}

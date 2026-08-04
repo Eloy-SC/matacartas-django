@@ -74,47 +74,101 @@
 	box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
 }
 
-.mesa-inicial__subcontenedor-cartas {
-	position: absolute;
-	left: calc(100% + 8px);
-	top: 50%;
+.cartas-en-mesa {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	transform: translateY(-50%);
+}
+
+.cartas-en-mesa__carta-wrapper,
+.cartas-en-mesa__pila {
+	pointer-events: auto;
+}
+
+.mesa-inicial__cartas-en-mesa {
+	position: absolute;
 	z-index: 1;
 }
 
-.mesa-inicial__carta-boca-abajo {
-	width: 52px;
-	height: 72px;
-	flex: 0 0 auto;
-	object-fit: cover;
-	border-radius: 8px;
-	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
-	transform: translateY(-2px);
+.mesa-inicial__cartas-en-mesa--derecha {
+	left: calc(100% + 8px);
+	top: 50%;
+	transform: translateY(-50%);
 }
 
-.mesa-inicial__cartas-jugadas {
+.mesa-inicial__cartas-en-mesa--izquierda {
+	right: calc(100% + 8px);
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.mesa-inicial__cartas-en-mesa--arriba_centro {
+	top: calc(100% + 8px);
+	left: 50%;
+	transform: translateX(-50%) rotate(180deg);
+}
+
+.mesa-inicial__cartas-en-mesa--arriba_centro .cartas-propias__tooltip {
+	transform: translateX(-50%) rotate(180deg);
+	transform-origin: center bottom;
+}
+
+.mesa-inicial__cartas-en-mesa--arriba_dcha {
+	top: calc(100% + 8px);
+	right: 0;
+}
+
+.mesa-inicial__cartas-en-mesa--arriba_izq {
+	top: calc(100% + 8px);
+	left: 0;
+}
+
+.juego-mesa {
 	position: relative;
-	width: 68px;
+}
+
+.juego-mesa__cartas-jugador-propio {
+	position: absolute;
+	left: 50%;
+	bottom: calc(100% + 18px);
+	transform: translateX(-50%);
+	z-index: 2;
+}
+
+.juego-mesa__cartas-jugador-propio .cartas-en-mesa {
+	justify-content: center;
+}
+
+.cartas-en-mesa__carta-boca-abajo {
+	width: 120px;
+	height: 180px;
+	flex: 0 0 auto;
+	object-fit: contain;
+	object-position: center;
+	border-radius: 10px;
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.cartas-en-mesa__pila {
+	position: relative;
+	width: 120px;
 	flex: 0 0 auto;
 	overflow: visible;
 }
 
-.mesa-inicial__cartas-jugadas--vacía {
+.cartas-en-mesa__pila--vacia {
 	height: 0;
-	width: 68px;
+	width: 120px;
 }
 
-.mesa-inicial__carta-jugada {
-	position: absolute;
-	left: 0;
-	width: 68px;
-	height: 96px;
-	object-fit: cover;
-	border-radius: 9px;
-	box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+.cartas-en-mesa__carta-jugada {
+	position: relative;
+	width: 120px;
+	height: 180px;
+	object-fit: contain;
+	object-position: center;
+	border-radius: 10px;
+	background: transparent;
 }
 .mesa-inicial__contrincante-card:hover .mesa-inicial__nombre-contrincante,
 .mesa-inicial__contrincante-card:focus-visible .mesa-inicial__nombre-contrincante {
@@ -146,6 +200,12 @@
 .mesa-inicial__contrincante--arriba_dcha {
 	right: 50%;
 	top: 15%;
+}
+
+.mesa-inicial__jugador-propio {
+	left: 50%;
+	bottom: 2%;
+	transform: translateX(-50%);
 }
 
 .juego-mesa__cartas-y-acciones {

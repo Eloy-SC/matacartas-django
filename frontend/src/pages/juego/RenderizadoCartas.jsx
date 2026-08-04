@@ -54,10 +54,6 @@ export function renderizarCarta({
 	onToggleCarta,
 	onMouseEnter,
 	onMouseLeave,
-	tooltipVisible = false,
-	tooltipData = null,
-	tooltipLoading = false,
-	tooltipError = "",
 }) {
 	const rutaCarta = obtenerRutaCarta(carta);
 
@@ -67,11 +63,6 @@ export function renderizarCarta({
 
 	const key = `${carta}-${index}`;
 	const cartaDescripcion = describirCarta(carta);
-	const claveCarta = typeof carta === "string" ? carta.trim().toUpperCase() : "";
-	const entradaCarta = CARTAS_A_RENDERIZAR[claveCarta];
-	const efectoCarta = entradaCarta?.efecto?.trim();
-	const tipoVisual = obtenerTipoVisual(tooltipData?.tipo);
-	const claseTipo = tipoVisual.className ? `cartas-propias__tooltip-tipo ${tipoVisual.className}` : "cartas-propias__tooltip-tipo";
 
 	const contenidoCarta = (
 		<img
@@ -90,25 +81,6 @@ export function renderizarCarta({
 			role="listitem"
 		>
 			{contenidoCarta}
-			{tooltipVisible ? (
-				<div className="cartas-propias__tooltip" role="tooltip">
-					{tooltipLoading ? (
-						<p className="cartas-propias__tooltip-cargando">Cargando datos…</p>
-					) : tooltipError ? (
-						<p className="cartas-propias__tooltip-error">{tooltipError}</p>
-					) : (
-						<>
-							<p className="cartas-propias__tooltip-titulo">{tooltipData?.nombreMostrar || cartaDescripcion}</p>
-							<p className={claseTipo}>{tipoVisual.label}</p>
-							<p><span className="cartas-propias__tooltip-valor cartas-propias__tooltip-valor--fuerza">{tooltipData?.fuerza ?? "?"}</span><span className="cartas-propias__tooltip-etiqueta"> de fuerza</span></p>
-							<p><span className="cartas-propias__tooltip-valor cartas-propias__tooltip-valor--riqueza">{tooltipData?.riqueza ?? "?"}</span><span className="cartas-propias__tooltip-etiqueta"> de riqueza</span></p>
-							{efectoCarta ? (
-								<p className="cartas-propias__tooltip-efecto"><span className="cartas-propias__tooltip-etiqueta"></span>{efectoCarta}</p>
-							) : null}
-						</>
-					)}
-				</div>
-			) : null}
 		</div>
 	) : (
 		<div
@@ -126,25 +98,6 @@ export function renderizarCarta({
 			>
 				{contenidoCarta}
 			</button>
-			{tooltipVisible ? (
-				<div className="cartas-propias__tooltip" role="tooltip">
-					{tooltipLoading ? (
-						<p className="cartas-propias__tooltip-cargando">Cargando datos…</p>
-					) : tooltipError ? (
-						<p className="cartas-propias__tooltip-error">{tooltipError}</p>
-					) : (
-						<>
-							<p className="cartas-propias__tooltip-titulo">{tooltipData?.nombreMostrar || cartaDescripcion}</p>
-							<p><span className="cartas-propias__tooltip-etiqueta">Tipo:</span> <span className={claseTipo}>{tipoVisual.label}</span></p>
-							<p><span className="cartas-propias__tooltip-etiqueta">Fuerza:</span> <span className="cartas-propias__tooltip-valor cartas-propias__tooltip-valor--fuerza">{tooltipData?.fuerza ?? "-"}</span></p>
-							<p><span className="cartas-propias__tooltip-etiqueta">Riqueza:</span> <span className="cartas-propias__tooltip-valor cartas-propias__tooltip-valor--riqueza">{tooltipData?.riqueza ?? "-"}</span></p>
-							{efectoCarta ? (
-								<p className="cartas-propias__tooltip-efecto"><span className="cartas-propias__tooltip-etiqueta">Efecto:</span> {efectoCarta}</p>
-							) : null}
-						</>
-					)}
-				</div>
-			) : null}
 		</div>
 	);
 

@@ -213,14 +213,16 @@ def get_datos_carta(actor, carta, partida_id):
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
     if not partida_usuario:
         raise PermissionError("No participas en la partida.")
-    if carta not in partida_usuario.cartas:
-        raise ValueError("No posees esa carta.")
+
+    carta_normalizada = carta.strip().upper() if isinstance(carta, str) else ""
+    if carta_normalizada not in CATALOGO:
+        raise ValueError("La carta no existe.")
 
     datos = {
-        "nombre": carta,
-        "fuerza": CATALOGO[carta]["fuerza"],
-        "riqueza": CATALOGO[carta]["riqueza"],
-        "tipo": CATALOGO[carta]["tipo"],
+        "nombre": carta_normalizada,
+        "fuerza": CATALOGO[carta_normalizada]["fuerza"],
+        "riqueza": CATALOGO[carta_normalizada]["riqueza"],
+        "tipo": CATALOGO[carta_normalizada]["tipo"],
     }
 
     return datos

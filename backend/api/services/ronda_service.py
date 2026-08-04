@@ -1,3 +1,5 @@
+from ..models.ronda import Ronda
+
 from ..selectors.ronda_selector import get_rondas_de_mano
 
 from ..utils.funciones_aux import aux_siguiente_turno
@@ -38,7 +40,10 @@ def jugar_carta(user, partida_id, carta):
 
     aux_siguiente_turno(partida)  # Avanzar al siguiente turno
     if partida.turno_actual == partida.disposicion_jugadores[0]:  # Si el turno vuelve al primer jugador, iniciar nueva ronda
-        ganador_ronda()  # Determinar ganador de la ronda y preparar la siguiente
+        ganador_ronda(partida_id)  # Determinar ganador de la ronda y preparar la siguiente
 
-def ganador_ronda():
-    pass
+def ganador_ronda(partida_id):
+
+    num_ronda = get_rondas_de_mano(get_mano_actual(partida_id).id)[-1].num
+    nueva_ronda = Ronda(mano=get_mano_actual(partida_id), num=num_ronda + 1, cartas={}, cambios=2)
+    nueva_ronda.save()
