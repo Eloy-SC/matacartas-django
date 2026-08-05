@@ -538,7 +538,7 @@ def iniciar_partida(actor, partida_id, manual=False):
     
     # Partida
     partida.fecha_inicio = timezone.now()
-    partida.baraja = aux_generar_baraja_inicial(partida.cartas_especiales)
+    partida.baraja = aux_generar_baraja_inicial(partida.cartas_especiales, partida.num_jugadores)
     partida.disposicion_jugadores = aux_generar_disposicion_jugadores(partida_id, jugadores)
 
     # Mano
@@ -559,7 +559,7 @@ def iniciar_partida(actor, partida_id, manual=False):
 
     repartir_cartas(partida_id)  # Reparte las cartas a los jugadores al iniciar la partida
 
-def aux_generar_baraja_inicial(cartas_especiales):
+def aux_generar_baraja_inicial(cartas_especiales, num_jugadores):
     """
     Genera la baraja inicial de cartas para una partida.
     """
@@ -583,6 +583,9 @@ def aux_generar_baraja_inicial(cartas_especiales):
             for nombre, datos in CATALOGO.items()
             if datos["tipo"] == "especial_mag"
         ]
+        if num_jugadores == 2 and "MONEDERO_PECULIAR" in cartas_magicas and "AS_EXTRANJERO" in cartas_magicas:
+            cartas_magicas.remove("MONEDERO_PECULIAR")
+            cartas_magicas.remove("AS_EXTRANJERO")
         cartas_unicas = [
             nombre
             for nombre, datos in CATALOGO.items()
