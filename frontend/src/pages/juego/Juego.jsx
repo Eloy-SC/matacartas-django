@@ -14,6 +14,15 @@ import CartasEnMesa from "./CartasEnMesa.jsx";
 import MesaInicialContrincantes from "./MesaInicialContrincantes.jsx";
 import "../../styles/mesa.css";
 
+const COLORJUGADOR = {
+    rojo: "red",
+    naranja: "orange",
+    amarillo: "yellow",
+    verde: "green",
+    azul: "blue",
+    morado: "purple",
+}
+
 export default function Juego() {
 	const { partidaId } = useParams();
 	const [mesa, setMesa] = useState(null);
@@ -42,6 +51,28 @@ export default function Juego() {
 	const puedeElegirComodin =
 		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
 		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 2);
+
+	const indicacionTuTurno = 
+		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color);
+
+	const indicacionTurnoAjeno =
+		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual !== jugador.color);
+
+	const indicacionQuererCambiar =
+		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 0);
+	
+	const indicacionCambiarCartas =
+		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 1);
+	
+	const indicacionElegirComodin =
+		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 2);
+	
+	const indicacionJugarCarta =
+		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		Boolean(rondaActual && rondaActual.ronda_num >= 1 && rondaActual.ronda_num <= 3);
 
 	const loadMesa = async ({ showLoading = true, guardarMesaInicial = false } = {}) => {
 		if (showLoading) {
@@ -182,7 +213,21 @@ export default function Juego() {
 									}
 								}}
 							/>
+
+							<div className="recuadro-indicaciones">
+								{indicacionTuTurno ? (<span className="texto-indicaciones">Es tu turno.</span>) :
+								indicacionTurnoAjeno ? (<span className="texto-indicaciones">Es el turno del jugador{" "}
+								<span className="texto-indicaciones" style={{ color: COLORJUGADOR[partida?.turno_actual] }}>
+									{partida?.turno_actual}
+								</span>.</span>) : null}
+								{indicacionQuererCambiar ? (<p className="texto-indicaciones">¡Di si quieres cambiar cartas!</p>) : 
+								indicacionCambiarCartas ? (<p className="texto-indicaciones">¡Elige las cartas que quieres cambiar!</p>) :
+								indicacionElegirComodin ? (<p className="texto-indicaciones">¡Elige que carta quieres usar como comodín!</p>) :
+								indicacionJugarCarta ? (<p className="texto-indicaciones">¡Elige la carta que quieres lanzar!</p>) : null}
+							</div>
 						</div>
+
+						
 
 						{puedeCambiarCartas ? (
 							<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">

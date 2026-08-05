@@ -240,3 +240,29 @@
 	min-width: 180px;
 	width: 100%;
 }
+
+.recuadro-indicaciones {
+  border: 3px solid #000000;
+  border-radius: 8px;
+  background-image: var(--form-card-texture);
+  background-repeat: repeat;
+  background-size: 210px 210px;
+  padding: 30px;
+  position: absolute;
+  top: 25%;
+  right: 18%;
+  width: 200px;
+  max-width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+  text-align: center;
+}
+
+.texto-indicaciones {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.1;
+  overflow: hidden;
+  color: #000000;
+  text-align: center;
+}
