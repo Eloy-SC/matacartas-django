@@ -41,3 +41,15 @@ class Partida(models.Model):
     disposicion_jugadores = models.JSONField(default=list)  # Representación de la disposición de los jugadores en la partida
     turno_actual = models.CharField(max_length=8, null=True)  # Color del jugador que tiene el turno actual
 
+    # Métodos
+
+    def get_num_manos(self):
+        if self.longitud == self.LongitudPartida.CORTA:
+            return 20
+        elif self.longitud == self.LongitudPartida.NORMAL:
+            return 40
+        elif self.longitud == self.LongitudPartida.LARGA:
+            return 60
+        else:
+            return 40  # Valor por defecto si no se reconoce la longitud
+

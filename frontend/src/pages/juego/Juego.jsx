@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import CartasPropias from "./CartasPropias.jsx";
 import {
@@ -7,6 +7,7 @@ import {
 	handleEleccionCambio,
 	handleEleccionComodin,
 	handleJugarCarta,
+	handleSiguienteMano,
 	handleToggleCartaSeleccionada,
 	handleToggleCartaSeleccionadaUnica,
 } from "./FuncionesMesa.jsx";
@@ -31,6 +32,8 @@ export default function Juego() {
 	const [error, setError] = useState("");
 	const [cartasSeleccionadas, setCartasSeleccionadas] = useState([]);
 	const [cartaComodinSeleccionada, setCartaComodinSeleccionada] = useState(null);
+	const [cuentaAtrasFinMano, setCuentaAtrasFinMano] = useState(null);
+	const finManoProgramadaRef = useRef(null);
 
 	const partida = mesa?.partida ?? null;
 	const mano = mesa?.mano ?? null;
@@ -38,6 +41,7 @@ export default function Juego() {
 	const contrincantes = mesa?.contrincantes ?? [];
 	const rondas = mesa?.rondas ?? [];
 	const rondaActual = rondas[rondas.length - 1] ?? null;
+	const esJugadorPosicionCero = partida?.disposicion_jugadores?.[0] === jugador?.color;
 	const rondaCambio = rondas.length === 1 ? rondas[0] : null;
 	const puedeJugarCarta =
 		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
@@ -127,6 +131,50 @@ export default function Juego() {
 	}, [puedeElegirComodin]);
 
 	useEffect(() => {
+		finManoProgramadaRef.current = null;
+		setCuentaAtrasFinMano(null);
+	}, [mano?.mano_id]);
+
+	useEffect(() => {
+		if (!esJugadorPosicionCero) {
+			return;
+		}
+
+		if (rondaActual?.ronda_num === 4 && cuentaAtrasFinMano === null) {
+			finManoProgramadaRef.current = mano?.mano_id ?? null;
+			setCuentaAtrasFinMano(7);
+		}
+	}, [cuentaAtrasFinMano, esJugadorPosicionCero, mano?.mano_id, rondaActual?.ronda_num]);
+
+	useEffect(() => {
+		if (cuentaAtrasFinMano === null) {
+			return;
+		}
+
+		if (cuentaAtrasFinMano === 0) {
+			let cancelado = false;
+
+			void (async () => {
+				await handleSiguienteMano(partidaId, loadMesa);
+				if (!cancelado) {
+					finManoProgramadaRef.current = null;
+					setCuentaAtrasFinMano(null);
+				}
+			})();
+
+			return () => {
+				cancelado = true;
+			};
+		}
+
+		const timeoutId = window.setTimeout(() => {
+			setCuentaAtrasFinMano((valorActual) => (valorActual === null ? valorActual : Math.max(valorActual - 1, 0)));
+		}, 1000);
+
+		return () => window.clearTimeout(timeoutId);
+	}, [cuentaAtrasFinMano, loadMesa, partidaId]);
+
+	useEffect(() => {
 		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 		let socket;
 		let reconnectTimer;
@@ -197,7 +245,7 @@ export default function Juego() {
 								seleccionable={puedeCambiarCartas || puedeElegirComodin || puedeJugarCarta}
 								cartasSeleccionadas={puedeCambiarCartas ? cartasSeleccionadas : cartaComodinSeleccionada ? [cartaComodinSeleccionada] : []}
 								partidaId={partidaId}
-								onToggleCarta={(carta) => {
+								onToggleCarta={async (carta) => {
 									if (puedeCambiarCartas) {
 										handleToggleCartaSeleccionada(puedeCambiarCartas, setCartasSeleccionadas, carta);
 										return;
@@ -209,12 +257,20 @@ export default function Juego() {
 									}
 
 									if (puedeJugarCarta) {
-										void handleJugarCarta(partidaId, carta, loadMesa);
+										const respuesta = await handleJugarCarta(partidaId, carta, loadMesa);
+
+										if (respuesta?.detail === "FIN_MANO" && esJugadorPosicionCero) {
+											finManoProgramadaRef.current = mano?.mano_id ?? null;
+											setCuentaAtrasFinMano(7);
+										}
 									}
 								}}
 							/>
 
 							<div className="recuadro-indicaciones">
+								{cuentaAtrasFinMano !== null ? (
+									<p className="texto-indicaciones">Nueva mano en {cuentaAtrasFinMano} s.</p>
+								) : null}
 								{indicacionTuTurno ? (<span className="texto-indicaciones">Es tu turno.</span>) :
 								indicacionTurnoAjeno ? (<span className="texto-indicaciones">Es el turno del jugador{" "}
 								<span className="texto-indicaciones" style={{ color: COLORJUGADOR[partida?.turno_actual] }}>

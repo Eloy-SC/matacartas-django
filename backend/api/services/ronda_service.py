@@ -1,5 +1,4 @@
-from backend.api.models.catalogo_cartas import CATALOGO
-from backend.api.models.mano import Mano
+from ..models.catalogo_cartas import CATALOGO
 
 from ..models.ronda import Ronda
 
@@ -45,7 +44,8 @@ def jugar_carta(user, partida_id, carta):
     if partida.turno_actual == partida.disposicion_jugadores[0]:  # Si el turno vuelve al primer jugador, iniciar nueva ronda
         ganador_ronda(partida_id)  # Determinar ganador de la ronda y preparar la siguiente
 
-    if mano.ganador is not None:
+    mano_actualizada = get_mano_actual(partida_id)
+    if mano_actualizada and mano_actualizada.ganador is not None:
         return True  # Indica que la mano ha terminado
     else:
         return False  # Indica que la mano sigue en curso
@@ -60,18 +60,27 @@ def ganador_ronda(partida_id):
             especiales = True
             break
     if especiales:
-        pass
+        aux_determinar_ganador_ronda_con_especiales(partida_id)
+        return
     else:
         carta_mayor_fuerza = aux_get_carta_mayor_fuerza(partida_id)
-        carta_matadora = aux_get_carta_matadora(carta_mayor_fuerza)
-        if carta_matadora and carta_matadora in cartas_jugadas.values():
-            ganador = [color for color, carta in cartas_jugadas.items() if carta == carta_matadora][0]
+        cartas_matadoras = aux_get_cartas_matadoras(carta_mayor_fuerza)
+        cartas_matadoras_jugadas = [carta for carta in cartas_jugadas.values() if carta in cartas_matadoras]
+
+        if cartas_matadoras_jugadas:
+            carta_ganadora = max(
+                cartas_matadoras_jugadas,
+                key=lambda carta: CATALOGO[carta]["fuerza"],
+            )
+            ganador = [color for color, carta in cartas_jugadas.items() if carta == carta_ganadora][0]
         else:
             ganador = [color for color, carta in cartas_jugadas.items() if carta == carta_mayor_fuerza][0]
 
     jugador_ganador = get_partida_usuario_by_partida_and_color(partida_id, ganador)
-    if cartas_jugadas[ganador] == carta_matadora: 
+    carta_ganadora = cartas_jugadas[ganador]
+    if carta_ganadora in aux_get_cartas_matadoras(carta_mayor_fuerza):
         jugador_ganador.puntos += CATALOGO[carta_mayor_fuerza]["recompensa"]
+        jugador_ganador.save()
 
     ronda_actual.ganador = ganador
     ronda_actual.save()        
@@ -94,20 +103,36 @@ def aux_get_carta_mayor_fuerza(partida_id):
 
 def aux_get_carta_matadora(carta):
 
-    matadoras = CATALOGO[carta].get("matadoras", [])
-    carta_matadora = matadoras[-1] if matadoras else None
-    return carta_matadora
+    return aux_get_cartas_matadoras(carta)
+
+def aux_get_cartas_matadoras(carta):
+
+    matadoras = CATALOGO[carta].get("matadoras", ())
+    return tuple(matadoras)
 
 def aux_resolver_ganador_mano(partida_id):
     mano_actual = get_mano_actual(partida_id)
     rondas = get_rondas_de_mano(mano_actual.id)
     ganadores = {}
     for ronda in rondas:
+        if ronda.num < 1 or ronda.num > 3 or ronda.ganador is None:
+            continue
         ganadores[ronda.ganador] = ganadores.get(ronda.ganador, 0) + 1
-    if len(ganadores) <= 2:
-        ganador_mano = max(ganadores, key=ganadores.get)
+
+    if not ganadores:
+        raise ValueError("No hay ganador válido para resolver la mano.")
+
+    max_victorias = max(ganadores.values())
+    colores_con_maximo = [color for color, victorias in ganadores.items() if victorias == max_victorias]
+
+    # Si alguien ganó 2 o 3 rondas, gana la mano sin desempate por comodines.
+    if max_victorias >= 2:
+        ganador_mano = colores_con_maximo[0]
+    # Solo hay desempate cuando las tres rondas tienen tres ganadores distintos (1-1-1).
+    elif len(colores_con_maximo) == 3:
+        ganador_mano = aux_resolver_desempate_comodines(partida_id, colores_con_maximo)
     else:
-        ganador_mano = aux_resolver_desempate_comodines(partida_id, ganadores.keys())
+        ganador_mano = colores_con_maximo[0]
 
     ganador_usuario = get_partida_usuario_by_partida_and_color(partida_id, ganador_mano)
     ganador_usuario.puntos += 4
@@ -123,6 +148,7 @@ def aux_resolver_desempate_comodines(partida_id, ganadores):
     for jugador in jugadores:
         if jugador["color"] in ganadores:
             ronda_comodines.cartas[jugador["color"]] = jugador["carta_comodin"]
+    ronda_comodines.save()
     comodines_a_usar = {
         (nombre, CATALOGO[nombre]["riqueza"])
         for nombre in ronda_comodines.cartas.values()

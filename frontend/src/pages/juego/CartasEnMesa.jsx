@@ -14,7 +14,11 @@ function obtenerCartasJugadasDeParticipante(rondas, colorParticipante) {
 	}
 
 	return [...rondas]
-		.filter((ronda) => (ronda?.ronda_num ?? 0) > 0)
+		.filter((ronda) => {
+			const numRonda = ronda?.ronda_num ?? 0;
+
+			return numRonda > 0 && numRonda < 4;
+		})
 		.sort((rondaA, rondaB) => (rondaA?.ronda_num ?? 0) - (rondaB?.ronda_num ?? 0))
 		.flatMap((ronda) => {
 			const cartaJugada = ronda?.cartas?.[colorParticipante];
@@ -29,6 +33,24 @@ function obtenerCartasJugadasDeParticipante(rondas, colorParticipante) {
 
 			return [];
 		});
+}
+
+function obtenerCartaReveladaDeRonda(ronda, colorParticipante) {
+	if ((ronda?.ronda_num ?? 0) !== 4 || !colorParticipante) {
+		return null;
+	}
+
+	const cartaRevelada = ronda?.cartas?.[colorParticipante];
+
+	if (Array.isArray(cartaRevelada)) {
+		return cartaRevelada.find(Boolean) ?? null;
+	}
+
+	if (typeof cartaRevelada === "string" && cartaRevelada.trim()) {
+		return cartaRevelada;
+	}
+
+	return null;
 }
 
 function tieneComodinSeleccionado(participante) {
@@ -83,6 +105,30 @@ function renderizarCartaConTooltip({ carta, indice, manejarHoverCarta, limpiarHo
 	);
 }
 
+function renderizarCartaCompacta({ carta, manejarHoverCarta, limpiarHoverCarta }) {
+	const rutaCarta = obtenerRutaCarta(carta);
+
+	if (!rutaCarta) {
+		return null;
+	}
+
+	return (
+		<div
+			className="cartas-en-mesa__carta-wrapper"
+			style={{ position: "relative" }}
+			onMouseEnter={(evento) => void manejarHoverCarta(carta, evento)}
+			onMouseLeave={limpiarHoverCarta}
+			role="listitem"
+		>
+			<img
+				className="cartas-en-mesa__carta-jugada"
+				src={rutaCarta}
+				alt={describirCarta(carta)}
+			/>
+		</div>
+	);
+}
+
 export default function CartasEnMesa({ participante, rondas = [], className = "", partidaId, esJugadorPropio = false }) {
 	const {
 		detalleCarta,
@@ -92,14 +138,22 @@ export default function CartasEnMesa({ participante, rondas = [], className = ""
 		manejarHoverCarta,
 		limpiarHoverCarta,
 	} = useCartaTooltip(partidaId);
+	const rondaActual = Array.isArray(rondas) && rondas.length > 0 ? rondas[rondas.length - 1] : null;
 	const cartasJugadas = obtenerCartasJugadasDeParticipante(rondas, participante?.color);
+	const cartaRevelada = obtenerCartaReveladaDeRonda(rondaActual, participante?.color);
 	const conComodin = tieneComodinSeleccionado(participante);
 	const cartaComodinJugadorPropio = obtenerCartaComodinJugadorPropio(participante, esJugadorPropio);
 	const alturaPila = cartasJugadas.length > 0 ? ALTO_CARTA + (cartasJugadas.length - 1) * DESPLAZAMIENTO_CARTAS : 0;
 
 	return (
 		<div className={`cartas-en-mesa ${className}`.trim()}>
-			{cartaComodinJugadorPropio ? (
+			{cartaRevelada ? (
+				renderizarCartaCompacta({
+					carta: cartaRevelada,
+					manejarHoverCarta,
+					limpiarHoverCarta,
+				})
+			) : cartaComodinJugadorPropio ? (
 				<div
 					className="cartas-en-mesa__carta-wrapper"
 					style={{ position: "relative" }}

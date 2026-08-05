@@ -122,3 +122,20 @@ def get_datos_carta(request, partida_id):
         return Response({"detail": str(e)}, status=404)
     
     return Response(datos_carta, status=200)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def siguiente_mano(request, partida_id):
+    """
+    Endpoint para iniciar una nueva mano en la partida.
+    """
+    try:
+        mano_service.siguiente_mano(request.user, partida_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    notificar_mesa_actualizada(partida_id)
+    
+    return Response({"detail": "Mano iniciada correctamente."}, status=200)

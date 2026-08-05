@@ -1,3 +1,6 @@
+from datetime import timezone
+
+from ..models.mano import Mano
 from ..models.ronda import Ronda
 from ..models.catalogo_cartas import CATALOGO
 
@@ -227,4 +230,59 @@ def get_datos_carta(actor, carta, partida_id):
 
     return datos
 
-    
+def siguiente_mano(actor, partida_id):
+    """
+    Inicia la siguiente mano en la partida.
+    """
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    if not partida_usuario:
+        raise PermissionError("No participas en la partida.")
+
+    partida = get_partida_by_id(partida_id).first()
+    if not partida:
+        raise ValueError("Partida no encontrada.")
+
+    mano_actual = get_mano_actual(partida_id)
+
+    if mano_actual.num < partida.get_num_manos():
+        # Devolver todas las cartas UTILIZADAS a la baraja
+        for ronda in get_rondas_de_mano(mano_actual.id):
+            for carta in ronda.cartas.values():
+                if carta not in partida.baraja:
+                    partida.baraja.append(carta)
+
+        # Devolver todas las cartas comodín NO UTILIZADAS a las manos de sus jugadores correspondientes
+        comodines_utilizados = get_rondas_de_mano(mano_actual.id)[-1].cartas
+        for jugador in get_jugadores_actuales_de_partida(partida_id):
+            carta_comodin = jugador.get("carta_comodin")
+            if carta_comodin and carta_comodin not in comodines_utilizados:
+                partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, jugador["id"])
+                if partida_usuario:
+                    partida_usuario.cartas.append(jugador["carta_comodin"])
+                    partida_usuario.carta_comodin = None
+                    partida_usuario.save()
+
+        # Crear nueva mano y su correspondiente ronda "0"
+        nueva_mano = Mano(partida=partida, num=mano_actual.num + 1)
+        nueva_mano.save()
+        ronda_inicial = Ronda(mano=nueva_mano, num=0, cartas={}, cambios=0)
+        ronda_inicial.save()
+
+        # Repartir cartas
+        repartir_cartas(partida_id)
+
+    else: # Finalizar partida
+        finalizar_partida(partida_id)
+
+def finalizar_partida(partida_id):
+    """
+    Finaliza la partida y determina el ganador.
+    """
+    partida = get_partida_by_id(partida_id).first()
+    if not partida:
+        raise ValueError("Partida no encontrada.")
+
+    # TODO: Implementar la lógica para determinar el ganador de la partida y actualizar los puntos de los jugadores.
+
+    partida.fecha_fin = timezone.now()
+    partida.save()

@@ -105,7 +105,7 @@ export async function handleEleccionComodin(partidaId, cartaComodin, loadMesa) {
 
 export async function handleJugarCarta(partidaId, carta, loadMesa) {
 	if (!carta) {
-		return;
+		return null;
 	}
 
 	try {
@@ -128,8 +128,37 @@ export async function handleJugarCarta(partidaId, carta, loadMesa) {
 		}
 
 		await loadMesa({ showLoading: false });
+		return jugarData;
 	} catch (e) {
 		alert(e instanceof Error ? e.message : "Error jugando la carta");
+		return null;
+	}
+}
+
+export async function handleSiguienteMano(partidaId, loadMesa) {
+	try {
+		const csrfToken = await obtenerCsrfToken();
+
+		const siguienteManoRes = await fetch(`/api/partida/${partidaId}/mano/siguiente-mano/`, {
+			method: "POST",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json",
+				"X-CSRFToken": csrfToken,
+			},
+		});
+
+		const siguienteManoData = await siguienteManoRes.json().catch(() => ({}));
+
+		if (!siguienteManoRes.ok) {
+			throw new Error(siguienteManoData?.detail || "Error iniciando la siguiente mano");
+		}
+
+		await loadMesa({ showLoading: false });
+		return siguienteManoData;
+	} catch (e) {
+		alert(e instanceof Error ? e.message : "Error iniciando la siguiente mano");
+		return null;
 	}
 }
 
