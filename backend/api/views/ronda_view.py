@@ -17,12 +17,15 @@ def jugar_carta(request, partida_id):
         carta = request.data.get("carta")
         if not carta:
             return Response({"detail": "No se proporcionó la carta a jugar."}, status=400)
-        ronda_service.jugar_carta(request.user, partida_id, carta)
+        fin_mano = ronda_service.jugar_carta(request.user, partida_id, carta)
     except PermissionError as e:
         return Response({"detail": str(e)}, status=403)
     except ValueError as e:
         return Response({"detail": str(e)}, status=404)
     
     notificar_mesa_actualizada(partida_id)
-    
-    return Response({"detail": "Carta jugada correctamente."}, status=200)
+
+    if fin_mano:
+        return Response({"detail": "FIN_MANO"}, status=200)
+    else:
+        return Response({"detail": "Carta jugada correctamente."}, status=200)

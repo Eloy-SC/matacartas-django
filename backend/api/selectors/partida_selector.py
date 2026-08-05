@@ -139,6 +139,9 @@ def get_jugador_participa_en_partida(partida_id, usuario_id):
 
 def get_partida_usuario_by_partida_and_usuario(partida_id, usuario_id):
     return PartidaUsuario.objects.filter(partida_id=partida_id, usuario_id=usuario_id).first()
+
+def get_partida_usuario_by_partida_and_color(partida_id, color):
+    return PartidaUsuario.objects.filter(partida_id=partida_id, color=color).first()
     
 def get_usuario_participa_en_partida_activa(usuario_id):
     return PartidaUsuario.objects.filter(usuario_id=usuario_id, partida__fecha_fin__isnull=True).exists()

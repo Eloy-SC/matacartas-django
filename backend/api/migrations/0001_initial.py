@@ -306,6 +306,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("num", models.IntegerField(null=False, default=1)),
+                ("ganador", models.CharField(max_length=10, null=True, default=None)),
             ],
         ),
         migrations.CreateModel(
@@ -330,6 +331,7 @@ class Migration(migrations.Migration):
                 ("num", models.IntegerField(null=False, default=0)),
                 ("cartas", models.JSONField(default=dict, null=True)),
                 ("cambios", models.IntegerField(default=0)),
+                ("ganador", models.CharField(max_length=10, null=True, default=None)),
             ],
         ),
     ]
