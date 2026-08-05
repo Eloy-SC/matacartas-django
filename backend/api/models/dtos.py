@@ -33,6 +33,7 @@ class RondaDTO:
 class ManoDTO:
     mano_id: int
     mano_num: int
+    ganador: str | None
 
 @dataclass
 class PartidaDTO:

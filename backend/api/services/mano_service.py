@@ -65,7 +65,8 @@ def get_mesa(actor, partida_id):
 
     mano_dto = ManoDTO(
         mano_id=mano.id,
-        mano_num=mano.num
+        mano_num=mano.num,
+        ganador=mano.ganador
     ) if mano else None
 
     rondas_dto = [RondaDTO(

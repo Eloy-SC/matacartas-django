@@ -35,6 +35,7 @@ export default function Juego() {
 	const [cartaComodinSeleccionada, setCartaComodinSeleccionada] = useState(null);
 	const [cuentaAtrasFinMano, setCuentaAtrasFinMano] = useState(null);
 	const finManoProgramadaRef = useRef(null);
+	const siguienteManoSolicitadaRef = useRef(null);
 
 	const partida = mesa?.partida ?? null;
 	const mano = mesa?.mano ?? null;
@@ -134,6 +135,7 @@ export default function Juego() {
 	useEffect(() => {
 		finManoProgramadaRef.current = null;
 		setCuentaAtrasFinMano(null);
+		siguienteManoSolicitadaRef.current = null;
 	}, [mano?.mano_id]);
 
 	useEffect(() => {
@@ -141,11 +143,21 @@ export default function Juego() {
 			return;
 		}
 
-		if (rondaActual?.ronda_num === 4 && cuentaAtrasFinMano === null) {
+		if (cuentaAtrasFinMano !== null) {
+			return;
+		}
+
+		if (mano?.ganador && finManoProgramadaRef.current !== mano.mano_id) {
+			finManoProgramadaRef.current = mano.mano_id;
+			setCuentaAtrasFinMano(7);
+			return;
+		}
+
+		if (rondaActual?.ronda_num === 4) {
 			finManoProgramadaRef.current = mano?.mano_id ?? null;
 			setCuentaAtrasFinMano(7);
 		}
-	}, [cuentaAtrasFinMano, esJugadorPosicionCero, mano?.mano_id, rondaActual?.ronda_num]);
+	}, [cuentaAtrasFinMano, esJugadorPosicionCero, mano?.ganador, mano?.mano_id, rondaActual?.ronda_num]);
 
 	useEffect(() => {
 		if (cuentaAtrasFinMano === null) {
@@ -153,6 +165,11 @@ export default function Juego() {
 		}
 
 		if (cuentaAtrasFinMano === 0) {
+			if (mano?.mano_id == null || siguienteManoSolicitadaRef.current === mano.mano_id) {
+				return () => undefined;
+			}
+
+			siguienteManoSolicitadaRef.current = mano.mano_id;
 			let cancelado = false;
 
 			void (async () => {
@@ -192,6 +209,11 @@ export default function Juego() {
 				const data = JSON.parse(event.data);
 
 				if (data.type === "mesa_updated") {
+					if (siguienteManoSolicitadaRef.current !== mano?.mano_id) {
+						await loadMesa({ showLoading: false });
+						return;
+					}
+
 					await loadMesa({ showLoading: false });
 				}
 			};
@@ -331,61 +353,6 @@ export default function Juego() {
 							</div>
 						) : null}
 					</div>
-
-					<section className="juego-mesa__bloque">
-						<h2>Partida</h2>
-						<p>Identificador: {partida?.partida_id ?? "-"}</p>
-						<p>Cartas en la baraja: {partida?.baraja_cant ?? "-"}</p>
-						<p>Disposición de jugadores: {partida?.disposicion_jugadores?.join(", ") ?? "-"}</p>
-						<p>Turno actual: {partida?.turno_actual ?? "-"}</p>
-						<p>Tiempo máximo de turno: {partida?.tiempo_max_turno ?? "-"} s</p>
-					</section>
-
-					<section className="juego-mesa__bloque">
-						<h2>Mano</h2>
-						<p>Identificador: {mano?.mano_id ?? "-"}</p>
-						<p>Número de mano: {mano?.mano_num ?? "-"}</p>
-					</section>
-
-					<section className="juego-mesa__bloque">
-						<h2>Tu jugador</h2>
-						<p>Identificador: {jugador?.jugador_id ?? "-"}</p>
-						<p>Nombre: {jugador?.nombre ?? "-"}</p>
-						<p>Color: {jugador?.color ?? "-"}</p>
-						<p>Puntos: {jugador?.puntos ?? "-"}</p>
-						<p>Cartas: {jugador?.cartas}</p>
-						<p>Carta comodín: {jugador?.carta_comodin ?? "-"}</p>
-					</section>
-
-					<section className="juego-mesa__bloque">
-						<h2>Contrincantes</h2>
-						{contrincantes.length === 0 ? (
-							<p>No hay contrincantes cargados.</p>
-						) : (
-							<ul>
-								{contrincantes.map((contrincante) => (
-									<li key={contrincante.contrincante_id}>
-										{contrincante.nombre} - {contrincante.puntos} puntos - {contrincante.cartas_cant} cartas - comodín: {contrincante.carta_comodin ? "Sí" : "No"}
-									</li>
-								))}
-							</ul>
-						)}
-					</section>
-
-					<section className="juego-mesa__bloque">
-						<h2>Rondas</h2>
-						{rondas.length === 0 ? (
-							<p>No hay rondas cargadas.</p>
-						) : (
-							<ul>
-								{rondas.map((ronda) => (
-									<li key={ronda.ronda_id}>
-										Ronda {ronda.ronda_num}: {formatCartas(ronda.cartas) || "sin cartas"}, cambios: {ronda.cambios}
-									</li>
-								))}
-							</ul>
-						)}
-					</section>
 				</div>
 			)}
 		</div>

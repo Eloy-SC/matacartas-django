@@ -2,7 +2,7 @@ from ..models.catalogo_cartas import CATALOGO
 
 from ..models.ronda import Ronda
 
-from ..selectors.ronda_selector import get_rondas_de_mano
+from ..selectors.ronda_selector import get_jugador_lanzador_carta_mayor_fuerza, get_rondas_de_mano
 
 from ..utils.funciones_aux import aux_siguiente_turno
 
@@ -80,7 +80,12 @@ def ganador_ronda(partida_id):
     carta_ganadora = cartas_jugadas[ganador]
     if carta_ganadora in aux_get_cartas_matadoras(carta_mayor_fuerza):
         jugador_ganador.puntos += CATALOGO[carta_mayor_fuerza]["recompensa"]
+        jugador_ganador.acumulador_kills += 1
         jugador_ganador.save()
+        color_jug_perdedor = get_jugador_lanzador_carta_mayor_fuerza(ronda_actual.id)
+        jugador_perdedor = get_partida_usuario_by_partida_and_color(partida_id, color_jug_perdedor)
+        jugador_perdedor.acumulador_deaths += 1
+        jugador_perdedor.save()
 
     ronda_actual.ganador = ganador
     ronda_actual.save()        
@@ -100,10 +105,6 @@ def aux_get_carta_mayor_fuerza(partida_id):
     }
     carta_mayor_fuerza = max(cartas_jugadas_fuerza, key=lambda x: x[1])
     return carta_mayor_fuerza[0]
-
-def aux_get_carta_matadora(carta):
-
-    return aux_get_cartas_matadoras(carta)
 
 def aux_get_cartas_matadoras(carta):
 
