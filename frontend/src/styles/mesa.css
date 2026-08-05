@@ -266,3 +266,32 @@
   color: #000000;
   text-align: center;
 }
+
+.recuadro-info-superior {
+	border: 3px solid #000000;
+	border-radius: 8px;
+	background-image: var(--form-card-texture);
+	background-repeat: repeat;
+	background-size: 210px 210px;
+	padding: 10px;
+	position: absolute;
+	top: 1%;
+	left: 1%;
+	width: 220px;
+	max-width: 100%;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	justify-content: left;
+	text-align: left;
+}
+
+.texto-info-superior {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 700;
+	line-height: 1.1;
+	color: #000000;
+	text-align: left;
+}

@@ -12,6 +12,7 @@ import {
 	handleToggleCartaSeleccionadaUnica,
 } from "./FuncionesMesa.jsx";
 import CartasEnMesa from "./CartasEnMesa.jsx";
+import InfoSuperior from "./InfoSuperior.jsx";
 import MesaInicialContrincantes from "./MesaInicialContrincantes.jsx";
 import "../../styles/mesa.css";
 
@@ -222,6 +223,11 @@ export default function Juego() {
 				<p role="alert">{error}</p>
 			) : (
 				<div className="juego-mesa">
+					<InfoSuperior
+								partida={partida}
+								mano={mano}
+								jugador={jugador}
+							/>
 					{mesaInicial && (
 						<MesaInicialContrincantes
 							partida={mesaInicial.partida}

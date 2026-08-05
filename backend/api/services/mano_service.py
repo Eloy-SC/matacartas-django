@@ -39,7 +39,9 @@ def get_mesa(actor, partida_id):
                 color=jugador["color"],
                 puntos=jugador["puntos"],
                 cartas=jugador.get("cartas", []),
-                carta_comodin=jugador.get("carta_comodin")
+                carta_comodin=jugador.get("carta_comodin"),
+                acumulador_kills=jugador.get("acumulador_kills", 0),
+                acumulador_deaths=jugador.get("acumulador_deaths", 0),
             )
         else:
             contrincantes_dto.append(ContrincanteDTO(
@@ -55,6 +57,7 @@ def get_mesa(actor, partida_id):
     partida_dto = PartidaDTO(
         partida_id=partida.id,
         baraja_cant=len(partida.baraja),
+        longitud=partida.get_num_manos(),
         disposicion_jugadores=partida.disposicion_jugadores,
         turno_actual=partida.turno_actual,
         tiempo_max_turno=partida.tiempo_max_turno

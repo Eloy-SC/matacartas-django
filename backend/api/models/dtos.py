@@ -19,6 +19,8 @@ class JugadorDTO:
     puntos: int
     cartas: list[str] | None
     carta_comodin: str | None
+    acumulador_kills: int
+    acumulador_deaths: int
 
 @dataclass
 class RondaDTO:
@@ -36,6 +38,7 @@ class ManoDTO:
 class PartidaDTO:
     partida_id: int
     baraja_cant: int
+    longitud: int
     disposicion_jugadores: list[str]
     turno_actual: str | None
     tiempo_max_turno: int
