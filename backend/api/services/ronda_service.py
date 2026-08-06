@@ -60,6 +60,7 @@ def ganador_ronda(partida_id):
             especiales = True
             break
     if especiales:
+        aux_asignar_puntos_inmediatos_por_cartas_especiales(partida_id)
         aux_determinar_ganador_ronda_con_especiales(partida_id)
         return
     else:
@@ -79,7 +80,19 @@ def ganador_ronda(partida_id):
     jugador_ganador = get_partida_usuario_by_partida_and_color(partida_id, ganador)
     carta_ganadora = cartas_jugadas[ganador]
     if carta_ganadora in aux_get_cartas_matadoras(carta_mayor_fuerza):
-        jugador_ganador.puntos += CATALOGO[carta_mayor_fuerza]["recompensa"]
+        if especiales == False:
+            jugador_ganador.puntos += CATALOGO[carta_mayor_fuerza]["recompensa"]
+        else: 
+            for carta in cartas_jugadas.values():
+                if carta == "SAQUEADOR_TUMBAS":
+                    lanzador_saqueador_tumbas = next(
+                            (jugador for jugador, carta in cartas_jugadas.items()
+                            if carta == "SAQUEADOR_TUMBAS"),
+                            None
+                    )
+                    jugador_saqueador_tumbas = get_partida_usuario_by_partida_and_color(partida_id, lanzador_saqueador_tumbas)
+                    jugador_saqueador_tumbas.puntos += 3
+                    jugador_saqueador_tumbas.puntos += CATALOGO[carta_mayor_fuerza]["recompensa"]
         jugador_ganador.acumulador_kills += 1
         jugador_ganador.save()
         color_jug_perdedor = get_jugador_lanzador_carta_mayor_fuerza(ronda_actual.id)
@@ -157,6 +170,22 @@ def aux_resolver_desempate_comodines(partida_id, ganadores):
     carta_mayor_riqueza = max(comodines_a_usar, key=lambda x: x[1])
     ganador = [color for color, carta in ronda_comodines.cartas.items() if carta == carta_mayor_riqueza[0]][0]
     return ganador
+
+def aux_asignar_puntos_inmediatos_por_cartas_especiales(partida_id):
+    ronda_actual = get_rondas_de_mano(get_mano_actual(partida_id).id)[-1]
+    cartas_jugadas = ronda_actual.cartas
+
+    # VINOS VIEJOS
+    lanzadores_vinos_viejos = [color for color, carta in cartas_jugadas.items() if carta.endswith("_VINOS_VIEJOS")]
+    if lanzadores_vinos_viejos:
+        for carta in cartas_jugadas.values():
+            if carta.endswith("_COPAS"):
+                for color in lanzadores_vinos_viejos:
+                    jugador = get_partida_usuario_by_partida_and_color(partida_id, color)
+                    jugador.puntos += 2
+                    jugador.save()
+                break
+        
 
 def aux_determinar_ganador_ronda_con_especiales(partida_id):
     pass
