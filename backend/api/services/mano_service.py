@@ -4,7 +4,7 @@ from ..models.mano import Mano
 from ..models.ronda import Ronda
 from ..models.catalogo_cartas import CATALOGO
 
-from ..selectors.ronda_selector import get_ronda_cambios, get_rondas_de_mano
+from ..selectors.ronda_selector import get_carta_equivalente, get_cartas_lanzadas_en_mano, get_cartas_valiosas_utilizadas_en_mano, get_ronda_cambios, get_rondas_de_mano
 from ..selectors.partida_selector import get_jugadores_actuales_de_partida, get_partida_by_id, get_partida_usuario_by_partida_and_usuario
 from ..selectors.mano_selector import get_jugadores_en_mesa, get_mano_actual
 
@@ -249,13 +249,22 @@ def siguiente_mano(actor, partida_id):
     mano_actual = get_mano_actual(partida_id)
 
     if mano_actual.num < partida.get_num_manos():
-        # Devolver todas las cartas UTILIZADAS a la baraja
+
+
         for ronda in get_rondas_de_mano(mano_actual.id):
             for carta in ronda.cartas.values():
                 if carta not in partida.baraja:
-                    partida.baraja.append(carta)
+                    if not any(carta == "SEGADOR" for carta in get_cartas_lanzadas_en_mano(mano_actual.id)) \
+                        or CATALOGO[carta]["tipo"] != "especial_val":
+                        partida.baraja.append(carta)
 
-        # Devolver todas las cartas comodín NO UTILIZADAS a las manos de sus jugadores correspondientes
+        if any(carta == "SEGADOR" for carta in get_cartas_lanzadas_en_mano(mano_actual.id)):
+            cartas_valiosas_utilizadas = get_cartas_valiosas_utilizadas_en_mano(mano_actual.id)
+            for carta in cartas_valiosas_utilizadas:
+                carta_equivalente = get_carta_equivalente(carta)
+                partida.baraja.append(carta_equivalente)  # Añadir la carta equivalente a la baraja
+
+        # Devolver comodines no utilizados a los jugadores correspondientes
         comodines_utilizados = get_rondas_de_mano(mano_actual.id)[-1].cartas
         for jugador in get_jugadores_actuales_de_partida(partida_id):
             carta_comodin = jugador.get("carta_comodin")
@@ -265,6 +274,7 @@ def siguiente_mano(actor, partida_id):
                     partida_usuario.cartas.append(jugador["carta_comodin"])
                     partida_usuario.carta_comodin = None
                     partida_usuario.save()
+
 
         # Crear nueva mano y su correspondiente ronda "0"
         nueva_mano = Mano(partida=partida, num=mano_actual.num + 1)

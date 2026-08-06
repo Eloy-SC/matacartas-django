@@ -248,72 +248,73 @@ export const CARTAS_A_RENDERIZAR = {
     },
 	"3_JOYAS_REALES": {
         imagen: "carta_joyas_3.png",
-        efecto: "",
+        efecto: "Si un jugador lanza o utiliza como comodín una carta de joyas reales, obtendrá 2 puntos extra al final de la mano, siempre y cuando gane la mano. Si ha utilizado más de una carta de este palo, se le otorgará un punto adicional.",
         nombre: "3 de joyas reales",
     },
 	"4_JOYAS_REALES": {
         imagen: "carta_joyas_4.png",
-        efecto: "",
+        efecto: "Si un jugador lanza o utiliza como comodín una carta de joyas reales, obtendrá 2 puntos extra al final de la mano, siempre y cuando gane la mano. Si ha utilizado más de una carta de este palo, se le otorgará un punto adicional.",
+
         nombre: "4 de joyas reales",
     },
 	"5_JOYAS_REALES": {
         imagen: "carta_joyas_5.png",
-        efecto: "",
+        efecto: "Si un jugador lanza o utiliza como comodín una carta de joyas reales, obtendrá 2 puntos extra al final de la mano, siempre y cuando gane la mano. Si ha utilizado más de una carta de este palo, se le otorgará un punto adicional.",
         nombre: "5 de joyas reales",
     },
 	"6_JOYAS_REALES": {
         imagen: "carta_joyas_6.png",
-        efecto: "",
+        efecto: "Si un jugador lanza o utiliza como comodín una carta de joyas reales, obtendrá 2 puntos extra al final de la mano, siempre y cuando gane la mano. Si ha utilizado más de una carta de este palo, se le otorgará un punto adicional.",
         nombre: "6 de joyas reales",
     },
 	"7_JOYAS_REALES": {
         imagen: "carta_joyas_7.png",
-        efecto: "Otorga 3 puntos al jugador que la lanza o que la utiliza como comodín, siempre y cuando gane la mano.",
+        efecto: "Si un jugador lanza o utiliza como comodín una carta de joyas reales, obtendrá 2 puntos extra al final de la mano, siempre y cuando gane la mano. Si ha utilizado más de una carta de este palo, se le otorgará un punto adicional.",
         nombre: "7 de joyas reales",
     },
 	"8_JOYAS_REALES": {
         imagen: "carta_joyas_8.png",
-        efecto: "",
+        efecto: "Si un jugador lanza o utiliza como comodín una carta de joyas reales, obtendrá 2 puntos extra al final de la mano, siempre y cuando gane la mano. Si ha utilizado más de una carta de este palo, se le otorgará un punto adicional.",
         nombre: "8 de joyas reales",
 	},
 	"9_JOYAS_REALES": {
         imagen: "carta_joyas_9.png",
-        efecto: "Otorga 3 puntos al jugador que la lanza o que la utiliza como comodín, siempre y cuando gane la mano.",
+        efecto: "Si un jugador lanza o utiliza como comodín una carta de joyas reales, obtendrá 2 puntos extra al final de la mano, siempre y cuando gane la mano. Si ha utilizado más de una carta de este palo, se le otorgará un punto adicional.",
         nombre: "9 de joyas reales",
     },
 	"3_VINOS_VIEJOS": {
         imagen: "carta_vinos_3.png",
-        efecto: "",
+        efecto: "Otorga 2 puntos al jugador que haya lanzado esta carta en una ronda siempre y cuando en la ronda se haya lanzado, por lo menos, una carta de copas.",
         nombre: "3 de vinos viejos",
     },
 	"4_VINOS_VIEJOS": {
         imagen: "carta_vinos_4.png",
-        efecto: "",
+        efecto: "Otorga 2 puntos al jugador que haya lanzado esta carta en una ronda siempre y cuando en la ronda se haya lanzado, por lo menos, una carta de copas.",
         nombre: "4 de vinos viejos",
     },
 	"5_VINOS_VIEJOS": {
         imagen: "carta_vinos_5.png",
-        efecto: "",
+        efecto: "Otorga 2 puntos al jugador que haya lanzado esta carta en una ronda siempre y cuando en la ronda se haya lanzado, por lo menos, una carta de copas.",
         nombre: "5 de vinos viejos",
     },
 	"6_VINOS_VIEJOS": {
         imagen: "carta_vinos_6.png",
-        efecto: "",
+        efecto: "Otorga 2 puntos al jugador que haya lanzado esta carta en una ronda siempre y cuando en la ronda se haya lanzado, por lo menos, una carta de copas.",
         nombre: "6 de vinos viejos",
     },
 	"7_VINOS_VIEJOS": {
         imagen: "carta_vinos_7.png",
-        efecto: "",
+        efecto: "Otorga 2 puntos al jugador que haya lanzado esta carta en una ronda siempre y cuando en la ronda se haya lanzado, por lo menos, una carta de copas.",
         nombre: "7 de vinos viejos",
     },
 	"8_VINOS_VIEJOS": {
         imagen: "carta_vinos_8.png",
-        efecto: "",
+        efecto: "Otorga 2 puntos al jugador que haya lanzado esta carta en una ronda siempre y cuando en la ronda se haya lanzado, por lo menos, una carta de copas.",
         nombre: "8 de vinos viejos",
     },
 	"9_VINOS_VIEJOS": {
         imagen: "carta_vinos_9.png",
-        efecto: "",
+        efecto: "Otorga 2 puntos al jugador que haya lanzado esta carta en una ronda siempre y cuando en la ronda se haya lanzado, por lo menos, una carta de copas.",
         nombre: "9 de vinos viejos",
     },
 	"2_BASTOS_PUNTIAGUDOS": {
@@ -438,7 +439,7 @@ export const CARTAS_A_RENDERIZAR = {
     },
 	"SAQUEADOR_TUMBAS": {
         imagen: "carta_saqueador.png",
-        efecto: "",
+        efecto: "Si se produce una muerte en la ronda en la que se lanza esta carta, el jugador que la haya lanzado obtendrá 3 puntos, además de robarle la recompensa al jugador que haya lanzado la carta asesina. No obstante, el jugador que haya matado seguirá siendo el vencedor de la ronda.",
         nombre: "El saqueador de tumbas",
     },
 	"CORRUPTOR": {
@@ -448,7 +449,7 @@ export const CARTAS_A_RENDERIZAR = {
     },
 	"MERCADER": {
         imagen: "carta_mercader.png",
-        efecto: "",
+        efecto: "Otorga 1 punto por cada carta de oros, copas, joyas reales y vinos viejos que haya sido lanzada durante la ronda en la que se utiliza esta carta y rondas anteriores, con un límite de 6 puntos adicionales. No aplica a rondas posteriores y tiene el mismo efecto si se utiliza como comodín.",
         nombre: "El mercader",
     },
 	"MONEDERO_PECULIAR": {
@@ -473,7 +474,7 @@ export const CARTAS_A_RENDERIZAR = {
     },
 	"REBELDE": {
         imagen: "carta_rebelde.png",
-        efecto: "Otorga 1 punto por cada carta de bastos (incluyendo “bastos puntiagudos”) que se utilice en TODA la mano.",
+        efecto: "Otorga 1 punto al jugador que haya lanzado esta carta por cada carta de bastos o bastos puntiagudos que haya sido utilizada de cualquier modo durante toda la mano. Tiene un límite de 8 puntos adicionales.",
         nombre: "El rebelde",
     },
 	"DON_DINERO": {
