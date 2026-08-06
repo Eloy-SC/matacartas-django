@@ -113,6 +113,8 @@ def get_jugadores_actuales_de_partida(id):
             'carta_comodin': pu.carta_comodin,
             'acumulador_kills': pu.acumulador_kills,
             'acumulador_deaths': pu.acumulador_deaths,
+            'eff_acum_monedero': pu.eff_acum_monedero,
+            'eff_as_extranjero': pu.eff_as_extranjero,
         })
     return jugadores
 

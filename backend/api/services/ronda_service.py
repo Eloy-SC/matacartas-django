@@ -56,7 +56,7 @@ def ganador_ronda(partida_id):
     cartas_jugadas = ronda_actual.cartas
     especiales = False
     for carta in cartas_jugadas.values():
-        if CATALOGO[carta]["tipo"] == "especial":
+        if CATALOGO[carta]["tipo"].startswith("especial"):
             especiales = True
             break
     if especiales:
@@ -126,6 +126,11 @@ def aux_get_cartas_matadoras(carta):
 def aux_resolver_ganador_mano(partida_id):
     mano_actual = get_mano_actual(partida_id)
     rondas = get_rondas_de_mano(mano_actual.id)
+    especiales = False
+    for carta in get_cartas_lanzadas_en_mano(mano_actual.id):
+        if CATALOGO[carta]["tipo"].startswith("especial"):
+            especiales = True
+            break
 
     ganadores = {}
     for ronda in rondas:
@@ -145,9 +150,10 @@ def aux_resolver_ganador_mano(partida_id):
     # Solo hay desempate cuando las tres rondas tienen tres ganadores distintos (1-1-1).
     elif len(colores_con_maximo) == 3: 
         # Si hay desempate, aqui no se asignan puntos extra, eso se hace en la propia función de desempate
-        ganador_mano = aux_resolver_desempate_comodines(partida_id, colores_con_maximo)
+        ganador_mano = aux_resolver_desempate_comodines(partida_id, colores_con_maximo, especiales)
     else:
-        aux_asignar_puntos_extra_final_mano(partida_id)
+        if especiales:
+            aux_asignar_puntos_extra_final_mano(partida_id)
         ganador_mano = colores_con_maximo[0]
 
     ganador_usuario = get_partida_usuario_by_partida_and_color(partida_id, ganador_mano)
@@ -158,7 +164,7 @@ def aux_resolver_ganador_mano(partida_id):
     mano_actual.ganador = ganador_mano
     mano_actual.save()
 
-def aux_resolver_desempate_comodines(partida_id, ganadores):
+def aux_resolver_desempate_comodines(partida_id, ganadores, especiales):
 
     ronda_comodines = Ronda(mano=get_mano_actual(partida_id), num=4, cartas={}, cambios=2)
     jugadores = get_jugadores_actuales_de_partida(partida_id)
@@ -173,8 +179,21 @@ def aux_resolver_desempate_comodines(partida_id, ganadores):
     carta_mayor_riqueza = max(comodines_a_usar, key=lambda x: x[1])
     ganador = [color for color, carta in ronda_comodines.cartas.items() if carta == carta_mayor_riqueza[0]][0]
 
-    # Asignar puntos extra habiendose definido la ronda de comodines
-    aux_asignar_puntos_extra_final_mano(partida_id)
+    if especiales:
+        # Asignar puntos extra habiendose definido la ronda de comodines
+        aux_asignar_puntos_extra_final_mano(partida_id)
+
+        # Asignar efecto de As Extranjero si el ganador de la ronda de comodines jugó el As Extranjero
+        for color in ganadores:
+            if color == ganador and carta_mayor_riqueza[0] == "AS_EXTRANJERO":
+                jugador_ganador = get_partida_usuario_by_partida_and_color(partida_id, color)
+                jugador_ganador.eff_as_extranjero == True
+                jugador_ganador.save()
+                for jugador in jugadores:
+                    if jugador["eff_as_extranjero"] and jugador["color"] != color:
+                        jugador_perdedor = get_partida_usuario_by_partida_and_color(partida_id, jugador["color"])
+                        jugador_perdedor.eff_as_extranjero == False
+                        jugador_perdedor.save()
 
     return ganador
 
@@ -270,6 +289,15 @@ def aux_asignar_puntos_extra_final_mano(partida_id):
             elif len(cartas_valiosas_lanzadas) > 6:
                 lanzador_de_segador.puntos += 12
                 lanzador_de_segador.save()
+
+    # MONEDERO PECULIAR
+    for color in mano_actual.disposicion_jugadores:
+        cartas_lanzadas_por_jugador = get_cartas_lanzadas_en_mano_por_jugador(mano_actual.id, color)
+        if any(carta.endswith("_MONEDERO_PECULIAR") for carta in cartas_lanzadas_por_jugador):
+            lanzador_de_monedero = get_partida_usuario_by_partida_and_color(partida_id, color)
+            lanzador_de_monedero.puntos += lanzador_de_monedero.eff_acum_monedero
+            lanzador_de_monedero.eff_acum_monedero = 0
+            lanzador_de_monedero.save()
 
 
 def aux_determinar_ganador_ronda_con_especiales(partida_id):

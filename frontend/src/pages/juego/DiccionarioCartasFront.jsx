@@ -454,7 +454,7 @@ export const CARTAS_A_RENDERIZAR = {
     },
 	"MONEDERO_PECULIAR": {
         imagen: "carta_monedero.png",
-        efecto: "",
+        efecto: "Por cada mano en la cual esta carta no haya sido utilizada, se sumará 1 punto a un acumulador de puntos para el poseedor. Al ser utilizada, ya sea en ronda o como comodín, el jugador recibirá el total de puntos acumulados al final de la mano, sin importar su resultado. El acumulador tiene un límite de 15 puntos.",
         nombre: "El monedero peculiar",
     },
 	"AS_EXTRANJERO": {

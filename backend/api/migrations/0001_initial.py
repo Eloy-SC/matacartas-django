@@ -284,6 +284,8 @@ class Migration(migrations.Migration):
                 ("carta_comodin", models.CharField(max_length=25, null=True, default=None)),
                 ("acumulador_kills", models.IntegerField(null=False, default=0)),
                 ("acumulador_deaths", models.IntegerField(null=False, default=0)),
+                ("eff_acum_monedero", models.IntegerField(null=False, default=0)),
+                ("eff_as_extranjero", models.BooleanField(default=False)),
             ],
         ),
         migrations.CreateModel(

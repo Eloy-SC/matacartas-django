@@ -273,6 +273,8 @@ def siguiente_mano(actor, partida_id):
                 if partida_usuario:
                     partida_usuario.cartas.append(jugador["carta_comodin"])
                     partida_usuario.carta_comodin = None
+                    if carta_comodin == "MONEDERO_PECULIAR" and partida_usuario.eff_acum_monedero <= 15:
+                        partida_usuario.eff_acum_monedero += 1
                     partida_usuario.save()
 
 

@@ -27,3 +27,5 @@ class PartidaUsuario(models.Model):
     carta_comodin = models.CharField(max_length=25, null=True, default=None)  # Carta que el jugador usa como comodín
     acumulador_kills = models.IntegerField(null=False, default=0)
     acumulador_deaths = models.IntegerField(null=False, default=0)
+    eff_acum_monedero = models.IntegerField(null=False, default=0)
+    eff_as_extranjero = models.BooleanField(default=False)
