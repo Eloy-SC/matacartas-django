@@ -32,3 +32,15 @@ def notificar_mesa_actualizada(partida_id):
             "partida_id": partida_id
         }
     )
+
+def notificar_mano_finalizada(partida_id, mano_id):
+    channel_layer = get_channel_layer()
+
+    async_to_sync(channel_layer.group_send)(
+        f"mesa_{partida_id}",
+        {
+            "type": "mano_finalizada",
+            "partida_id": partida_id,
+            "mano_id": mano_id,
+        }
+    )

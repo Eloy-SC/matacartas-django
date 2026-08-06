@@ -3,8 +3,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from ..services import ronda_service
+from ..selectors.mano_selector import get_mano_actual
 
-from ..utils.web_sockets import notificar_mesa_actualizada
+from ..utils.web_sockets import notificar_mano_finalizada, notificar_mesa_actualizada
 
 
 @api_view(["PUT"])
@@ -26,6 +27,6 @@ def jugar_carta(request, partida_id):
     notificar_mesa_actualizada(partida_id)
 
     if fin_mano:
-        return Response({"detail": "FIN_MANO"}, status=200)
-    else:
-        return Response({"detail": "Carta jugada correctamente."}, status=200)
+        notificar_mano_finalizada(partida_id, get_mano_actual(partida_id).id)
+
+    return Response({"detail": "Carta jugada correctamente."}, status=200)

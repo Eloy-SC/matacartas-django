@@ -26,3 +26,10 @@ class MesaConsumer(AsyncWebsocketConsumer):
 			"type": "mesa_updated",
 			"partida_id": event["partida_id"],
 		}))
+
+	async def mano_finalizada(self, event):
+		await self.send(text_data=json.dumps({
+			"type": "mano_finalizada",
+			"partida_id": event["partida_id"],
+			"mano_id": event.get("mano_id"),
+		}))

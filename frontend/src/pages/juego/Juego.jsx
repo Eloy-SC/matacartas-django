@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import CartasPropias from "./CartasPropias.jsx";
 import {
@@ -34,8 +34,10 @@ export default function Juego() {
 	const [cartasSeleccionadas, setCartasSeleccionadas] = useState([]);
 	const [cartaComodinSeleccionada, setCartaComodinSeleccionada] = useState(null);
 	const [cuentaAtrasFinMano, setCuentaAtrasFinMano] = useState(null);
+	const [manoFinalizadaId, setManoFinalizadaId] = useState(null);
 	const finManoProgramadaRef = useRef(null);
 	const siguienteManoSolicitadaRef = useRef(null);
+	const esJugadorPosicionCeroRef = useRef(false);
 
 	const partida = mesa?.partida ?? null;
 	const mano = mesa?.mano ?? null;
@@ -80,7 +82,11 @@ export default function Juego() {
 		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
 		Boolean(rondaActual && rondaActual.ronda_num >= 1 && rondaActual.ronda_num <= 3);
 
-	const loadMesa = async ({ showLoading = true, guardarMesaInicial = false } = {}) => {
+	useEffect(() => {
+		esJugadorPosicionCeroRef.current = esJugadorPosicionCero;
+	}, [esJugadorPosicionCero]);
+
+	const loadMesa = useCallback(async ({ showLoading = true, guardarMesaInicial = false } = {}) => {
 		if (showLoading) {
 			setLoading(true);
 			setError("");
@@ -102,18 +108,22 @@ export default function Juego() {
 			if (guardarMesaInicial) {
 				setMesaInicial((mesaActualInicial) => mesaActualInicial ?? data);
 			}
+
+			return data;
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Error cargando la mesa");
 			setMesa(null);
 			if (guardarMesaInicial) {
 				setMesaInicial(null);
 			}
+
+			return null;
 		} finally {
 			if (showLoading) {
 				setLoading(false);
 			}
 		}
-	};
+	}, [partidaId]);
 
 	useEffect(() => {
 		setMesaInicial(null);
@@ -135,29 +145,20 @@ export default function Juego() {
 	useEffect(() => {
 		finManoProgramadaRef.current = null;
 		setCuentaAtrasFinMano(null);
-		siguienteManoSolicitadaRef.current = null;
 	}, [mano?.mano_id]);
 
 	useEffect(() => {
-		if (!esJugadorPosicionCero) {
+		if (manoFinalizadaId == null) {
 			return;
 		}
 
-		if (cuentaAtrasFinMano !== null) {
+		if (finManoProgramadaRef.current === manoFinalizadaId) {
 			return;
 		}
 
-		if (mano?.ganador && finManoProgramadaRef.current !== mano.mano_id) {
-			finManoProgramadaRef.current = mano.mano_id;
-			setCuentaAtrasFinMano(7);
-			return;
-		}
-
-		if (rondaActual?.ronda_num === 4) {
-			finManoProgramadaRef.current = mano?.mano_id ?? null;
-			setCuentaAtrasFinMano(7);
-		}
-	}, [cuentaAtrasFinMano, esJugadorPosicionCero, mano?.ganador, mano?.mano_id, rondaActual?.ronda_num]);
+		finManoProgramadaRef.current = manoFinalizadaId;
+		setCuentaAtrasFinMano(7);
+	}, [manoFinalizadaId]);
 
 	useEffect(() => {
 		if (cuentaAtrasFinMano === null) {
@@ -173,10 +174,13 @@ export default function Juego() {
 			let cancelado = false;
 
 			void (async () => {
-				await handleSiguienteMano(partidaId, loadMesa);
-				if (!cancelado) {
-					finManoProgramadaRef.current = null;
-					setCuentaAtrasFinMano(null);
+				try {
+					await handleSiguienteMano(partidaId, loadMesa);
+				} finally {
+					if (!cancelado) {
+						finManoProgramadaRef.current = null;
+						setCuentaAtrasFinMano(null);
+					}
 				}
 			})();
 
@@ -208,12 +212,17 @@ export default function Juego() {
 			socket.onmessage = async (event) => {
 				const data = JSON.parse(event.data);
 
-				if (data.type === "mesa_updated") {
-					if (siguienteManoSolicitadaRef.current !== mano?.mano_id) {
-						await loadMesa({ showLoading: false });
-						return;
-					}
+				if (data.type === "mano_finalizada") {
+						if (data.mano_id != null && siguienteManoSolicitadaRef.current !== data.mano_id) {
+							setManoFinalizadaId(data.mano_id);
+						}
 
+						await loadMesa({ showLoading: false });
+
+					return;
+				}
+
+				if (data.type === "mesa_updated") {
 					await loadMesa({ showLoading: false });
 				}
 			};
@@ -285,12 +294,7 @@ export default function Juego() {
 									}
 
 									if (puedeJugarCarta) {
-										const respuesta = await handleJugarCarta(partidaId, carta, loadMesa);
-
-										if (respuesta?.detail === "FIN_MANO" && esJugadorPosicionCero) {
-											finManoProgramadaRef.current = mano?.mano_id ?? null;
-											setCuentaAtrasFinMano(7);
-										}
+										await handleJugarCarta(partidaId, carta, loadMesa);
 									}
 								}}
 							/>
@@ -298,16 +302,29 @@ export default function Juego() {
 							<div className="recuadro-indicaciones">
 								{cuentaAtrasFinMano !== null ? (
 									<p className="texto-indicaciones">Nueva mano en {cuentaAtrasFinMano} s.</p>
-								) : null}
-								{indicacionTuTurno ? (<span className="texto-indicaciones">Es tu turno.</span>) :
-								indicacionTurnoAjeno ? (<span className="texto-indicaciones">Es el turno del jugador{" "}
-								<span className="texto-indicaciones" style={{ color: COLORJUGADOR[partida?.turno_actual] }}>
-									{partida?.turno_actual}
-								</span>.</span>) : null}
-								{indicacionQuererCambiar ? (<p className="texto-indicaciones">¡Di si quieres cambiar cartas!</p>) : 
-								indicacionCambiarCartas ? (<p className="texto-indicaciones">¡Elige las cartas que quieres cambiar!</p>) :
-								indicacionElegirComodin ? (<p className="texto-indicaciones">¡Elige que carta quieres usar como comodín!</p>) :
-								indicacionJugarCarta ? (<p className="texto-indicaciones">¡Elige la carta que quieres lanzar!</p>) : null}
+								) : (
+									<>
+										{indicacionTuTurno ? (
+											<span className="texto-indicaciones">Es tu turno.</span>
+										) : indicacionTurnoAjeno ? (
+											<span className="texto-indicaciones">
+												Es el turno del jugador{" "}
+												<span className="texto-indicaciones" style={{ color: COLORJUGADOR[partida?.turno_actual] }}>
+													{partida?.turno_actual}
+												</span>.
+											</span>
+										) : null}
+										{indicacionQuererCambiar ? (
+											<p className="texto-indicaciones">¡Di si quieres cambiar cartas!</p>
+										) : indicacionCambiarCartas ? (
+											<p className="texto-indicaciones">¡Elige las cartas que quieres cambiar!</p>
+										) : indicacionElegirComodin ? (
+											<p className="texto-indicaciones">¡Elige que carta quieres usar como comodín!</p>
+										) : indicacionJugarCarta ? (
+											<p className="texto-indicaciones">¡Elige la carta que quieres lanzar!</p>
+										) : null}
+									</>
+								)}
 							</div>
 						</div>
 
