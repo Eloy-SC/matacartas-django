@@ -50,6 +50,7 @@ class PartidaPublicaTaskSet(SequentialTaskSet):
 
 		response = self.client.post(
 			f"/api/partidas/{partida_id}/unirse/",
+			headers=self.user._auth_headers(),
 			name="/api/partidas/[id]/unirse/",
 		)
 		if response.status_code == 200:
@@ -92,6 +93,7 @@ class PartidaPublicaTaskSet(SequentialTaskSet):
 
 		self.client.put(
 			f"/api/partidas/{self.public_partida_id}/toggle-listo/",
+			headers=self.user._auth_headers(),
 			name="/api/partidas/[id]/toggle-listo/",
 		)
 
@@ -102,6 +104,7 @@ class PartidaPublicaTaskSet(SequentialTaskSet):
 
 		response = self.client.delete(
 			f"/api/partidas/{self.public_partida_id}/abandonar/",
+			headers=self.user._auth_headers(),
 			name="/api/partidas/[id]/abandonar/",
 		)
 		if response.status_code == 200:
@@ -137,6 +140,7 @@ class PartidaPrivadaTaskSet(SequentialTaskSet):
 
 		response = self.client.post(
 			f"/api/partidas/{SEED_PRIVATE_CLAVE}/unirse/",
+			headers=self.user._auth_headers(),
 			name="/api/partidas/[clave]/unirse/",
 		)
 		if response.status_code == 200:
@@ -186,6 +190,7 @@ class PartidaPrivadaTaskSet(SequentialTaskSet):
 
 		self.client.put(
 			f"/api/partidas/{SEED_PRIVATE_CLAVE}/toggle-listo/",
+			headers=self.user._auth_headers(),
 			name="/api/partidas/[clave]/toggle-listo/",
 		)
 
@@ -196,6 +201,7 @@ class PartidaPrivadaTaskSet(SequentialTaskSet):
 
 		response = self.client.delete(
 			f"/api/partidas/{SEED_PRIVATE_CLAVE}/abandonar/",
+			headers=self.user._auth_headers(),
 			name="/api/partidas/[clave]/abandonar/",
 		)
 		if response.status_code == 200:
@@ -309,6 +315,7 @@ class PartidaCreadorTaskSet(SequentialTaskSet):
 
 		self.client.delete(
 			f"/api/partidas/{self.created_partida_id}/expulsar-jugador/999999/",
+			headers=self.user._auth_headers(),
 			name="/api/partidas/[id]/expulsar-jugador/[id]/",
 		)
 
@@ -319,7 +326,19 @@ class PartidaCreadorTaskSet(SequentialTaskSet):
 
 		self.client.put(
 			f"/api/partidas/{self.created_partida_id}/iniciar/",
+			headers=self.user._auth_headers(),
 			name="/api/partidas/[id]/iniciar/",
+		)
+
+	@task(1)
+	def iniciar_partida_manual(self):
+		if not self.created_partida_id:
+			return
+
+		self.client.put(
+			f"/api/partidas/{self.created_partida_id}/iniciar/manual/",
+			headers=self.user._auth_headers(),
+			name="/api/partidas/[id]/iniciar/manual/",
 		)
 
 

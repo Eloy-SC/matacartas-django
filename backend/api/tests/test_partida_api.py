@@ -311,3 +311,23 @@ class PartidaAPITest(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 		self.partida_publica.refresh_from_db()
 		self.assertIsNotNone(self.partida_publica.fecha_inicio)
+
+	@patch("api.views.partida_view.notificar_inicio_partida")
+	def test_iniciar_partida_manual_starts_match(self, _notify_mock):
+		self.partida_publica.num_jugadores = 2
+		self.partida_publica.save()
+
+		PartidaUsuario.objects.create(
+			partida=self.partida_publica,
+			usuario=self.jugador,
+			creador=False,
+			listo=False,
+		)
+
+		url = reverse("iniciar-partida-manual", args=[self.partida_publica.id])
+		self.client.force_authenticate(user=self.creador)
+
+		response = self.client.put(url)
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.partida_publica.refresh_from_db()
+		self.assertIsNotNone(self.partida_publica.fecha_inicio)
