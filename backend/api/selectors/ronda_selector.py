@@ -88,3 +88,12 @@ def get_carta_equivalente(carta):
         if CATALOGO[c]["posicion"] == CATALOGO[carta]["posicion"] and CATALOGO[c]["tipo"] == "normal":
             return c
     return None
+
+def get_cartas_matadoras_de_carta_equivalente(carta):
+    """
+    Obtiene las cartas matadoras de la carta equivalente a una carta valiosa.
+    """
+    carta_equivalente = get_carta_equivalente(carta)
+    if carta_equivalente:
+        return CATALOGO[carta_equivalente]["matadoras"]
+    return []

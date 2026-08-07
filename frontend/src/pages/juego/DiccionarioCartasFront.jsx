@@ -319,122 +319,122 @@ export const CARTAS_A_RENDERIZAR = {
     },
 	"2_BASTOS_PUNTIAGUDOS": {
         imagen: "carta_bastospun_2.png",
-        efecto: "",
+        efecto: "Las cartas de bastos puntiagudos sirven para contraatacar a las cartas que puedan matar a sus equivalentes de bastos. Un contraataque implica una muerte en toda regla, solo que en este caso es la carta de bastos punitagudos la que mata.",
         nombre: "2 de bastos puntiagudos",
     },
 	"3_BASTOS_PUNTIAGUDOS": {
         imagen: "carta_bastospun_3.png",
-        efecto: "",
+        efecto: "Las cartas de bastos puntiagudos sirven para contraatacar a las cartas que puedan matar a sus equivalentes de bastos. Un contraataque implica una muerte en toda regla, solo que en este caso es la carta de bastos punitagudos la que mata.",
         nombre: "3 de bastos puntiagudos",
     },
 	"4_BASTOS_PUNTIAGUDOS": {
         imagen: "carta_bastospun_4.png",
-        efecto: "",
+        efecto: "Las cartas de bastos puntiagudos sirven para contraatacar a las cartas que puedan matar a sus equivalentes de bastos. Un contraataque implica una muerte en toda regla, solo que en este caso es la carta de bastos punitagudos la que mata.",
         nombre: "4 de bastos puntiagudos",
     },
 	"5_BASTOS_PUNTIAGUDOS": {
         imagen: "carta_bastospun_5.png",
-        efecto: "",
+        efecto: "Las cartas de bastos puntiagudos sirven para contraatacar a las cartas que puedan matar a sus equivalentes de bastos. Un contraataque implica una muerte en toda regla, solo que en este caso es la carta de bastos punitagudos la que mata.",
         nombre: "5 de bastos puntiagudos",
     },
 	"6_BASTOS_PUNTIAGUDOS": {
         imagen: "carta_bastospun_6.png",
-        efecto: "",
+        efecto: "Las cartas de bastos puntiagudos sirven para contraatacar a las cartas que puedan matar a sus equivalentes de bastos. Un contraataque implica una muerte en toda regla, solo que en este caso es la carta de bastos punitagudos la que mata.",
         nombre: "6 de bastos puntiagudos",
     },
 	"7_BASTOS_PUNTIAGUDOS": {
         imagen: "carta_bastospun_7.png",
-        efecto: "",
+        efecto: "Las cartas de bastos puntiagudos sirven para contraatacar a las cartas que puedan matar a sus equivalentes de bastos. Un contraataque implica una muerte en toda regla, solo que en este caso es la carta de bastos punitagudos la que mata.",
         nombre: "7 de bastos puntiagudos",
     },
 	"8_BASTOS_PUNTIAGUDOS": {
         imagen: "carta_bastospun_8.png",
-        efecto: "",
+        efecto: "Las cartas de bastos puntiagudos sirven para contraatacar a las cartas que puedan matar a sus equivalentes de bastos. Un contraataque implica una muerte en toda regla, solo que en este caso es la carta de bastos punitagudos la que mata.",
         nombre: "8 de bastos puntiagudos",
     },
 	"9_BASTOS_PUNTIAGUDOS": {
         imagen: "carta_bastospun_9.png",
-        efecto: "",
+        efecto: "Las cartas de bastos puntiagudos sirven para contraatacar a las cartas que puedan matar a sus equivalentes de bastos. Un contraataque implica una muerte en toda regla, solo que en este caso es la carta de bastos punitagudos la que mata.",
         nombre: "9 de bastos puntiagudos",
     },
 	"10_BASTOS_PUNTIAGUDOS": {
         imagen: "carta_bastospun_10.png",
-        efecto: "",
+        efecto: "Las cartas de bastos puntiagudos sirven para contraatacar a las cartas que puedan matar a sus equivalentes de bastos. Un contraataque implica una muerte en toda regla, solo que en este caso es la carta de bastos punitagudos la que mata.",
         nombre: "Sota de bastos puntiagudos",
     },
 	"11_BASTOS_PUNTIAGUDOS": {
         imagen: "carta_bastospun_11.png",
-        efecto: "Si hay una carta que pueda matar a una carta de bastos, el jugador recibe la puntuación que obtendría el jugador que ha lanzado la carta.",
+        efecto: "Las cartas de bastos puntiagudos sirven para contraatacar a las cartas que puedan matar a sus equivalentes de bastos. Un contraataque implica una muerte en toda regla, solo que en este caso es la carta de bastos punitagudos la que mata.",
         nombre: "Caballo de bastos puntiagudos",
     },
 	"12_BASTOS_PUNTIAGUDOS": {
         imagen: "carta_bastospun_12.png",
-        efecto: "",
+        efecto: "Las cartas de bastos puntiagudos sirven para contraatacar a las cartas que puedan matar a sus equivalentes de bastos. Un contraataque implica una muerte en toda regla, solo que en este caso es la carta de bastos punitagudos la que mata.",
         nombre: "Rey de bastos puntiagudos",
     },
 	"1_BASTOS_PUNTIAGUDOS": {
         imagen: "carta_bastospun_1.png",
-        efecto: "Si hay una carta que pueda matar a una carta de bastos, el jugador recibe la puntuación que obtendría el jugador que ha lanzado la carta.",
+        efecto: "Las cartas de bastos puntiagudos sirven para contraatacar a las cartas que puedan matar a sus equivalentes de bastos. Un contraataque implica una muerte en toda regla, solo que en este caso es la carta de bastos punitagudos la que mata.",
         nombre: "As de bastos puntiagudos",
     },
 	"2_ESPADAS_ESCUDOS": {
         imagen: "carta_espesc_2.png",
-        efecto: "",
+        efecto: "Las cartas de espadas y escudos son iguales que las cartas de espadas, solo que más fuertes y sin la presencia de cartas que puedan matarlas. No obstante, tienen menor riqueza y no tienen asociado ningún efecto especial.",
         nombre: "2 de espadas y escudos",
     },
 	"3_ESPADAS_ESCUDOS": {
         imagen: "carta_espesc_3.png",
-        efecto: "",
+        efecto: "Las cartas de espadas y escudos son iguales que las cartas de espadas, solo que más fuertes y sin la presencia de cartas que puedan matarlas. No obstante, tienen menor riqueza y no tienen asociado ningún efecto especial.",
         nombre: "3 de espadas y escudos",
     },
 	"4_ESPADAS_ESCUDOS": {
         imagen: "carta_espesc_4.png",
-        efecto: "",
+        efecto: "Las cartas de espadas y escudos son iguales que las cartas de espadas, solo que más fuertes y sin la presencia de cartas que puedan matarlas. No obstante, tienen menor riqueza y no tienen asociado ningún efecto especial.",
         nombre: "4 de espadas y escudos",
     },
 	"5_ESPADAS_ESCUDOS": {
         imagen: "carta_espesc_5.png",
-        efecto: "",
+        efecto: "Las cartas de espadas y escudos son iguales que las cartas de espadas, solo que más fuertes y sin la presencia de cartas que puedan matarlas. No obstante, tienen menor riqueza y no tienen asociado ningún efecto especial.",
         nombre: "5 de espadas y escudos",
     },
 	"6_ESPADAS_ESCUDOS": {
         imagen: "carta_espesc_6.png",
-        efecto: "",
+        efecto: "Las cartas de espadas y escudos son iguales que las cartas de espadas, solo que más fuertes y sin la presencia de cartas que puedan matarlas. No obstante, tienen menor riqueza y no tienen asociado ningún efecto especial.",
         nombre: "6 de espadas y escudos",
     },
 	"7_ESPADAS_ESCUDOS": {
         imagen: "carta_espesc_7.png",
-        efecto: "",
+        efecto: "Las cartas de espadas y escudos son iguales que las cartas de espadas, solo que más fuertes y sin la presencia de cartas que puedan matarlas. No obstante, tienen menor riqueza y no tienen asociado ningún efecto especial.",
         nombre: "7 de espadas y escudos",
     },
 	"8_ESPADAS_ESCUDOS": {
         imagen: "carta_espesc_8.png",
-        efecto: "",
+        efecto: "Las cartas de espadas y escudos son iguales que las cartas de espadas, solo que más fuertes y sin la presencia de cartas que puedan matarlas. No obstante, tienen menor riqueza y no tienen asociado ningún efecto especial.",
         nombre: "8 de espadas y escudos",
     },
 	"9_ESPADAS_ESCUDOS": {
         imagen: "carta_espesc_9.png",
-        efecto: "",
+        efecto: "Las cartas de espadas y escudos son iguales que las cartas de espadas, solo que más fuertes y sin la presencia de cartas que puedan matarlas. No obstante, tienen menor riqueza y no tienen asociado ningún efecto especial.",
         nombre: "9 de espadas y escudos",
     },
 	"10_ESPADAS_ESCUDOS": {
         imagen: "carta_espesc_10.png",
-        efecto: "",
+        efecto: "Las cartas de espadas y escudos son iguales que las cartas de espadas, solo que más fuertes y sin la presencia de cartas que puedan matarlas. No obstante, tienen menor riqueza y no tienen asociado ningún efecto especial.",
         nombre: "Sota de espadas y escudos",
     },
 	"11_ESPADAS_ESCUDOS": {
         imagen: "carta_espesc_11.png",
-        efecto: "No puede ser matada.",
+        efecto: "Las cartas de espadas y escudos son iguales que las cartas de espadas, solo que más fuertes y sin la presencia de cartas que puedan matarlas. No obstante, tienen menor riqueza y no tienen asociado ningún efecto especial.",
         nombre: "Caballo de espadas y escudos",
     },
 	"12_ESPADAS_ESCUDOS": {
         imagen: "carta_espesc_12.png",
-        efecto: "",
+        efecto: "Las cartas de espadas y escudos son iguales que las cartas de espadas, solo que más fuertes y sin la presencia de cartas que puedan matarlas. No obstante, tienen menor riqueza y no tienen asociado ningún efecto especial.",
         nombre: "Rey de espadas y escudos",
     },
 	"1_ESPADAS_ESCUDOS": {
         imagen: "carta_espesc_1.png",
-        efecto: "",
+        efecto: "Las cartas de espadas y escudos son iguales que las cartas de espadas, solo que más fuertes y sin la presencia de cartas que puedan matarlas. No obstante, tienen menor riqueza y no tienen asociado ningún efecto especial.",
         nombre: "As de espadas y escudos",
     },
 	"SAQUEADOR_TUMBAS": {
@@ -444,7 +444,7 @@ export const CARTAS_A_RENDERIZAR = {
     },
 	"CORRUPTOR": {
         imagen: "carta_corruptor.png",
-        efecto: "",
+        efecto: "El corruptor se apropia de los efectos de cualquier muerte producida en la ronda (tanto ganar la ronda como sumar 1 al acumulador de cartas matadas del jugador que la lanza), siempre y cuando la carta asesina no sea de un tipo superior al suyo. No obstante, la recompensa recibida por matar será de 1 punto, en lugar de la recompensa habitual.",
         nombre: "El corruptor",
     },
 	"MERCADER": {
@@ -459,12 +459,12 @@ export const CARTAS_A_RENDERIZAR = {
     },
 	"AS_EXTRANJERO": {
         imagen: "carta_as_extranjero.png",
-        efecto: "",
+        efecto: "Utilizar esta carta como comodín y ganar una mano gracias a ella otorga un efecto especial que podrá manifestarse al final de la partida: si el jugador que haya quedado en primera posición se distancia del jugador que posee este efecto en 15 puntos o menos, el jugador que posee este efecto pasará a ser el ganador de la partida. Si otro jugador, en una mano posterior, consigue este efecto, el anterior en utilizar esta carta perderá su privilegio.",
         nombre: "El as extranjero",
     },
 	"BUFON": {
         imagen: "carta_bufon.png",
-        efecto: "",
+        efecto: "Esta carta se convierte en la carta de mayor fuerza de la ronda en la que se utiliza en caso de que no haya ninguna otra carta mágica o única. No aplica en ronda de comodines.",
         nombre: "El bufón",
     },
 	"SEGADOR": {
@@ -479,12 +479,12 @@ export const CARTAS_A_RENDERIZAR = {
     },
 	"DON_DINERO": {
         imagen: "carta_rey_don_dinero.png",
-        efecto: "",
+        efecto: "Es la carta con mayor fuerza y mayor riqueza de todas las que existen. No puede ser matada por ninguna carta, salvo una.",
         nombre: "El rey don Dinero",
     },
 	"MARTIRIZADO": {
         imagen: "carta_martirizado.png",
-        efecto: "",
+        efecto: "Lanzar esta carta en una ronda en la que se ha lanzado una carta especial de cualquier tipo provocará que esta carta mate a dicha carta especial (la de mayor fuerza, si hay varias), sin importar la carta de mayor fuerza sus amenazas presentes en la ronda. Este efecto no aplica para ronda de comodines, por lo que en dicha ronda, esta carta se comportará como cualquier otra carta normal.",
         nombre: "El martirizado",
     },
 };

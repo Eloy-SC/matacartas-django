@@ -2,7 +2,7 @@ from ..models.catalogo_cartas import CATALOGO
 
 from ..models.ronda import Ronda
 
-from ..selectors.ronda_selector import get_cartas_lanzadas_en_mano, get_cartas_lanzadas_en_mano_hasta_ronda, get_cartas_lanzadas_en_mano_por_jugador, get_jugador_lanzador_carta_mayor_fuerza, get_rondas_de_mano
+from ..selectors.ronda_selector import get_cartas_lanzadas_en_mano, get_cartas_lanzadas_en_mano_hasta_ronda, get_cartas_lanzadas_en_mano_por_jugador, get_cartas_matadoras_de_carta_equivalente, get_jugador_lanzador_carta_mayor_fuerza, get_rondas_de_mano
 
 from ..utils.funciones_aux import aux_siguiente_turno
 
@@ -52,6 +52,7 @@ def jugar_carta(user, partida_id, carta):
 
 def ganador_ronda(partida_id):
 
+    # Detectar si hay especiales y asignar puntos (extra) inmediatos
     ronda_actual = get_rondas_de_mano(get_mano_actual(partida_id).id)[-1]
     cartas_jugadas = ronda_actual.cartas
     especiales = False
@@ -61,9 +62,110 @@ def ganador_ronda(partida_id):
             break
     if especiales:
         aux_asignar_puntos_inmediatos_por_cartas_especiales(partida_id)
+
+    # Determinar la carta de mayor fuerza y sus cartas matadoras
+    carta_mayor_fuerza = aux_get_carta_mayor_fuerza(partida_id)
+    cartas_matadoras = aux_get_cartas_matadoras(carta_mayor_fuerza)
+    # Lanzador de la carta de mayor fuerza
+    lanzador_carta_mayor_fuerza = next(
+        (jugador for jugador, carta in cartas_jugadas.items()
+        if carta == carta_mayor_fuerza),
+        None
+    )
+
+    # Buscar cartas especiales lanzadas
+    cartas_especiales = []
+    for c in cartas_jugadas.values():
+        if CATALOGO[c]["tipo"].startswith("especial"):
+            cartas_especiales.append(c)
+
+    # Comprobacion de la carta Martirizado y su efecto, debe haber otra carta especial lanzada
+    if any(carta == "MARTIRIZADO" for carta in cartas_especiales) and len(cartas_especiales) > 2:
+        lanzador_martirizado = next(
+            (jugador for jugador, carta in cartas_jugadas.items()
+            if carta == "MARTIRIZADO"),
+            None
+        )
+        cartas_especiales.remove("MARTIRIZADO") # Así no se cuenta la carta del Martirizado para determinar la de mayor fuerza
+        carta_mayor_especial = aux_get_carta_mayor_fuerza_de_conj(partida_id, cartas_especiales)
+        lanzador_mayor_especial = next(
+            (jugador for jugador, carta in cartas_jugadas.items()
+            if carta == carta_mayor_especial),
+            None
+        )
+        aux_producir_efecto_muerte(partida_id, lanzador_martirizado, lanzador_mayor_especial)
+        ronda_actual.ganador = lanzador_martirizado
+        ronda_actual.save()
+
+    # Comprobacion de carta de bastos puntiagudos
+    elif carta_mayor_fuerza.endswith("_BASTOS_PUNTIAGUDOS"):
+        cartas_matadoras = get_cartas_matadoras_de_carta_equivalente(carta_mayor_fuerza)
+        if len(cartas_matadoras) > 0:
+            lanzador_carta_asesina = next(
+                (jugador for jugador, carta in cartas_jugadas.items()
+                if carta == cartas_matadoras[-1]),  # La carta matadora de mayor fuerza, pues en el catalogo ya están ordenadas así
+                None
+            )
+            if not any(carta == "CORRUPTOR" for carta in cartas_jugadas.values()):
+                # En este caso la carta de mas fuerza es la que mata porque hace contraataque al ser de bastos puntiagudos
+                aux_producir_efecto_muerte(partida_id, lanzador_carta_mayor_fuerza, lanzador_carta_asesina)
+                ronda_actual.ganador = lanzador_carta_mayor_fuerza
+                ronda_actual.save()
+            else:
+                # Lo mismo, pero si hay corruptor es el el que recibe la recompensa y la muerte
+                aux_producir_efecto_muerte(partida_id, lanzador_carta_mayor_fuerza, lanzador_carta_asesina, corruptor=True)
+                lanzador_corruptor = next(
+                    (jugador for jugador, carta in cartas_jugadas.items()
+                    if carta == "CORRUPTOR"),
+                    None
+                )
+                ronda_actual.ganador = lanzador_corruptor
+                ronda_actual.save()
+    elif len(cartas_matadoras) > 0:
+        lanzador_carta_asesina = next(
+            (jugador for jugador, carta in cartas_jugadas.items()
+            if carta == cartas_matadoras[-1]),  # La carta matadora de mayor fuerza, pues en el catalogo ya están ordenadas así
+            None
+        )
+        aux_producir_efecto_muerte(partida_id, lanzador_carta_asesina, lanzador_carta_mayor_fuerza)
+        ronda_actual.ganador = lanzador_carta_asesina
+        ronda_actual.save()
+    else: # Si no hay muerte de ningun tipo, gana directamente el jugador que lanzó la carta de mayor fuerza
+        ronda_actual.ganador = lanzador_carta_mayor_fuerza
+        ronda_actual.save()
+    
+
+#############################################################
+    if any(carta == "MARTIRIZADO" for carta in cartas_jugadas.values()):
+        cartas_especiales = []
+        for c in cartas_jugadas.values():
+            if CATALOGO[c]["tipo"].startswith("especial"):
+                cartas_especiales.append(c)
+        cartas_especiales.remove("MARTIRIZADO")
+        if len(cartas_especiales) > 1:
+            aux_get_carta_mayor_fuerza_de_conj(partida_id, cartas_especiales)
+            aux_producir_efecto_muerte(partida_id, ganador, color_jug_perdedor, cartas_jugadas)
+        
+
+    elif any(carta == "BUFON" for carta in cartas_jugadas.values()):
+        pass
+    elif any(carta == "CORRUPTOR" for carta in cartas_jugadas.values()):
+        pass
+    elif carta_mayor_fuerza.endswith("_BASTOS_PUNTIAGUDOS"):
+        pass
+
+    if carta_mayor_fuerza.endswith("_BASTOS_PUNTIAGUDOS") and \
+        not any(carta == "CORRUPTOR" for carta in cartas_jugadas.values()) and \
+        any(carta in get_matadoras_de_posicion(carta_mayor_fuerza) for carta in cartas_jugadas.values()):
+            ganador = [color for color, carta in cartas_jugadas.items() if carta == carta_mayor_fuerza][0]
+            jugador_ganador = get_partida_usuario_by_partida_and_color(partida_id, ganador)
+            jugador_ganador.puntos += CATALOGO[carta_mayor_fuerza]["recompensa"]
+    elif carta_mayor_fuerza.endswith("_BASTOS_PUNTIAGUDOS") and \
+        not any(carta == "BUFON" for carta in cartas_jugadas.values()) and \
+        any(carta == "CORRUPTOR" for carta in cartas_jugadas.values()):
+        pass
+    
     else:
-        carta_mayor_fuerza = aux_get_carta_mayor_fuerza(partida_id)
-        cartas_matadoras = aux_get_cartas_matadoras(carta_mayor_fuerza)
         cartas_matadoras_jugadas = [carta for carta in cartas_jugadas.values() if carta in cartas_matadoras]
 
         if cartas_matadoras_jugadas:
@@ -101,27 +203,78 @@ def ganador_ronda(partida_id):
 
     ronda_actual.ganador = ganador
     ronda_actual.save()        
+#############################################################
 
+    # Siguiente ronda
     num_ronda = ronda_actual.num
     if num_ronda < 3:
         nueva_ronda = Ronda(mano=get_mano_actual(partida_id), num=num_ronda + 1, cartas={}, cambios=2)
         nueva_ronda.save()
-    else:
+    else: # Fin de la mano en caso de que se haya jugado la tercera ronda
         aux_resolver_ganador_mano(partida_id)
 
+
+## ESTAS FUNCIONES QUIZAS ESTARÍAN MEJOR EN RONDA_SELECTOR
 def aux_get_carta_mayor_fuerza(partida_id):
+    ronda_actual = get_rondas_de_mano(get_mano_actual(partida_id).id)[-1]
+    cartas_jugadas = ronda_actual.cartas
+    # Comprobar el efecto de la carta Bufón
+    if any(carta == "BUFON" for carta in cartas_jugadas.values()):
+        for carta in cartas_jugadas.values():
+            if not (CATALOGO[carta]["tipo"] == "especial_mag" or CATALOGO[carta]["tipo"] == "especial_uni") \
+                and carta != "BUFON":
+                return "BUFON"
+    else:
+        cartas_jugadas_fuerza = {
+            (nombre, CATALOGO[nombre]["fuerza"])
+            for nombre in cartas_jugadas.values()
+        }
+        carta_mayor_fuerza = max(cartas_jugadas_fuerza, key=lambda x: x[1])
+        return carta_mayor_fuerza[0]
+
+def aux_get_carta_mayor_fuerza_de_conj(partida_id, conjunto):
     ronda_actual = get_rondas_de_mano(get_mano_actual(partida_id).id)[-1]
     cartas_jugadas_fuerza = {
         (nombre, CATALOGO[nombre]["fuerza"])
         for nombre in ronda_actual.cartas.values()
+        if nombre in conjunto
     }
     carta_mayor_fuerza = max(cartas_jugadas_fuerza, key=lambda x: x[1])
     return carta_mayor_fuerza[0]
+
 
 def aux_get_cartas_matadoras(carta):
 
     matadoras = CATALOGO[carta].get("matadoras", ())
     return tuple(matadoras)
+##############
+
+def aux_producir_efecto_muerte(partida_id, matador, matado, corruptor=False):
+    jugador_matador = get_partida_usuario_by_partida_and_color(partida_id, matador)
+    jugador_matado = get_partida_usuario_by_partida_and_color(partida_id, matado)
+    cartas_jugadas = get_rondas_de_mano(get_mano_actual(partida_id).id)[-1].cartas
+    carta_matada = next(
+        (carta for color, carta in cartas_jugadas.items() if color == matado),
+        None
+    )
+
+    jugador_matado.acumulador_deaths += 1
+
+    if not corruptor:
+        jugador_matador.acumulador_kills += 1
+        jugador_matador.puntos += CATALOGO[carta_matada]["recompensa"]
+        jugador_matador.save()
+    else:
+        lanzador_corruptor = next(
+            (jugador for jugador, carta in cartas_jugadas.items() if carta == "CORRUPTOR"),
+            None
+        )
+        jugador_corruptor = get_partida_usuario_by_partida_and_color(partida_id, lanzador_corruptor)
+        jugador_corruptor.puntos += 1
+        jugador_corruptor.acumulador_kills += 1
+        jugador_corruptor.save()
+    
+    jugador_matado.save()
 
 def aux_resolver_ganador_mano(partida_id):
     mano_actual = get_mano_actual(partida_id)
@@ -299,6 +452,12 @@ def aux_asignar_puntos_extra_final_mano(partida_id):
             lanzador_de_monedero.eff_acum_monedero = 0
             lanzador_de_monedero.save()
 
-
-def aux_determinar_ganador_ronda_con_especiales(partida_id):
-    pass
+    # DON DINERO Y MARTIRIZADO: sólo otorga 4 puntos extra al ganador de la mano
+    for color in mano_actual.disposicion_jugadores:
+        cartas_lanzadas_por_jugador = get_cartas_lanzadas_en_mano_por_jugador(mano_actual.id, color)
+        if any(carta.endswith("_DON_DINERO") for carta in cartas_lanzadas_por_jugador) or \
+            any(carta.endswith("_MARTIRIZADO") for carta in cartas_lanzadas_por_jugador):
+            if color == mano_actual.ganador:
+                lanzador_de_unica = get_partida_usuario_by_partida_and_color(partida_id, color)
+                lanzador_de_unica.puntos += 4
+                lanzador_de_unica.save()
