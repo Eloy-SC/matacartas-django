@@ -15,6 +15,8 @@ def unique_suffix() -> str:
 
 class AuthenticatedApiUser(HttpUser):
 	wait_time = between(1, 3)
+	# Mark as abstract so Locust won't try to instantiate this base user directly
+	abstract = True
 
 	username = os.getenv("LOCUST_USERNAME", "cervantes")
 	password = os.getenv("LOCUST_PASSWORD", "123456")

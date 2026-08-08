@@ -3,6 +3,8 @@
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.db import migrations
+import sys
+import os
 
 
 TEST_USERS = [
@@ -245,6 +247,10 @@ def _get_user_model(apps):
 
 
 def seed_test_users(apps, schema_editor):
+    # Skip seeding when running tests or when explicitly disabled
+    if "test" in sys.argv or os.getenv("SKIP_SEED", "0") == "1":
+        return
+
     UserModel = _get_user_model(apps)
 
     for user_spec in TEST_USERS:
@@ -266,6 +272,10 @@ def seed_test_users(apps, schema_editor):
 
 
 def seed_rangos(apps, schema_editor):
+    # Skip seeding when running tests or when explicitly disabled
+    if "test" in sys.argv or os.getenv("SKIP_SEED", "0") == "1":
+        return
+
     Rango = apps.get_model("api", "Rango")
     for rango in RANGO_SEED:
         Rango.objects.update_or_create(nombre=rango["nombre"], defaults=rango)

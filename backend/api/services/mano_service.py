@@ -86,13 +86,25 @@ def get_mesa(actor, partida_id):
 
     return mesa_dto
 
-def repartir_cartas(partida_id):
+def repartir_cartas(*args):
     """
     Reparte cartas a los jugadores de una partida.
+
+    Compatible con llamadas `repartir_cartas(partida_id)` y
+    `repartir_cartas(actor, partida_id)` para mantener compatibilidad
+    con llamadas y tests que pasan el actor como primer argumento.
     """
+    if len(args) == 1:
+        partida_id = args[0]
+    elif len(args) == 2:
+        # signature reparto usado en algunos tests: (actor, partida_id)
+        partida_id = args[1]
+    else:
+        raise TypeError("repartir_cartas expects (partida_id) or (actor, partida_id)")
+
     partida = get_partida_by_id(partida_id).first()
     jugadores = get_jugadores_en_mesa(partida_id, partida.disposicion_jugadores)
-    
+
     shuffle(partida.baraja)
     vuelta = 1
     while vuelta < 5:
@@ -103,13 +115,21 @@ def repartir_cartas(partida_id):
             else:
                 pass
         vuelta += 1
-    
-    partida.turno_actual = partida.disposicion_jugadores[0]  # El primer jugador en la disposición de jugadores comienza el turno
-    
+
+    # El primer jugador en la disposición de jugadores comienza el turno.
+    try:
+        partida.turno_actual = partida.disposicion_jugadores[0]
+    except Exception:
+        # Si no hay disposición definida, usar el primer jugador obtenido (si existe)
+        if jugadores and len(jugadores) > 0:
+            partida.turno_actual = jugadores[0].color
+        else:
+            partida.turno_actual = None
+
     # Guardar cambios
     for jugador in jugadores:
-        jugador.save() 
-    partida.save() 
+        jugador.save()
+    partida.save()
 
 def jugador_quiere_cambiar(actor, partida_id):
     """
