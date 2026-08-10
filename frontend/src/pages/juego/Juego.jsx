@@ -173,16 +173,18 @@ export default function Juego() {
 			siguienteManoSolicitadaRef.current = mano.mano_id;
 			let cancelado = false;
 
-			void (async () => {
-				try {
-					await handleSiguienteMano(partidaId, loadMesa);
-				} finally {
-					if (!cancelado) {
-						finManoProgramadaRef.current = null;
-						setCuentaAtrasFinMano(null);
+			if (jugador?.color === partida?.disposicion_jugadores?.[0]) {
+				void (async () => {
+					try {
+						await handleSiguienteMano(partidaId, loadMesa);
+					} finally {
+						if (!cancelado) {
+							finManoProgramadaRef.current = null;
+							setCuentaAtrasFinMano(null);
+						}
 					}
-				}
-			})();
+				})();
+			}
 
 			return () => {
 				cancelado = true;

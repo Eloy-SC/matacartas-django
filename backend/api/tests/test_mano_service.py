@@ -134,6 +134,19 @@ class ManoServiceTests(TestCase):
         self.assertEqual(self.pu_creator.carta_comodin, "MONEDERO_PECULIAR")
         self.assertNotIn("MONEDERO_PECULIAR", self.pu_creator.cartas)
 
+    def test_siguiente_mano_does_not_duplicate_comodin_if_already_in_hand(self):
+        self.partida.turno_actual = PartidaUsuario.ColorJugador.ROJO
+        self.partida.save(update_fields=["turno_actual"])
+        self.pu_creator.cartas = ["MONEDERO_PECULIAR", "CARTA_B", "CARTA_C"]
+        self.pu_creator.carta_comodin = "MONEDERO_PECULIAR"
+        self.pu_creator.save(update_fields=["cartas", "carta_comodin"])
+
+        mano_service.siguiente_mano(self.creator, self.partida.id)
+
+        self.pu_creator.refresh_from_db()
+        self.assertEqual(self.pu_creator.cartas.count("MONEDERO_PECULIAR"), 1)
+        self.assertIsNone(self.pu_creator.carta_comodin)
+
     def test_get_datos_carta_returns_catalog_data(self):
         datos = mano_service.get_datos_carta(self.creator, "2_OROS", self.partida.id)
 

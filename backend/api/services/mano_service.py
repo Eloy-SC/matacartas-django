@@ -243,6 +243,7 @@ def siguiente_mano(actor, partida_id):
     """
     Inicia la siguiente mano en la partida.
     """
+    print("se ha ejecutado siguiente_mano")
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
     if not partida_usuario:
         raise PermissionError("No participas en la partida.")
@@ -276,7 +277,8 @@ def siguiente_mano(actor, partida_id):
             if carta_comodin and carta_comodin not in comodines_utilizados:
                 partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, jugador["id"])
                 if partida_usuario:
-                    partida_usuario.cartas.append(jugador["carta_comodin"])
+                    if carta_comodin not in partida_usuario.cartas:
+                        partida_usuario.cartas.append(carta_comodin)
                     partida_usuario.carta_comodin = None
                     if carta_comodin == "MONEDERO_PECULIAR" and partida_usuario.eff_acum_monedero <= 15:
                         partida_usuario.eff_acum_monedero += 1

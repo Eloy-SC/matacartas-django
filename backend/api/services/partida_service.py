@@ -539,7 +539,7 @@ def iniciar_partida(actor, partida_id, manual=False):
     # Partida
     partida.fecha_inicio = timezone.now()
     partida.baraja = aux_generar_baraja_inicial(partida.cartas_especiales, partida.num_jugadores)
-    partida.disposicion_jugadores = aux_generar_disposicion_jugadores(partida_id, jugadores)
+    partida.disposicion_jugadores = aux_generar_disposicion_jugadores(partida_id)
 
     # Mano
     mano = Mano(
@@ -625,7 +625,7 @@ def aux_generar_baraja_inicial(cartas_especiales, num_jugadores):
 
     return baraja
 
-def aux_generar_disposicion_jugadores(partida_id, jugadores):
+def aux_generar_disposicion_jugadores(partida_id):
     """
     Genera la disposición inicial de los jugadores en la partida.
     """
