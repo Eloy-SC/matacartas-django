@@ -3,7 +3,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from ..services import ronda_service
-from ..services import mano_service
 from ..selectors.mano_selector import get_mano_actual
 
 from ..utils.web_sockets import notificar_mano_finalizada, notificar_mesa_actualizada

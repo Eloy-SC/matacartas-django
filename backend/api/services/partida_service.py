@@ -369,16 +369,12 @@ def unirse_a_partida_publica(actor, partida_id):
     if jugadores_actuales >= partida.num_jugadores:
         raise ValueError("La partida ya está llena")
     
-    # Range checks are intentionally permissive for private joins in API context
-    # Tests create users with default puntuacion=0; enforcing strict rango checks
-    # here causes API tests to fail. Keep range checks at creation time only.
-    # If stricter behavior is desired, reintroduce these checks here.
-    # rango_minimo_puntos = partida.rango_minimo.puntos_minimos if partida.rango_minimo else None
-    # rango_maximo_puntos = partida.rango_maximo.puntos_maximos if partida.rango_maximo else None
-    # if rango_minimo_puntos is not None and actor.puntuacion < rango_minimo_puntos:
-    #     raise PermissionError("Tu rango es demasiado bajo para unirte a esta partida")
-    # if rango_maximo_puntos is not None and actor.puntuacion > rango_maximo_puntos:
-    #     raise PermissionError("Tu rango es demasiado alto para unirte a esta partida")
+    rango_minimo_puntos = partida.rango_minimo.puntos_minimos if partida.rango_minimo else None
+    rango_maximo_puntos = partida.rango_maximo.puntos_maximos if partida.rango_maximo else None
+    if rango_minimo_puntos is not None and actor.puntuacion < rango_minimo_puntos:
+        raise PermissionError("Tu rango es demasiado bajo para unirte a esta partida")
+    if rango_maximo_puntos is not None and actor.puntuacion > rango_maximo_puntos:
+        raise PermissionError("Tu rango es demasiado alto para unirte a esta partida")
     
     if get_usuario_participa_en_partida_activa(actor.id):
         raise ValueError("Ya estás participando en una partida activa")
@@ -561,7 +557,7 @@ def iniciar_partida(actor, partida_id, manual=False):
     mano.save()
     ronda.save()
 
-    repartir_cartas(partida_id)  # Reparte las cartas a los jugadores al iniciar la partida
+    repartir_cartas(actor, partida_id)  # Reparte las cartas a los jugadores al iniciar la partida
 
 def aux_generar_baraja_inicial(cartas_especiales, num_jugadores):
     """
