@@ -93,3 +93,36 @@ class RondaServiceTests(TestCase):
 
         carta = ronda_service.aux_get_carta_mayor_fuerza(self.partida.id)
         self.assertEqual(carta, "BUFON")
+
+    def test_aux_asignar_puntos_extra_final_mano_applies_all_bonus_paths(self):
+        Ronda.objects.create(
+            mano=self.mano,
+            num=2,
+            cartas={
+                PartidaUsuario.ColorJugador.ROJO: "2_BASTOS",
+                PartidaUsuario.ColorJugador.AZUL: "REBELDE",
+            },
+            cambios=2,
+        )
+        Ronda.objects.create(
+            mano=self.mano,
+            num=3,
+            cartas={
+                PartidaUsuario.ColorJugador.ROJO: "SEGADOR",
+                PartidaUsuario.ColorJugador.AZUL: "2_BASTOS_PUNTIAGUDOS",
+            },
+            cambios=2,
+        )
+        self.ronda.cartas = {
+            PartidaUsuario.ColorJugador.ROJO: "MERCADER",
+            PartidaUsuario.ColorJugador.AZUL: "2_OROS",
+        }
+        self.ronda.save(update_fields=["cartas"])
+
+        ronda_service.aux_asignar_puntos_extra_final_mano(self.partida.id)
+
+        self.pu_creator.refresh_from_db()
+        self.pu_player.refresh_from_db()
+
+        self.assertEqual(self.pu_creator.puntos, 3)
+        self.assertEqual(self.pu_player.puntos, 2)

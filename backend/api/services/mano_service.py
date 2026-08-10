@@ -289,8 +289,14 @@ def siguiente_mano(actor, partida_id):
         ronda_inicial = Ronda(mano=nueva_mano, num=0, cartas={}, cambios=0)
         ronda_inicial.save()
 
+        # Colocar al primer jugador al final para rotar posiciones
+        empezador = partida.disposicion_jugadores[0]
+        partida.disposicion_jugadores.remove(empezador)
+        partida.disposicion_jugadores.append(empezador)
+        partida.save()
+
         # Repartir cartas
-        repartir_cartas(partida_id)
+        repartir_cartas(actor, partida_id)
 
     else: # Finalizar partida
         finalizar_partida(partida_id)

@@ -583,9 +583,14 @@ def aux_generar_baraja_inicial(cartas_especiales, num_jugadores):
             for nombre, datos in CATALOGO.items()
             if datos["tipo"] == "especial_mag"
         ]
-        if num_jugadores == 2 and "MONEDERO_PECULIAR" in cartas_magicas and "AS_EXTRANJERO" in cartas_magicas:
+        if num_jugadores == 2 and "MONEDERO_PECULIAR" in cartas_magicas:
             cartas_magicas.remove("MONEDERO_PECULIAR")
+        if num_jugadores == 2 and "AS_EXTRANJERO" in cartas_magicas:
             cartas_magicas.remove("AS_EXTRANJERO")
+        if num_jugadores == 2 and "CORRUPTOR" in cartas_magicas:
+            cartas_magicas.remove("CORRUPTOR")
+        if num_jugadores == 2 and "SAQUEADOR_TUMBAS" in cartas_magicas:
+            cartas_magicas.remove("SAQUEADOR_TUMBAS")
         cartas_unicas = [
             nombre
             for nombre, datos in CATALOGO.items()

@@ -469,7 +469,7 @@ export const CARTAS_A_RENDERIZAR = {
     },
 	"SEGADOR": {
         imagen: "carta_segador.png",
-        efecto: "Las cartas valiosas que hayan sido lanzadas durante la mano serán eliminadas por completo de la baraja tras la finalización de la mano. Por cada carta eliminada serás obsequiado con un punto.",
+        efecto: "El segador elimina de la baraja todas las cartas valiosas que hayan sido utilizadas durante la mano y obsequia, por cada carta erradicada, con 2 puntos al jugador que haya hecho uso de ella, tanto lanzándola en una ronda como utilizándola como comodín. Tiene un límite de 12 puntos adicionales, por lo que eliminar 7 o más cartas valiosas otorgará los mismos puntos que eliminar sólo 6.",
         nombre: "El segador",
     },
 	"REBELDE": {

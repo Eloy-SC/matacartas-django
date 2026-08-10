@@ -99,11 +99,12 @@ def ganador_ronda(partida_id):
 
     # Comprobacion de carta de bastos puntiagudos
     elif carta_mayor_fuerza.endswith("_BASTOS_PUNTIAGUDOS"):
-        cartas_matadoras = get_cartas_matadoras_de_carta_equivalente(carta_mayor_fuerza)
-        if len(cartas_matadoras) > 0:
+        cartas_matadoras_de_bastos = get_cartas_matadoras_de_carta_equivalente(carta_mayor_fuerza)
+        cartas_matadoras_en_ronda = [carta for carta in cartas_matadoras_de_bastos if carta in cartas_jugadas.values()]
+        if len(cartas_matadoras_en_ronda) > 0:
             lanzador_carta_asesina = next(
                 (jugador for jugador, carta in cartas_jugadas.items()
-                if carta == cartas_matadoras[-1]),  # La carta matadora de mayor fuerza, pues en el catalogo ya están ordenadas así
+                if carta == cartas_matadoras_en_ronda[-1]),  # La carta matadora de mayor fuerza, pues en el catalogo ya están ordenadas así
                 None
             )
             if not any(carta == "CORRUPTOR" for carta in cartas_jugadas.values()):
@@ -239,17 +240,15 @@ def aux_resolver_ganador_mano(partida_id):
         # Si hay desempate, aqui no se asignan puntos extra, eso se hace en la propia función de desempate
         ganador_mano = aux_resolver_desempate_comodines(partida_id, colores_con_maximo, especiales)
     else:
-        if especiales:
-            aux_asignar_puntos_extra_final_mano(partida_id)
         ganador_mano = colores_con_maximo[0]
+    mano_actual.ganador = ganador_mano
+    mano_actual.save()
 
     ganador_usuario = get_partida_usuario_by_partida_and_color(partida_id, ganador_mano)
     ganador_usuario.puntos += 4
     ganador_usuario.save()
+    aux_asignar_puntos_extra_final_mano(partida_id)
     aux_asignar_puntos_extra_ganador_mano(partida_id, ganador_mano)
-
-    mano_actual.ganador = ganador_mano
-    mano_actual.save()
 
 def aux_resolver_desempate_comodines(partida_id, ganadores, especiales):
 
@@ -267,19 +266,17 @@ def aux_resolver_desempate_comodines(partida_id, ganadores, especiales):
     ganador = [color for color, carta in ronda_comodines.cartas.items() if carta == carta_mayor_riqueza[0]][0]
 
     if especiales:
-        # Asignar puntos extra habiendose definido la ronda de comodines
-        aux_asignar_puntos_extra_final_mano(partida_id)
 
         # Asignar efecto de As Extranjero si el ganador de la ronda de comodines jugó el As Extranjero
         for color in ganadores:
             if color == ganador and carta_mayor_riqueza[0] == "AS_EXTRANJERO":
                 jugador_ganador = get_partida_usuario_by_partida_and_color(partida_id, color)
-                jugador_ganador.eff_as_extranjero == True
+                jugador_ganador.eff_as_extranjero = True
                 jugador_ganador.save()
                 for jugador in jugadores:
                     if jugador["eff_as_extranjero"] and jugador["color"] != color:
                         jugador_perdedor = get_partida_usuario_by_partida_and_color(partida_id, jugador["color"])
-                        jugador_perdedor.eff_as_extranjero == False
+                        jugador_perdedor.eff_as_extranjero = False
                         jugador_perdedor.save()
 
     return ganador
@@ -302,9 +299,9 @@ def aux_asignar_puntos_inmediatos_por_cartas_especiales(partida_id):
 def aux_asignar_puntos_extra_ganador_mano(partida_id, ganador_mano):
     jugador = get_partida_usuario_by_partida_and_color(partida_id, ganador_mano)
     mano_actual = get_mano_actual(partida_id)
+    cartas_lanzadas_por_jugador = get_cartas_lanzadas_en_mano_por_jugador(mano_actual.id, ganador_mano)
 
     # JOYAS REALES
-    cartas_lanzadas_por_jugador = get_cartas_lanzadas_en_mano_por_jugador(mano_actual.id, ganador_mano)
     cartas_joyas = []
     for carta in cartas_lanzadas_por_jugador:
         if carta.endswith("_JOYAS_REALES"):
@@ -315,83 +312,55 @@ def aux_asignar_puntos_extra_ganador_mano(partida_id, ganador_mano):
         jugador.puntos += 2
     jugador.save()
 
+    # CARTAS ÚNICAS
+    for carta in cartas_lanzadas_por_jugador:
+        if CATALOGO[carta]["tipo"] == "especial_uni":
+            jugador.puntos += 4
+    jugador.save()
+
 def aux_asignar_puntos_extra_final_mano(partida_id):
 
+    partida = get_partida_by_id(partida_id).first()
     mano_actual = get_mano_actual(partida_id)
+    cartas_lanzadas_mano = get_cartas_lanzadas_en_mano(mano_actual.id)
 
-    # MERCADER
-    for color in mano_actual.disposicion_jugadores:
+    sufijos_mercancia = ("_OROS", "_JOYAS_REALES", "_COPAS", "_VINOS_VIEJOS")
+    sufijos_bastos = ("_BASTOS", "_BASTOS_PUNTIAGUDOS")
+
+    for color in partida.disposicion_jugadores:
         cartas_lanzadas_por_jugador = get_cartas_lanzadas_en_mano_por_jugador(mano_actual.id, color)
-        if any(carta.endswith("_MERCADER") for carta in cartas_lanzadas_por_jugador):
-            ronda_mercader_lanzado = cartas_lanzadas_por_jugador.index(next(carta for carta in cartas_lanzadas_por_jugador if carta.endswith("_MERCADER"))) + 1
-            cartas_mercancias = []
+        jugador = get_partida_usuario_by_partida_and_color(partida_id, color)
+        puntos_extra = 0
+        necesita_guardar = False
+
+        # MERCADER
+        if any(carta.endswith("MERCADER") for carta in cartas_lanzadas_por_jugador):
+            ronda_mercader_lanzado = next(
+                index for index, carta in enumerate(cartas_lanzadas_por_jugador, start=1)
+                if carta.endswith("MERCADER")
+            )
             cartas_lanzadas_mano_hasta_ronda = get_cartas_lanzadas_en_mano_hasta_ronda(mano_actual.id, ronda_mercader_lanzado)
-            for carta in cartas_lanzadas_mano_hasta_ronda:
-                if carta.endswith("_OROS") \
-                or carta.endswith("_JOYAS_REALES") \
-                or carta.endswith("_COPAS") \
-                or carta.endswith("_VINOS_VIEJOS"):
-                    cartas_mercancias.append(carta)
-            lanzador_de_mercader = get_partida_usuario_by_partida_and_color(partida_id, color)
-            if len(cartas_mercancias) >= 1 and len(cartas_mercancias) <= 6:
-                lanzador_de_mercader.puntos += cartas_mercancias.count()
-                lanzador_de_mercader.save()
-            elif len(cartas_mercancias) > 6:
-                lanzador_de_mercader.puntos += 6
-                lanzador_de_mercader.save()
+            cartas_mercancias = sum(1 for carta in cartas_lanzadas_mano_hasta_ronda if carta.endswith(sufijos_mercancia))
+            puntos_extra += min(cartas_mercancias, 6)
 
-    # REBELDE
-    for color in mano_actual.disposicion_jugadores:
-        cartas_lanzadas_por_jugador = get_cartas_lanzadas_en_mano_por_jugador(mano_actual.id, color)
-        if any(carta.endswith("_REBELDE") for carta in cartas_lanzadas_por_jugador):
-            cartas_bastos = []
-            cartas_lanzadas_mano = get_cartas_lanzadas_en_mano(mano_actual.id)
-            for carta in cartas_lanzadas_mano:
-                if carta.endswith("_BASTOS"):
-                    cartas_bastos.append(carta)
-                elif carta.endswith("_BASTOS_PUNTIAGUDOS"):
-                    cartas_bastos.append(carta)
-            lanzador_de_rebelde = get_partida_usuario_by_partida_and_color(partida_id, color)
-            if len(cartas_bastos) >= 1 and len(cartas_bastos) <= 8:
-                lanzador_de_rebelde.puntos += cartas_bastos.count()
-                lanzador_de_rebelde.save()
-            elif len(cartas_bastos) > 8:
-                lanzador_de_rebelde.puntos += 8
-                lanzador_de_rebelde.save()
+        # REBELDE
+        if any(carta.endswith("REBELDE") for carta in cartas_lanzadas_por_jugador):
+            cartas_bastos = sum(1 for carta in cartas_lanzadas_mano if carta.endswith(sufijos_bastos))
+            puntos_extra += min(cartas_bastos, 8)
 
-    # SEGADOR
-    for color in mano_actual.disposicion_jugadores:
-        cartas_lanzadas_por_jugador = get_cartas_lanzadas_en_mano_por_jugador(mano_actual.id, color)
-        if any(carta.endswith("_SEGADOR") for carta in cartas_lanzadas_por_jugador):
-            cartas_valiosas_lanzadas = []
-            cartas_lanzadas_mano = get_cartas_lanzadas_en_mano(mano_actual.id)
-            for carta in cartas_lanzadas_mano:
-                tipo = CATALOGO[carta]["tipo"]
-                if tipo == "especial_val":
-                    cartas_valiosas_lanzadas.append(carta)
-            lanzador_de_segador = get_partida_usuario_by_partida_and_color(partida_id, color)
-            if len(cartas_valiosas_lanzadas) >= 1 and len(cartas_valiosas_lanzadas) <= 6:
-                lanzador_de_segador.puntos += 2*cartas_valiosas_lanzadas.count()
-                lanzador_de_segador.save()
-            elif len(cartas_valiosas_lanzadas) > 6:
-                lanzador_de_segador.puntos += 12
-                lanzador_de_segador.save()
+        # SEGADOR
+        if any(carta.endswith("SEGADOR") for carta in cartas_lanzadas_por_jugador):
+            cartas_valiosas_lanzadas = sum(1 for carta in cartas_lanzadas_mano if CATALOGO[carta]["tipo"] == "especial_val")
+            puntos_extra += min(cartas_valiosas_lanzadas, 6) * 2
 
-    # MONEDERO PECULIAR
-    for color in mano_actual.disposicion_jugadores:
-        cartas_lanzadas_por_jugador = get_cartas_lanzadas_en_mano_por_jugador(mano_actual.id, color)
-        if any(carta.endswith("_MONEDERO_PECULIAR") for carta in cartas_lanzadas_por_jugador):
-            lanzador_de_monedero = get_partida_usuario_by_partida_and_color(partida_id, color)
-            lanzador_de_monedero.puntos += lanzador_de_monedero.eff_acum_monedero
-            lanzador_de_monedero.eff_acum_monedero = 0
-            lanzador_de_monedero.save()
+        # MONEDERO PECULIAR
+        if any(carta.endswith("MONEDERO_PECULIAR") for carta in cartas_lanzadas_por_jugador):
+            puntos_extra += jugador.eff_acum_monedero
+            jugador.eff_acum_monedero = 0
+            necesita_guardar = True
 
-    # DON DINERO Y MARTIRIZADO: sólo otorga 4 puntos extra al ganador de la mano
-    for color in mano_actual.disposicion_jugadores:
-        cartas_lanzadas_por_jugador = get_cartas_lanzadas_en_mano_por_jugador(mano_actual.id, color)
-        if any(carta.endswith("_DON_DINERO") for carta in cartas_lanzadas_por_jugador) or \
-            any(carta.endswith("_MARTIRIZADO") for carta in cartas_lanzadas_por_jugador):
-            if color == mano_actual.ganador:
-                lanzador_de_unica = get_partida_usuario_by_partida_and_color(partida_id, color)
-                lanzador_de_unica.puntos += 4
-                lanzador_de_unica.save()
+        if puntos_extra > 0:
+            jugador.puntos += puntos_extra
+            jugador.save()
+        elif necesita_guardar:
+            jugador.save()

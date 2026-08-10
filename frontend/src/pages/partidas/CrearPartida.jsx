@@ -81,7 +81,7 @@ export default function CrearPartida() {
 			return;
 		}
 
-		const num_jugadores = numJugadoresValue ? Number(numJugadoresValue) : 2;
+		const num_jugadores = numJugadoresValue ? Number(numJugadoresValue) : 3;
 		if (Number.isNaN(num_jugadores)) {
 			setError("El numero de jugadores no es valido");
 			return;
