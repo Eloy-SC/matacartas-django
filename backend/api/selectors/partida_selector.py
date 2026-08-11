@@ -158,3 +158,18 @@ def get_colores_disponibles(partida_id):
     colores_usados = PartidaUsuario.objects.filter(partida_id=partida_id).values_list('color', flat=True)
     colores_disponibles = [color for color in PartidaUsuario.ColorJugador.values if color not in colores_usados]
     return colores_disponibles
+
+def get_colores_ordenados_por_puntuacion(partida_id):
+    partida_usuarios = PartidaUsuario.objects.filter(
+        partida_id=partida_id
+    ).order_by('-puntos')
+
+    colores_por_puntuacion = {}
+
+    for pu in partida_usuarios:
+        if pu.puntos not in colores_por_puntuacion:
+            colores_por_puntuacion[pu.puntos] = []
+
+        colores_por_puntuacion[pu.puntos].append(pu.color)
+
+    return colores_por_puntuacion

@@ -29,3 +29,4 @@ class PartidaUsuario(models.Model):
     acumulador_deaths = models.IntegerField(null=False, default=0)
     eff_acum_monedero = models.IntegerField(null=False, default=0)
     eff_as_extranjero = models.BooleanField(default=False)
+    ticket = models.CharField(max_length=25, null=True, default=None)
