@@ -1,9 +1,10 @@
 from datetime import timezone
 
+from ..services.ticket_service import repartir_tickets
+
 from ..models.mano import Mano
 from ..models.ronda import Ronda
 from ..models.catalogo_cartas import CATALOGO
-from ..models.catalogo_tickets import PROBABILIDAD_TICKET, PROBABILIDAD_TICKET_CLASE, PROBABILIDAD_TICKET_CLASE_ULTIMO
 
 from ..selectors.ronda_selector import get_carta_equivalente, get_cartas_lanzadas_en_mano, get_cartas_valiosas_utilizadas_en_mano, get_ronda_cambios, get_rondas_de_mano
 from ..selectors.partida_selector import get_colores_ordenados_por_puntuacion, get_jugadores_actuales_de_partida, get_partida_by_id, get_partida_usuario_by_partida_and_color, get_partida_usuario_by_partida_and_usuario
@@ -99,7 +100,7 @@ def repartir_cartas(actor, partida_id):
     if not partida_usuario:
         raise PermissionError("No participas en la partida.")
 
-    shuffle(partida.baraja)
+    random.shuffle(partida.baraja)
     vuelta = 1
     while vuelta < 5:
         for jugador in jugadores:
@@ -239,68 +240,6 @@ def get_datos_carta(actor, carta, partida_id):
     }
 
     return datos
-
-def repartir_tickets(partida_id):
-    jugadores = get_colores_ordenados_por_puntuacion(partida_id)
-    puntuaciones = list(jugadores.keys())
-
-    tickets_por_clase = {
-        0: get_tickets_clase_0(),
-        1: get_tickets_clase_1(),
-        2: get_tickets_clase_2(),
-        3: get_tickets_clase_3(),
-    }
-
-    for indice, puntuacion in enumerate(puntuaciones):
-        posicion = indice + 1
-
-        # El primero nunca recibe
-        if posicion == 1:
-            continue
-
-        # Probabilidades correspondientes a la posición
-        if posicion == len(puntuaciones):
-            probabilidad_ticket = 1.0
-            probabilidades_clase = PROBABILIDAD_TICKET_CLASE_ULTIMO
-        else:
-            probabilidad_ticket = PROBABILIDAD_TICKET[posicion]
-            probabilidades_clase = PROBABILIDAD_TICKET_CLASE[posicion]
-
-        # Cada jugador recibe o no un ticket, aunque estén empatados (por eso el for)
-        for color in jugadores[puntuacion]:
-
-            if random.random() >= probabilidad_ticket:
-                continue
-
-            clase = random.choices(
-                list(probabilidades_clase.keys()),
-                weights=list(probabilidades_clase.values()),
-                k=1
-            )[0]
-
-            ticket = random.choice(tickets_por_clase[clase])
-
-            partida_usuario = get_partida_usuario_by_partida_and_color(partida_id, color)
-            if partida_usuario:
-                partida_usuario.ticket = ticket
-                partida_usuario.save()
-
-def usar_ticket(actor, partida_id, ticket):
-    """
-    Permite a un jugador usar un ticket en la partida.
-    """
-    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
-        raise PermissionError("No participas en la partida.")
-
-    if partida_usuario.ticket != ticket:
-        raise ValueError("No tienes este ticket.")
-
-    # Aquí se implementaría la lógica específica de cada tipo de ticket según el catálogo.
-
-    # Después de usar el ticket, se elimina del jugador.
-    partida_usuario.ticket = None
-    partida_usuario.save()
 
 def siguiente_mano(actor, partida_id):
     """

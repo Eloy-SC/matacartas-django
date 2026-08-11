@@ -559,7 +559,7 @@ def iniciar_partida(actor, partida_id, manual=False):
 
     repartir_cartas(actor, partida_id)  # Reparte las cartas a los jugadores al iniciar la partida
 
-def aux_generar_baraja_inicial(cartas_especiales, num_jugadores):
+def aux_generar_baraja_inicial(cartas_especiales, num_jugadores, valiosas=None, magicas=None, unicas=None):
     """
     Genera la baraja inicial de cartas para una partida.
     """
@@ -596,18 +596,32 @@ def aux_generar_baraja_inicial(cartas_especiales, num_jugadores):
             for nombre, datos in CATALOGO.items()
             if datos["tipo"] == "especial_uni"
         ]
-        if num_aleatorio < 0.7:
+
+        if valiosas is None:
             valiosas_selec = random.sample(cartas_valiosas, 8)
-            magicas_selec = random.sample(cartas_magicas, 4)
-            unicas_selec = []
-        elif num_aleatorio < 0.95:
-            valiosas_selec = random.sample(cartas_valiosas, 8)
-            magicas_selec = random.sample(cartas_magicas, 3)
-            unicas_selec = random.sample(cartas_unicas, 1)
         else:
-            valiosas_selec = random.sample(cartas_valiosas, 8)
-            magicas_selec = random.sample(cartas_magicas, 2)
-            unicas_selec = random.sample(cartas_unicas, 2)
+            valiosas_selec = random.sample(cartas_valiosas, valiosas)
+
+        if magicas is None:
+            if num_aleatorio < 0.7:
+                magicas_selec = random.sample(cartas_magicas, 4)
+            elif num_aleatorio < 0.95:
+                magicas_selec = random.sample(cartas_magicas, 3)
+            else:
+                magicas_selec = random.sample(cartas_magicas, 2)
+        else:
+            magicas_selec = random.sample(cartas_magicas, magicas)
+
+        if unicas is None:
+            if num_aleatorio < 0.7:
+                unicas_selec = []
+            elif num_aleatorio < 0.95:
+                unicas_selec = random.sample(cartas_unicas, 1)
+            else:
+                unicas_selec = random.sample(cartas_unicas, 2)
+        else:
+            unicas_selec = random.sample(cartas_unicas, unicas)
+
         cartas_especiales_selec = valiosas_selec + magicas_selec + unicas_selec
         cartas_especiales_selec_posiciones = {
             CATALOGO[nombre]["posicion"]
