@@ -1,17 +1,17 @@
 import random
 
-from ..services.partida_service import aux_generar_baraja_inicial
+from ..utils.funciones_aux import aux_generar_baraja_inicial
 
 from ..models.catalogo_tickets import TICKETS, PROBABILIDAD_TICKET, PROBABILIDAD_TICKET_CLASE, PROBABILIDAD_TICKET_CLASE_ULTIMO
 
-from ..selectors.mano_selector import get_tickets_clase_0, get_tickets_clase_1, get_tickets_clase_2, get_tickets_clase_3
+from ..selectors.ticket_selector import get_tickets_clase_0, get_tickets_clase_1, get_tickets_clase_2, get_tickets_clase_3
 
-from ..selectors.partida_selector import get_colores_jugadores, get_colores_ordenados_por_puntuacion, get_colores_ordenados_por_puntuacion_con_ticket, get_jugadores_actuales_de_partida, get_partida_by_id, get_partida_by_id, get_partida_usuario_by_partida_and_color, get_partida_usuario_by_partida_and_usuario
+from ..selectors.partida_selector import get_colores_jugadores, get_colores_ordenados_por_puntuacion, get_colores_ordenados_por_puntuacion_con_ticket, get_partida_by_id, get_partida_usuario_by_partida_and_color, get_partida_usuario_by_partida_and_usuario
 
 
 def repartir_tickets(partida_id):
-    partida_num_jug = get_partida_by_id(partida_id).num_jugadores
-    partida_especiales = get_partida_by_id(partida_id).cartas_especiales
+    partida_num_jug = get_partida_by_id(partida_id).first().num_jugadores
+    partida_especiales = get_partida_by_id(partida_id).first().cartas_especiales
     jugadores = get_colores_ordenados_por_puntuacion(partida_id)
     puntuaciones = list(jugadores.keys())
 
@@ -75,7 +75,7 @@ def usar_ticket(actor, partida_id, ticket):
     if partida_usuario.ticket != ticket:
         raise ValueError("No tienes este ticket.")
     
-    partida = get_partida_by_id(partida_id)
+    partida = get_partida_by_id(partida_id).first()
     if not partida.tickets:
         raise PermissionError("No se pueden usar tickets en esta partida.")
     if partida.turno_actual != partida_usuario.color:
@@ -103,7 +103,7 @@ def usar_ticket(actor, partida_id, ticket):
     partida_usuario.save()
 
 def aux_usar_ticket_cb(partida_id, ticket):
-    partida = get_partida_by_id(partida_id)
+    partida = get_partida_by_id(partida_id).first()
     baraja_nueva = None
     random.seed()
     num_aleatorio = random.random()

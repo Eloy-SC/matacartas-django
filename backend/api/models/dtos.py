@@ -9,6 +9,7 @@ class ContrincanteDTO:
     puntos: int
     cartas_cant: int
     carta_comodin: bool
+    ticket: bool
 
 @dataclass
 class JugadorDTO:
@@ -21,6 +22,8 @@ class JugadorDTO:
     carta_comodin: str | None
     acumulador_kills: int
     acumulador_deaths: int
+    retirado: bool
+    ticket: str | None
 
 @dataclass
 class RondaDTO:

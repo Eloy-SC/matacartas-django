@@ -109,12 +109,14 @@ def get_jugadores_actuales_de_partida(id):
             'creador': pu.creador,
             'color': pu.color,
             'puntos': pu.puntos,
+            'ticket': pu.ticket,
             'cartas': pu.cartas,
             'carta_comodin': pu.carta_comodin,
             'acumulador_kills': pu.acumulador_kills,
             'acumulador_deaths': pu.acumulador_deaths,
             'eff_acum_monedero': pu.eff_acum_monedero,
             'eff_as_extranjero': pu.eff_as_extranjero,
+            'retirado': pu.retirado,
         })
     return jugadores
 

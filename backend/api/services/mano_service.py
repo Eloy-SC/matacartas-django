@@ -7,8 +7,8 @@ from ..models.ronda import Ronda
 from ..models.catalogo_cartas import CATALOGO
 
 from ..selectors.ronda_selector import get_carta_equivalente, get_cartas_lanzadas_en_mano, get_cartas_valiosas_utilizadas_en_mano, get_ronda_cambios, get_rondas_de_mano
-from ..selectors.partida_selector import get_colores_ordenados_por_puntuacion, get_jugadores_actuales_de_partida, get_partida_by_id, get_partida_usuario_by_partida_and_color, get_partida_usuario_by_partida_and_usuario
-from ..selectors.mano_selector import get_jugadores_en_mesa, get_mano_actual, get_tickets_clase_0, get_tickets_clase_1, get_tickets_clase_2, get_tickets_clase_3
+from ..selectors.partida_selector import get_jugadores_actuales_de_partida, get_partida_by_id, get_partida_usuario_by_partida_and_color, get_partida_usuario_by_partida_and_usuario
+from ..selectors.mano_selector import get_jugadores_en_mesa, get_mano_actual
 
 from ..models.dtos import ContrincanteDTO, JugadorDTO, MesaDTO, RondaDTO, ManoDTO, PartidaDTO
 
@@ -44,6 +44,8 @@ def get_mesa(actor, partida_id):
                 carta_comodin=jugador.get("carta_comodin"),
                 acumulador_kills=jugador.get("acumulador_kills", 0),
                 acumulador_deaths=jugador.get("acumulador_deaths", 0),
+                retirado=jugador.get("retirado", False),
+                ticket=jugador.get("ticket")
             )
         else:
             contrincantes_dto.append(ContrincanteDTO(
@@ -53,7 +55,8 @@ def get_mesa(actor, partida_id):
                 color=jugador["color"],
                 puntos=jugador["puntos"],
                 cartas_cant=len(jugador.get("cartas", [])),
-                carta_comodin=jugador.get("carta_comodin") is not None
+                carta_comodin=jugador.get("carta_comodin") is not None,
+                ticket=jugador.get("ticket") is not None
             ))
 
     partida_dto = PartidaDTO(
@@ -245,7 +248,6 @@ def siguiente_mano(actor, partida_id):
     """
     Inicia la siguiente mano en la partida.
     """
-    print("se ha ejecutado siguiente_mano")
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
     if not partida_usuario:
         raise PermissionError("No participas en la partida.")
@@ -291,7 +293,7 @@ def siguiente_mano(actor, partida_id):
         nueva_mano = Mano(partida=partida, num=mano_actual.num + 1)
         nueva_mano.save()
 
-        if nueva_mano.num % 7 == 0:
+        if nueva_mano.num % 2 == 0:
             repartir_tickets(partida_id)
 
         ronda_inicial = Ronda(mano=nueva_mano, num=0, cartas={}, cambios=0)

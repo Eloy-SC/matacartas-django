@@ -4,6 +4,10 @@ from .views.ronda_view import (
     jugar_carta
 )
 
+from .views.ticket_view import (
+    usar_ticket
+)
+
 from .views.mano_view import (
     cambiar_cartas,
     elegir_carta_comodin,
@@ -119,5 +123,6 @@ urlpatterns = [
     path("partida/<int:partida_id>/mano/elegir-carta-comodin/", elegir_carta_comodin, name="elegir-carta-comodin"),
     path("partida/<int:partida_id>/mano/siguiente-mano/", siguiente_mano, name="siguiente-mano"),
 
-    path("partida/<int:partida_id>/mano/ronda/jugar-carta/", jugar_carta, name="jugar-carta")
+    path("partida/<int:partida_id>/mano/ronda/jugar-carta/", jugar_carta, name="jugar-carta"),
+    path("partida/<int:partida_id>/mano/ronda/usar-ticket/", usar_ticket, name="usar-ticket")
 ]

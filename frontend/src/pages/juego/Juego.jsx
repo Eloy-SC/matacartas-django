@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import CartasPropias from "./CartasPropias.jsx";
+import TicketJugador from "./TicketJugador.jsx";
 import {
 	formatCartas,
 	handleCambiarCartas,
@@ -272,6 +273,10 @@ export default function Juego() {
 					)}
 
 					<div className="juego-mesa__cartas-y-acciones">
+							{/* Contenedor lateral izquierdo: ticket del jugador */}
+							<div className="juego-mesa__lado-izquierdo">
+								<TicketJugador ticket={jugador?.ticket} partidaId={partidaId} loadMesa={loadMesa} />
+							</div>
 						{jugador ? (
 							<div className="juego-mesa__cartas-jugador-propio">
 								<CartasEnMesa participante={jugador} rondas={rondas} className="cartas-en-mesa--jugador-propio" partidaId={partidaId} esJugadorPropio />
