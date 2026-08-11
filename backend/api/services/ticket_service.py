@@ -11,6 +11,7 @@ from ..selectors.partida_selector import get_colores_ordenados_por_puntuacion, g
 
 def repartir_tickets(partida_id):
     partida_num_jug = get_partida_by_id(partida_id).num_jugadores
+    partida_especiales = get_partida_by_id(partida_id).cartas_especiales
     jugadores = get_colores_ordenados_por_puntuacion(partida_id)
     puntuaciones = list(jugadores.keys())
 
@@ -49,8 +50,13 @@ def repartir_tickets(partida_id):
             )[0]
 
             ticket = random.choice(tickets_por_clase[clase])
+            # Si el ticket es de retirada obligada y hay 2 jugadores, se vuelve a elegir hasta que no lo sea
             if TICKETS[ticket]["seccion"] == "retirada_obligada" and partida_num_jug == 2:
                 while TICKETS[ticket]["seccion"] == "retirada_obligada":
+                    ticket = random.choice(tickets_por_clase[clase])
+            # Si el ticket es de cambio de baraja y no hay cartas especiales, se vuelve a elegir hasta que no lo sea
+            elif TICKETS[ticket]["seccion"] == "cambio_baraja" and not partida_especiales:
+                while TICKETS[ticket]["seccion"] == "cambio_baraja":
                     ticket = random.choice(tickets_por_clase[clase])
 
             partida_usuario = get_partida_usuario_by_partida_and_color(partida_id, color)
@@ -78,17 +84,17 @@ def usar_ticket(actor, partida_id, ticket):
     if ticket.startswith("ticket_cb"):
         aux_usar_ticket_cb(partida_id, ticket)
     elif ticket.startswith("ticket_ic"):
-        aux_usar_ticket_ic(partida_id, ticket)
+        aux_usar_ticket_ic(partida_id, ticket, partida_usuario.color)
     elif ticket.startswith("ticket_pp"):
-        aux_usar_ticket_pp(partida_id, ticket)
+        aux_usar_ticket_pp(partida_id, ticket, partida_usuario.color)
     elif ticket.startswith("ticket_rp"):
-        aux_usar_ticket_rp(partida_id, ticket)
+        aux_usar_ticket_rp(partida_id, ticket, partida_usuario.color)
     elif ticket.startswith("ticket_cp"):
-        aux_usar_ticket_cp(partida_id, ticket)
+        aux_usar_ticket_cp(partida_id, ticket, partida_usuario.color)
     elif ticket.startswith("ticket_ro"):
-        aux_usar_ticket_ro(partida_id, ticket)
+        aux_usar_ticket_ro(partida_id, ticket, partida_usuario.color)
     elif ticket.startswith("ticket_rt"):
-        aux_usar_ticket_rt(partida_id, ticket)
+        aux_usar_ticket_rt(partida_id, ticket, partida_usuario.color)
     else:
         raise ValueError("Ticket no reconocido.")
 
@@ -121,20 +127,46 @@ def aux_usar_ticket_cb(partida_id, ticket):
     partida.baraja = baraja_nueva
     partida.save()
 
-def aux_usar_ticket_ic(partida_id, ticket):
+def aux_usar_ticket_ic(partida_id, ticket, actor_color):
+    dic_colores = get_colores_ordenados_por_puntuacion(partida_id)
+    dic_colores.remove(actor_color)
+
+    if ticket.endswith("azar"):
+        puntuacion = random.choice(dic_colores)
+        color_objetivo = random.choice(list(dic_colores[puntuacion].values()))
+    elif ticket.endswith("primero"):
+        color_objetivo = random.choice(list(dic_colores[dic_colores[0]].values()))  # El primero de la lista es el que tiene más puntos
+
+    actor = get_partida_usuario_by_partida_and_color(partida_id, actor_color)
+    comodin_actor = actor.carta_comodin
+    objetivo = get_partida_usuario_by_partida_and_color(partida_id, color_objetivo)
+    comodin_objetivo = objetivo.carta_comodin
+    intercambio = comodin_actor # variable de intercambio para almacenar el comodin del actor temporalmente
+    comodin_actor = comodin_objetivo
+    comodin_objetivo = intercambio
+
+    actor.save()
+    objetivo.save()
+
+def aux_usar_ticket_pp(partida_id, ticket, actor_color):
     pass
 
-def aux_usar_ticket_pp(partida_id, ticket):
+def aux_usar_ticket_rp(partida_id, ticket, actor_color):
     pass
 
-def aux_usar_ticket_rp(partida_id, ticket):
+def aux_usar_ticket_cp(partida_id, ticket, actor_color):
     pass
 
-def aux_usar_ticket_cp(partida_id, ticket):
+def aux_usar_ticket_ro(partida_id, ticket, actor_color):
     pass
 
-def aux_usar_ticket_ro(partida_id, ticket):
+def aux_usar_ticket_rt(partida_id, ticket, actor_color):
     pass
-
-def aux_usar_ticket_rt(partida_id, ticket):
-    pass
+    '''
+    elif ticket.endswith("mayor_clase"):
+            color_objetivo = None
+            for puntuacion in dic_colores:
+                for color in dic_colores[puntuacion]:
+                    if color_objetivo is None or TICKETS[get_partida_usuario_by_partida_and_color(partida_id, color).ticket]["clase"] < TICKETS[get_partida_usuario_by_partida_and_color(partida_id, color_objetivo).ticket]["clase"]:
+                        color_objetivo = color
+    '''
