@@ -29,7 +29,7 @@ class JugadorDTO:
 class RondaDTO:
     ronda_id: int
     ronda_num: int
-    cartas: list[str] | None
+    cartas: dict[str, str | None]
     cambios: int
 
 @dataclass

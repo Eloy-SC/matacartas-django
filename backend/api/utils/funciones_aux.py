@@ -5,6 +5,21 @@ from ..selectors.partida_selector import get_partida_usuario_by_partida_and_colo
 from ..models.catalogo_cartas import CATALOGO
 
 
+def obtener_primer_jugador_activo(partida):
+    """
+    Obtiene el primer jugador activo de la disposición actual.
+    """
+    if not partida or not partida.disposicion_jugadores:
+        return None
+
+    for color in partida.disposicion_jugadores:
+        partida_usuario = get_partida_usuario_by_partida_and_color(partida.id, color)
+        if partida_usuario and not partida_usuario.retirado:
+            return color
+
+    return None
+
+
 def aux_siguiente_turno(partida):
     """
     Cambia el turno al siguiente jugador en la disposición de jugadores.
@@ -14,14 +29,16 @@ def aux_siguiente_turno(partida):
     
     disposicion = partida.disposicion_jugadores
     indice_actual = disposicion.index(partida.turno_actual)
-    indice_siguiente = (indice_actual + 1) % len(disposicion)
-    partida.turno_actual = disposicion[indice_siguiente]
-    partida.save()
+    for offset in range(1, len(disposicion) + 1):
+        indice_siguiente = (indice_actual + offset) % len(disposicion)
+        color_turno_actual = disposicion[indice_siguiente]
+        partida_usuario = get_partida_usuario_by_partida_and_color(partida.id, color_turno_actual)
+        if partida_usuario and not partida_usuario.retirado:
+            partida.turno_actual = color_turno_actual
+            partida.save()
+            return
 
-    color_turno_actual = partida.turno_actual
-    partida_usuario = get_partida_usuario_by_partida_and_color(partida.id, color_turno_actual)
-    if partida_usuario.retirado:
-        aux_siguiente_turno(partida)  # Llamada recursiva para saltar al siguiente jugador
+    raise ValueError("No hay jugadores activos disponibles.")
 
 def aux_generar_baraja_inicial(cartas_especiales, num_jugadores, valiosas=None, magicas=None, unicas=None):
     """

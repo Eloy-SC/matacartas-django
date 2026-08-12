@@ -14,7 +14,7 @@ from ..models.dtos import ContrincanteDTO, JugadorDTO, MesaDTO, RondaDTO, ManoDT
 
 import random
 
-from ..utils.funciones_aux import aux_siguiente_turno
+from ..utils.funciones_aux import aux_siguiente_turno, obtener_primer_jugador_activo
 
 def get_mesa(actor, partida_id):
     """
@@ -98,6 +98,9 @@ def repartir_cartas(actor, partida_id):
 
     partida = get_partida_by_id(partida_id).first()
     jugadores = get_jugadores_en_mesa(partida_id, partida.disposicion_jugadores)
+    primer_jugador_activo = obtener_primer_jugador_activo(partida)
+    if not primer_jugador_activo:
+        raise ValueError("No hay jugadores activos para repartir la mano.")
 
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
     if not partida_usuario:
@@ -114,7 +117,7 @@ def repartir_cartas(actor, partida_id):
                 pass
         vuelta += 1
 
-    partida.turno_actual = partida.disposicion_jugadores[0] # El primer jugador en la disposición de jugadores comienza el turno.
+    partida.turno_actual = primer_jugador_activo # El primer jugador activo en la disposición de jugadores comienza el turno.
 
     # Guardar cambios
     for jugador in jugadores:
@@ -134,10 +137,11 @@ def jugador_quiere_cambiar(actor, partida_id):
         raise ValueError("Esta no es la ronda de cambios.")
 
     partida = get_partida_by_id(partida_id).first()
+    primer_jugador_activo = obtener_primer_jugador_activo(partida)
     
     aux_siguiente_turno(partida)
 
-    if partida.turno_actual == partida.disposicion_jugadores[0]: # Si el turno es el ult (sig turno = primer jugador), procedemos al cambio
+    if partida.turno_actual == primer_jugador_activo: # Si el turno es el ult (sig turno = primer jugador activo), procedemos al cambio
         ronda = get_ronda_cambios(get_mano_actual(partida_id).id)
         ronda.cambios = 1
         ronda.save()
@@ -156,7 +160,10 @@ def jugador_no_quiere_cambiar(actor, partida_id):
         raise ValueError("Esta no es la ronda de cambios.")
 
     partida = get_partida_by_id(partida_id).first()
-    partida.turno_actual = partida.disposicion_jugadores[0]  # Reinicia el turno al primer jugador en la disposición de jugadores
+    primer_jugador_activo = obtener_primer_jugador_activo(partida)
+    if not primer_jugador_activo:
+        raise ValueError("No hay jugadores activos para continuar la mano.")
+    partida.turno_actual = primer_jugador_activo  # Reinicia el turno al primer jugador activo en la disposición de jugadores
 
     ronda = get_ronda_cambios(get_mano_actual(partida_id).id)
     ronda.cambios = 2
@@ -176,6 +183,7 @@ def cambiar_cartas(actor, partida_id, cartas_a_cambiar):
         raise ValueError("Esta no es la ronda de cambios.")
 
     partida = get_partida_by_id(partida_id).first()
+    primer_jugador_activo = obtener_primer_jugador_activo(partida)
 
     # Cambiar las cartas del jugador
     for carta in cartas_a_cambiar:
@@ -192,7 +200,7 @@ def cambiar_cartas(actor, partida_id, cartas_a_cambiar):
 
     aux_siguiente_turno(partida)
 
-    if partida.turno_actual == partida.disposicion_jugadores[0]: # Si el turno es el ult (sig turno = primer jugador), 
+    if partida.turno_actual == primer_jugador_activo: # Si el turno es el ult (sig turno = primer jugador activo), 
         ronda = get_ronda_cambios(get_mano_actual(partida_id).id)
         ronda.cambios = 0
         ronda.save()
@@ -217,9 +225,10 @@ def elegir_carta_comodin(actor, partida_id, carta_comodin):
     partida_usuario.save()
 
     partida = get_partida_by_id(partida_id).first()
+    primer_jugador_activo = obtener_primer_jugador_activo(partida)
     aux_siguiente_turno(partida)
 
-    if partida.turno_actual == partida.disposicion_jugadores[0]: # Si el turno es el ult (sig turno = primer jugador), crear ronda 1
+    if partida.turno_actual == primer_jugador_activo: # Si el turno es el ult (sig turno = primer jugador activo), crear ronda 1
         ronda = Ronda(mano=get_mano_actual(partida_id), num=1, cartas={}, cambios=2)
         ronda.save()
 
@@ -284,8 +293,10 @@ def siguiente_mano(actor, partida_id):
                     if carta_comodin not in partida_usuario.cartas:
                         partida_usuario.cartas.append(carta_comodin)
                     partida_usuario.carta_comodin = None
+                    # Actualizar acumuladores de efectos si corresponde
                     if carta_comodin == "MONEDERO_PECULIAR" and partida_usuario.eff_acum_monedero <= 15:
                         partida_usuario.eff_acum_monedero += 1
+                    partida_usuario.retirado = False  # Asegurarse de que el jugador no esté marcado como retirado
                     partida_usuario.save()
 
 
@@ -300,7 +311,9 @@ def siguiente_mano(actor, partida_id):
         ronda_inicial.save()
 
         # Colocar al primer jugador al final para rotar posiciones
-        empezador = partida.disposicion_jugadores[0]
+        empezador = obtener_primer_jugador_activo(partida)
+        if not empezador:
+            raise ValueError("No hay jugadores activos para iniciar la siguiente mano.")
         partida.disposicion_jugadores.remove(empezador)
         partida.disposicion_jugadores.append(empezador)
         partida.save()

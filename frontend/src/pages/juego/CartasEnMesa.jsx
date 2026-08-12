@@ -20,19 +20,30 @@ function obtenerCartasJugadasDeParticipante(rondas, colorParticipante) {
 			return numRonda > 0 && numRonda < 4;
 		})
 		.sort((rondaA, rondaB) => (rondaA?.ronda_num ?? 0) - (rondaB?.ronda_num ?? 0))
-		.flatMap((ronda) => {
+		.map((ronda) => {
+			const numRonda = ronda?.ronda_num ?? 0;
 			const cartaJugada = ronda?.cartas?.[colorParticipante];
 
 			if (Array.isArray(cartaJugada)) {
-				return cartaJugada.filter(Boolean);
+				return {
+					rondaNum: numRonda,
+					carta: cartaJugada.find(Boolean) ?? null,
+				};
 			}
 
 			if (typeof cartaJugada === "string" && cartaJugada.trim()) {
-				return [cartaJugada];
+				return {
+					rondaNum: numRonda,
+					carta: cartaJugada,
+				};
 			}
 
-			return [];
-		});
+			return {
+				rondaNum: numRonda,
+				carta: null,
+			};
+		})
+		.filter((entrada) => Boolean(entrada?.carta));
 }
 
 function obtenerCartaReveladaDeRonda(ronda, colorParticipante) {
@@ -73,7 +84,7 @@ function obtenerCartaComodinJugadorPropio(participante, esJugadorPropio) {
 	return null;
 }
 
-function renderizarCartaConTooltip({ carta, indice, manejarHoverCarta, limpiarHoverCarta }) {
+function renderizarCartaConTooltip({ carta, rondaNum, manejarHoverCarta, limpiarHoverCarta }) {
 	const rutaCarta = obtenerRutaCarta(carta);
 
 	if (!rutaCarta) {
@@ -82,15 +93,15 @@ function renderizarCartaConTooltip({ carta, indice, manejarHoverCarta, limpiarHo
 
 	return (
 		<div
-			key={`${carta}-${indice}`}
+			key={`${carta}-${rondaNum}`}
 			className="cartas-en-mesa__carta-wrapper"
 			style={{
 				position: "absolute",
 				left: 0,
-				top: `${indice * DESPLAZAMIENTO_CARTAS}px`,
+				top: `${(rondaNum - 1) * DESPLAZAMIENTO_CARTAS}px`,
 				width: `${ANCHO_CARTA}px`,
 				height: `${ALTO_CARTA}px`,
-				zIndex: indice + 1,
+				zIndex: rondaNum,
 			}}
 			onMouseEnter={(evento) => void manejarHoverCarta(carta, evento)}
 			onMouseLeave={limpiarHoverCarta}
@@ -174,10 +185,10 @@ export default function CartasEnMesa({ participante, rondas = [], className = ""
 				{cartasJugadas.length === 0 ? (
 					<div className="cartas-en-mesa__pila cartas-en-mesa__pila--vacia" />
 				) : (
-					cartasJugadas.map((carta, indice) =>
+					cartasJugadas.map(({ carta, rondaNum }) =>
 						renderizarCartaConTooltip({
 							carta,
-							indice,
+							rondaNum,
 							manejarHoverCarta,
 							limpiarHoverCarta,
 						})

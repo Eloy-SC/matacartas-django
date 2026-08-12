@@ -4,7 +4,7 @@ from ..models.ronda import Ronda
 
 from ..selectors.ronda_selector import get_cartas_lanzadas_en_mano, get_cartas_lanzadas_en_mano_hasta_ronda, get_cartas_lanzadas_en_mano_por_jugador, get_cartas_matadoras_de_carta_equivalente, get_jugador_lanzador_carta_mayor_fuerza, get_rondas_de_mano
 
-from ..utils.funciones_aux import aux_siguiente_turno
+from ..utils.funciones_aux import aux_siguiente_turno, obtener_primer_jugador_activo
 
 from ..selectors.mano_selector import get_mano_actual
 
@@ -41,7 +41,7 @@ def jugar_carta(user, partida_id, carta):
     partida_usuario.save()
 
     aux_siguiente_turno(partida)  # Avanzar al siguiente turno
-    if partida.turno_actual == partida.disposicion_jugadores[0]:  # Si el turno vuelve al primer jugador, iniciar nueva ronda
+    if partida.turno_actual == obtener_primer_jugador_activo(partida):  # Si el turno vuelve al primer jugador activo, iniciar nueva ronda
         ganador_ronda(partida_id)  # Determinar ganador de la ronda y preparar la siguiente
 
     mano_actualizada = get_mano_actual(partida_id)
@@ -198,7 +198,7 @@ def retirarse_de_mano(actor, partida_id):
                 break
     else:
         aux_siguiente_turno(partida)  # Avanzar al siguiente turno
-        if partida.turno_actual == partida.disposicion_jugadores[0]:  # Si el turno vuelve al primer jugador, iniciar nueva ronda
+        if partida.turno_actual == obtener_primer_jugador_activo(partida):  # Si el turno vuelve al primer jugador activo, iniciar nueva ronda
                 ganador_ronda(partida_id)  # Determinar ganador de la ronda y preparar la siguiente
 
     mano_actualizada = get_mano_actual(partida_id)
