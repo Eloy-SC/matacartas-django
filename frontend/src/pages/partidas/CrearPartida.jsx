@@ -178,7 +178,7 @@ export default function CrearPartida() {
 						</select>
 					</div>
 					{numJugadores === 2 && (
-						<p style={{ marginTop: 8, color: "black", fontWeight: "bold" }}>
+						<p style={{ marginTop: 8, color: "black", fontWeight: "bold", fontSize: 14 }}>
 							⚠️ Las partidas de 2 jugadores<br></br>
 							no permiten una experiencia<br></br>
 							completa.

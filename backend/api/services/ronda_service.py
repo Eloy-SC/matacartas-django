@@ -177,6 +177,7 @@ def retirarse_de_mano(actor, partida_id):
         raise ValueError("Partida no encontrada.")
 
     partida_usuario.retirado = True
+    partida_usuario.puntos -= 1  # Penalizacion por retirarse de la mano
     partida_usuario.save()
     cantidad_retirados = 0
     for jugador in get_jugadores_actuales_de_partida(partida_id):
@@ -199,6 +200,12 @@ def retirarse_de_mano(actor, partida_id):
         aux_siguiente_turno(partida)  # Avanzar al siguiente turno
         if partida.turno_actual == partida.disposicion_jugadores[0]:  # Si el turno vuelve al primer jugador, iniciar nueva ronda
                 ganador_ronda(partida_id)  # Determinar ganador de la ronda y preparar la siguiente
+
+    mano_actualizada = get_mano_actual(partida_id)
+    if mano_actualizada and mano_actualizada.ganador is not None:
+        return True  # Indica que la mano ha terminado
+    else:
+        return False  # Indica que la mano sigue en curso
 
 ## ESTAS FUNCIONES QUIZAS ESTARÍAN MEJOR EN RONDA_SELECTOR
 def aux_get_carta_mayor_fuerza(partida_id):

@@ -1,5 +1,7 @@
 import random
 
+from ..selectors.partida_selector import get_partida_usuario_by_partida_and_color
+
 from ..models.catalogo_cartas import CATALOGO
 
 
@@ -15,6 +17,11 @@ def aux_siguiente_turno(partida):
     indice_siguiente = (indice_actual + 1) % len(disposicion)
     partida.turno_actual = disposicion[indice_siguiente]
     partida.save()
+
+    color_turno_actual = partida.turno_actual
+    partida_usuario = get_partida_usuario_by_partida_and_color(partida.id, color_turno_actual)
+    if partida_usuario.retirado:
+        aux_siguiente_turno(partida)  # Llamada recursiva para saltar al siguiente jugador
 
 def aux_generar_baraja_inicial(cartas_especiales, num_jugadores, valiosas=None, magicas=None, unicas=None):
     """

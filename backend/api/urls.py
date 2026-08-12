@@ -1,7 +1,8 @@
 from django.urls import path
 
 from .views.ronda_view import (
-    jugar_carta
+    jugar_carta,
+    retirarse_de_mano
 )
 
 from .views.ticket_view import (
@@ -124,5 +125,6 @@ urlpatterns = [
     path("partida/<int:partida_id>/mano/siguiente-mano/", siguiente_mano, name="siguiente-mano"),
 
     path("partida/<int:partida_id>/mano/ronda/jugar-carta/", jugar_carta, name="jugar-carta"),
+    path("partida/<int:partida_id>/mano/ronda/retirarse/", retirarse_de_mano, name="retirarse-de-mano"),
     path("partida/<int:partida_id>/mano/ronda/usar-ticket/", usar_ticket, name="usar-ticket")
 ]

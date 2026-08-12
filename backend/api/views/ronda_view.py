@@ -30,3 +30,23 @@ def jugar_carta(request, partida_id):
         notificar_mano_finalizada(partida_id, get_mano_actual(partida_id).id)
 
     return Response({"detail": "Carta jugada correctamente."}, status=200)
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def retirarse_de_mano(request, partida_id):
+    """
+    Endpoint para retirarse de una mano en una partida.
+    """
+    try:
+        fin_mano = ronda_service.retirarse_de_mano(request.user, partida_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    notificar_mesa_actualizada(partida_id)
+
+    if fin_mano:
+        notificar_mano_finalizada(partida_id, get_mano_actual(partida_id).id)
+
+    return Response({"detail": "Retirada de la mano realizada correctamente."}, status=200)

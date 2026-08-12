@@ -11,6 +11,7 @@ import {
 	handleSiguienteMano,
 	handleToggleCartaSeleccionada,
 	handleToggleCartaSeleccionadaUnica,
+	handleRetirarseDeMano,
 } from "./FuncionesMesa.jsx";
 import CartasEnMesa from "./CartasEnMesa.jsx";
 import InfoSuperior from "./InfoSuperior.jsx";
@@ -61,6 +62,16 @@ export default function Juego() {
 	const puedeElegirComodin =
 		esTurnoJugador &&
 		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 2);
+
+	const esFinMano = Boolean(mano?.ganador);
+
+	const mostrarBotonRetirada = 
+		Boolean(rondaActual && rondaActual.ronda_num >= 1 && rondaActual.ronda_num <= 3);
+	const puedeRetirarseDeMano = 
+		mostrarBotonRetirada && 
+		esTurnoJugador &&
+		!jugador?.retirado && 
+		!esFinMano;
 
 	const indicacionTuTurno = 
 		esTurnoJugador;
@@ -374,6 +385,17 @@ export default function Juego() {
 									onClick={() => void handleEleccionComodin(partidaId, cartaComodinSeleccionada, loadMesa)}
 								>
 									Elegir carta comodín
+								</button>
+							</div>
+						) : mostrarBotonRetirada ? (
+							<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">
+								<button
+									type="button"
+									className="main-primary-button"
+									disabled={!puedeRetirarseDeMano}
+									onClick={() => void handleRetirarseDeMano(partidaId, loadMesa)}
+								>
+									Retirarse de la mano
 								</button>
 							</div>
 						) : null}

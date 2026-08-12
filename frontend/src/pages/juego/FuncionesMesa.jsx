@@ -135,6 +135,33 @@ export async function handleJugarCarta(partidaId, carta, loadMesa) {
 	}
 }
 
+export async function handleRetirarseDeMano(partidaId, loadMesa) {
+	try {
+		const csrfToken = await obtenerCsrfToken();
+
+		const retirarseRes = await fetch(`/api/partida/${partidaId}/mano/ronda/retirarse/`, {
+			method: "PUT",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json",
+				"X-CSRFToken": csrfToken,
+			},
+		});
+
+		const retirarseData = await retirarseRes.json().catch(() => ({}));
+
+		if (!retirarseRes.ok) {
+			throw new Error(retirarseData?.detail || "Error retirándose de la mano");
+		}
+
+		await loadMesa({ showLoading: false });
+		return retirarseData;
+	} catch (e) {
+		alert(e instanceof Error ? e.message : "Error retirándose de la mano");
+		return null;
+	}
+}
+
 export async function handleSiguienteMano(partidaId, loadMesa) {
 	try {
 		const csrfToken = await obtenerCsrfToken();
