@@ -8,6 +8,7 @@ import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
 const JUGADORES_OPTIONS = [2, 3, 4, 5, 6];
 
 const LONGITUD_OPTIONS = [
+	{ value: "express", label: "Express (5 manos)" },
 	{ value: "corta", label: "Corta (20 manos)" },
 	{ value: "normal", label: "Normal (40 manos)" },
 	{ value: "larga", label: "Larga (60 manos)" },
