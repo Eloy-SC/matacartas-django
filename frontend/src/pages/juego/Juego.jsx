@@ -48,39 +48,40 @@ export default function Juego() {
 	const rondaActual = rondas[rondas.length - 1] ?? null;
 	const esJugadorPosicionCero = partida?.disposicion_jugadores?.[0] === jugador?.color;
 	const rondaCambio = rondas.length === 1 ? rondas[0] : null;
+	const esTurnoJugador = Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color);
 	const puedeJugarCarta =
-		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		esTurnoJugador &&
 		Boolean(rondaActual && rondaActual.ronda_num >= 1 && rondaActual.ronda_num <= 3);
 	const puedeSolicitarCambio =
-		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		esTurnoJugador &&
 		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 0);
 	const puedeCambiarCartas =
-		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		esTurnoJugador &&
 		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 1);
 	const puedeElegirComodin =
-		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		esTurnoJugador &&
 		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 2);
 
 	const indicacionTuTurno = 
-		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color);
+		esTurnoJugador;
 
 	const indicacionTurnoAjeno =
-		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual !== jugador.color);
+		!esTurnoJugador;
 
 	const indicacionQuererCambiar =
-		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		esTurnoJugador &&
 		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 0);
 	
 	const indicacionCambiarCartas =
-		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		esTurnoJugador &&
 		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 1);
 	
 	const indicacionElegirComodin =
-		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		esTurnoJugador &&
 		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 2);
 	
 	const indicacionJugarCarta =
-		Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color) &&
+		esTurnoJugador &&
 		Boolean(rondaActual && rondaActual.ronda_num >= 1 && rondaActual.ronda_num <= 3);
 
 	useEffect(() => {
