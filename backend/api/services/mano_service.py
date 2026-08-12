@@ -293,7 +293,7 @@ def siguiente_mano(actor, partida_id):
         nueva_mano = Mano(partida=partida, num=mano_actual.num + 1)
         nueva_mano.save()
 
-        if nueva_mano.num % 2 == 0:
+        if nueva_mano.num % 2 == 0 and partida.tickets:
             repartir_tickets(partida_id)
 
         ronda_inicial = Ronda(mano=nueva_mano, num=0, cartas={}, cambios=0)
