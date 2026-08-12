@@ -267,39 +267,36 @@ def siguiente_mano(actor, partida_id):
 
     mano_actual = get_mano_actual(partida_id)
 
+    for ronda in get_rondas_de_mano(mano_actual.id):
+        for carta in ronda.cartas.values():
+            if carta not in partida.baraja:
+                if not any(carta == "SEGADOR" for carta in get_cartas_lanzadas_en_mano(mano_actual.id)) \
+                    or CATALOGO[carta]["tipo"] != "especial_val":
+                    partida.baraja.append(carta)
+
+    if any(carta == "SEGADOR" for carta in get_cartas_lanzadas_en_mano(mano_actual.id)):
+        cartas_valiosas_utilizadas = get_cartas_valiosas_utilizadas_en_mano(mano_actual.id)
+        for carta in cartas_valiosas_utilizadas:
+            carta_equivalente = get_carta_equivalente(carta)
+            partida.baraja.append(carta_equivalente)  # Añadir la carta equivalente a la baraja
+
+    # Devolver comodines no utilizados a los jugadores correspondientes
+    comodines_utilizados = get_rondas_de_mano(mano_actual.id)[-1].cartas
+    for jugador in get_jugadores_actuales_de_partida(partida_id):
+        carta_comodin = jugador.get("carta_comodin")
+        if carta_comodin and carta_comodin not in comodines_utilizados:
+            partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, jugador["id"])
+            if partida_usuario:
+                if carta_comodin not in partida_usuario.cartas:
+                    partida_usuario.cartas.append(carta_comodin)
+                partida_usuario.carta_comodin = None
+                # Actualizar acumuladores de efectos si corresponde
+                if carta_comodin == "MONEDERO_PECULIAR" and partida_usuario.eff_acum_monedero <= 15:
+                    partida_usuario.eff_acum_monedero += 1
+                partida_usuario.retirado = False  # Asegurarse de que el jugador no esté marcado como retirado
+                partida_usuario.save()
+
     if mano_actual.num < partida.get_num_manos():
-
-
-        for ronda in get_rondas_de_mano(mano_actual.id):
-            for carta in ronda.cartas.values():
-                if carta not in partida.baraja:
-                    if not any(carta == "SEGADOR" for carta in get_cartas_lanzadas_en_mano(mano_actual.id)) \
-                        or CATALOGO[carta]["tipo"] != "especial_val":
-                        partida.baraja.append(carta)
-
-        if any(carta == "SEGADOR" for carta in get_cartas_lanzadas_en_mano(mano_actual.id)):
-            cartas_valiosas_utilizadas = get_cartas_valiosas_utilizadas_en_mano(mano_actual.id)
-            for carta in cartas_valiosas_utilizadas:
-                carta_equivalente = get_carta_equivalente(carta)
-                partida.baraja.append(carta_equivalente)  # Añadir la carta equivalente a la baraja
-
-        # Devolver comodines no utilizados a los jugadores correspondientes
-        comodines_utilizados = get_rondas_de_mano(mano_actual.id)[-1].cartas
-        for jugador in get_jugadores_actuales_de_partida(partida_id):
-            carta_comodin = jugador.get("carta_comodin")
-            if carta_comodin and carta_comodin not in comodines_utilizados:
-                partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, jugador["id"])
-                if partida_usuario:
-                    if carta_comodin not in partida_usuario.cartas:
-                        partida_usuario.cartas.append(carta_comodin)
-                    partida_usuario.carta_comodin = None
-                    # Actualizar acumuladores de efectos si corresponde
-                    if carta_comodin == "MONEDERO_PECULIAR" and partida_usuario.eff_acum_monedero <= 15:
-                        partida_usuario.eff_acum_monedero += 1
-                    partida_usuario.retirado = False  # Asegurarse de que el jugador no esté marcado como retirado
-                    partida_usuario.save()
-
-
         # Crear nueva mano y su correspondiente ronda "0"
         nueva_mano = Mano(partida=partida, num=mano_actual.num + 1)
         nueva_mano.save()
@@ -320,19 +317,3 @@ def siguiente_mano(actor, partida_id):
 
         # Repartir cartas
         repartir_cartas(actor, partida_id)
-
-    else: # Finalizar partida
-        finalizar_partida(partida_id)
-
-def finalizar_partida(partida_id):
-    """
-    Finaliza la partida y determina el ganador.
-    """
-    partida = get_partida_by_id(partida_id).first()
-    if not partida:
-        raise ValueError("Partida no encontrada.")
-
-    # TODO: Implementar la lógica para determinar el ganador de la partida y actualizar los puntos de los jugadores.
-
-    partida.fecha_fin = timezone.now()
-    partida.save()

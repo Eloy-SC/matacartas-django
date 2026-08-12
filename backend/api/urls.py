@@ -25,6 +25,7 @@ from .views.partida_view import (
     crear_partida,
     editar_partida,
     expulsar_jugador,
+    finalizar_partida,
     get_jugador_participa_en_partida,
     get_jugador_participa_en_partida_privada,
     get_jugadores_partida,
@@ -126,5 +127,7 @@ urlpatterns = [
 
     path("partida/<int:partida_id>/mano/ronda/jugar-carta/", jugar_carta, name="jugar-carta"),
     path("partida/<int:partida_id>/mano/ronda/retirarse/", retirarse_de_mano, name="retirarse-de-mano"),
-    path("partida/<int:partida_id>/mano/ronda/usar-ticket/", usar_ticket, name="usar-ticket")
+    path("partida/<int:partida_id>/mano/ronda/usar-ticket/", usar_ticket, name="usar-ticket"),
+
+    path("partida/<int:partida_id>/finalizar/", finalizar_partida, name="finalizar-partida"),
 ]

@@ -119,3 +119,86 @@ def aux_generar_baraja_inicial(cartas_especiales, num_jugadores, valiosas=None, 
     random.shuffle(baraja)
 
     return baraja
+
+def aux_fin_partida_mod_puntos(partida_id, jugadores):
+    """
+    Modifica los puntos de los jugadores al finalizar la partida según las reglas del juego.
+    """
+
+    ganadores = []
+    max_puntos = 0
+    jug_as_extranjero = None
+    puntos_ganados_por_kills = {}
+    puntos_perdidos_por_deaths = {}
+
+    # Modificación de puntos según acumuladores de kills y deaths
+    for j in jugadores:
+        jugador = get_partida_usuario_by_partida_and_color(partida_id, j["color"])
+        puntos_extra_kills = j.get("acumulador_kills", 0) // 2
+        puntos_extra_deaths = j.get("acumulador_deaths", 0) // 4
+        jugador.puntos += puntos_extra_kills
+        jugador.puntos -= puntos_extra_deaths
+        puntos_ganados_por_kills[jugador.color] = puntos_extra_kills
+        puntos_perdidos_por_deaths[jugador.color] = puntos_extra_deaths
+        jugador.save()
+
+        if jugador.eff_as_extranjero:
+            jug_as_extranjero = jugador.color
+
+        if jugador.puntos > max_puntos:
+            max_puntos = jugador.puntos
+            ganadores = [jugador.color]
+        elif jugador.puntos == max_puntos:
+            ganadores.append(jugador.color)
+
+    res = {
+        "puntos_ganados_por_kills": puntos_ganados_por_kills,
+        "puntos_perdidos_por_deaths": puntos_perdidos_por_deaths,
+    }
+    
+    # Efecto del as extranjero
+    for j in jugadores:
+            if j["color"] == jug_as_extranjero:
+                jugador = get_partida_usuario_by_partida_and_color(partida_id, j["color"])
+                if jugador.puntos + 15 >= max_puntos:
+                    diff = max_puntos - jugador.puntos
+                    res["jug_as_extranjero"] = jug_as_extranjero
+                    res["puntuacion_extra_jug_as_extranjero"] = diff + 1
+                    jugador.puntos += diff + 1
+                    jugador.save()
+                break
+
+    return res
+
+    
+
+def aux_fin_partida_posiciones(jugadores):
+    """
+    Modifica los puntos de los jugadores al finalizar la partida según las posiciones finales.
+    """
+
+    # Determinar las posiciones definitivas con efectos y puntos def. calculados
+    posiciones = {1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
+
+    jugadores_ordenados = sorted(
+        jugadores,
+        key=lambda jugador: jugador.puntos,
+        reverse=True
+    )
+
+    posicion = 1
+    i = 0
+
+    while i < len(jugadores_ordenados):
+        puntos = jugadores_ordenados[i].puntos
+
+        empatados = [
+            jugador for jugador in jugadores_ordenados
+            if jugador.puntos == puntos
+        ]
+
+        posiciones[posicion] = empatados
+
+        posicion += len(empatados)
+        i += len(empatados)
+    return posiciones

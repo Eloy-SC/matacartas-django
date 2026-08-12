@@ -389,3 +389,17 @@ def iniciar_partida_manual(request, partida_id):
     notificar_inicio_partida(partida_id)
 
     return Response({"detail": "Partida iniciada correctamente."}, status=200)
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def finalizar_partida(request, partida_id):
+    try:
+        datos_final_partida = partida_service.finalizar_partida(request.user, partida_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    #notificar_finalizacion_partida(partida_id, datos_final_partida)
+
+    return Response(datos_final_partida, status=200)

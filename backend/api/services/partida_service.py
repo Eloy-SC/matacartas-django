@@ -2,6 +2,8 @@ import random
 from sqlite3 import IntegrityError
 from django.utils import timezone
 
+from ..selectors.mano_selector import get_mano_actual
+
 from ..services.mano_service import repartir_cartas
 
 from ..models.catalogo_cartas import CATALOGO
@@ -15,7 +17,7 @@ from ..models.partida import Partida
 from ..models.mano import Mano
 from ..models.ronda import Ronda
 from ..selectors.partida_selector import *
-from ..utils.funciones_aux import aux_generar_baraja_inicial
+from ..utils.funciones_aux import aux_fin_partida_mod_puntos, aux_fin_partida_posiciones, aux_generar_baraja_inicial
 
 
 def listar_partidas_publicas(
@@ -570,3 +572,49 @@ def aux_generar_disposicion_jugadores(partida_id):
     random.shuffle(disposicion)
 
     return disposicion
+
+def finalizar_partida(actor, partida_id):
+    """
+    Finaliza la partida y determina el ganador.
+    """
+    partida = get_partida_by_id(partida_id).first()
+    if not partida:
+        raise ValueError("Partida no encontrada.")
+    partida_jugador_actor = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    if not partida_jugador_actor:
+        raise PermissionError("No tienes permiso para finalizar esta partida.")
+    mano_actual = get_mano_actual(partida_id)
+    if mano_actual.num < partida.get_num_manos():
+        raise ValueError("No se puede finalizar la partida antes de que se jueguen todas las manos.")
+
+    jugadores = get_jugadores_actuales_de_partida(partida_id)
+
+    datos_puntos_finales = aux_fin_partida_mod_puntos(partida_id, jugadores)
+
+    posiciones = aux_fin_partida_posiciones(jugadores)
+
+    # Actualizar puntuación de los usuarios si la partida tiene cartas especiales y tickets
+    if partida.cartas_especiales and partida.tickets:
+        for pos, jugadores_pos in posiciones.items():
+            for jugador in jugadores_pos:
+                partida_usuario = get_partida_usuario_by_partida_and_color(partida_id, jugador.color)
+                usuario = partida_usuario.usuario
+                n = partida.num_jugadores
+                if n > pos:
+                    usuario.puntuacion += (n/pos) * 100
+
+    # Guardar la fecha de finalización de la partida
+    partida.fecha_fin = timezone.now()
+    partida.save()
+
+    # Recopilacion de datos para mostrar en front
+    res = {
+        "puntos_ganados_por_kills": datos_puntos_finales["puntos_ganados_por_kills"],
+        "puntos_perdidos_por_deaths": datos_puntos_finales["puntos_perdidos_por_deaths"],
+        "posiciones": posiciones
+    }
+    if "jug_as_extranjero" in datos_puntos_finales:
+        res["jug_as_extranjero"] = datos_puntos_finales["jug_as_extranjero"]
+        res["puntuacion_extra_jug_as_extranjero"] = datos_puntos_finales["puntuacion_extra_jug_as_extranjero"]
+
+    return res

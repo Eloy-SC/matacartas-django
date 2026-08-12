@@ -21,7 +21,7 @@ import "../../styles/mesa.css";
 const COLORJUGADOR = {
     rojo: "red",
     naranja: "orange",
-    amarillo: "yellow",
+    amarillo: "goldenrod",
     verde: "green",
     azul: "blue",
     morado: "purple",
