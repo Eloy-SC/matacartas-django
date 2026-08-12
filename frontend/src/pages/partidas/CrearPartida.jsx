@@ -18,6 +18,7 @@ export default function CrearPartida() {
 	const [rangos, setRangos] = useState([]);
 	const [rangosLoading, setRangosLoading] = useState(true);
 	const [rangosError, setRangosError] = useState("");
+	const [numJugadores, setNumJugadores] = useState(3);
 	const [isPrivada, setIsPrivada] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -163,7 +164,12 @@ export default function CrearPartida() {
 					<div style={{ marginTop: 12 }}>
 						<label htmlFor="jugadores">Numero de jugadores</label>
 						<br />
-						<select id="jugadores" name="jugadores">
+						<select
+							id="jugadores"
+							name="jugadores"
+							value={numJugadores}
+							onChange={(event) => setNumJugadores(Number(event.target.value))}
+						>
 							{JUGADORES_OPTIONS.map((value) => (
 								<option key={value} value={value}>
 									{value}
@@ -171,6 +177,13 @@ export default function CrearPartida() {
 							))}
 						</select>
 					</div>
+					{numJugadores === 2 && (
+						<p style={{ marginTop: 8, color: "black", fontWeight: "bold" }}>
+							⚠️ Las partidas de 2 jugadores<br></br>
+							no permiten una experiencia<br></br>
+							completa.
+						</p>
+					)}
 					<div style={{ marginTop: 12 }}>
 						<label htmlFor="longitud">Longitud</label>
 						<br />
