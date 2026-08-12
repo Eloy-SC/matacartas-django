@@ -137,7 +137,7 @@ def aux_usar_ticket_ic(partida_id, ticket, actor_color):
             break
 
     if ticket.endswith("azar"):
-        puntuacion = random.choice(dic_colores)
+        puntuacion = random.choice(list(dic_colores.keys()))
         color_objetivo = random.choice(list(dic_colores[puntuacion].values()))
     elif ticket.endswith("primero"):
         color_objetivo = random.choice(list(dic_colores.values())[0])  # El primero de la lista es el que tiene más puntos
@@ -183,7 +183,7 @@ def aux_usar_ticket_pp(partida_id, ticket, actor_color):
                 jugador.save()
     else:
         if ticket.endswith("azar"):
-            puntuacion = random.choice(dic_colores)
+            puntuacion = random.choice(list(dic_colores.keys()))
             color_objetivo = random.choice(list(dic_colores[puntuacion].values()))
         elif ticket.endswith("primero"):
             color_objetivo = random.choice(list(dic_colores.values())[0])  # El primero de la lista es el que tiene más puntos
@@ -224,7 +224,7 @@ def aux_usar_ticket_ro(partida_id, ticket, actor_color):
             break
 
     if ticket.endswith("azar"):
-        puntuacion = random.choice(dic_colores)
+        puntuacion = random.choice(list(dic_colores.keys()))
         color_objetivo = random.choice(list(dic_colores[puntuacion].values()))
     elif ticket.endswith("primero"):
         color_objetivo = random.choice(list(dic_colores.values())[0])  # El primero de la lista es el que tiene más puntos
@@ -245,7 +245,7 @@ def aux_usar_ticket_rt(partida_id, ticket, actor_color):
         raise ValueError("No hay jugadores con tickets para robar.")
 
     if ticket.endswith("azar"):
-        puntuacion = random.choice(dic_colores)
+        puntuacion = random.choice(list(dic_colores.keys()))
         color_objetivo = random.choice(list(dic_colores[puntuacion].values()))
     elif ticket.endswith("primero"):
         color_objetivo = random.choice(list(dic_colores.values())[0])  # El primero de la lista es el que tiene más puntos

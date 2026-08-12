@@ -1,4 +1,5 @@
 import defaultProfilePic from "../../assets/default_profile_pic.png";
+import ticketTiene from "../../assets/tickets/ticket_tiene.png";
 import CartasEnMesa from "./CartasEnMesa.jsx";
 import "../../styles/mesa.css";
 
@@ -99,7 +100,7 @@ export default function MesaInicialContrincantes({ partida, jugador, contrincant
 							aria-label={`Contrincante ${contrincante?.nombre ?? index + 1}`}
 						>
 							<div className="mesa-inicial__contrincante-card" tabIndex={0}>
-								<div>
+								<div className="mesa-inicial__avatar-con-ticket">
 									<img
 										className="mesa-inicial__avatar"
 										style={{ border: `5px solid ${colorBorde}` }}
@@ -109,6 +110,14 @@ export default function MesaInicialContrincantes({ partida, jugador, contrincant
 											event.currentTarget.src = defaultProfilePic;
 										}}
 									/>
+									{contrincante?.ticket ? (
+										<img
+											className="mesa-inicial__ticket-tiene"
+											src={ticketTiene}
+											alt="Tiene ticket"
+											aria-hidden="true"
+										/>
+									) : null}
 								</div>
 								<div>
 									<span className="mesa-inicial__puntos-contrincante">

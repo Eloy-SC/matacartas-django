@@ -28,9 +28,23 @@
 	box-sizing: border-box;
 }
 
+.mesa-inicial__contrincante-card > * {
+	position: relative;
+	z-index: 1;
+}
+
 .mesa-inicial__contrincante-card:focus-visible {
 	outline: 3px solid color-mix(in srgb, var(--seat-color, #921425) 45%, transparent);
 	outline-offset: 3px;
+}
+
+.mesa-inicial__avatar-con-ticket {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	overflow: visible;
+	z-index: 1;
 }
 
 .mesa-inicial__avatar {
@@ -42,6 +56,17 @@
 	background: #ffffff;
 	box-sizing: border-box;
 	display: block;
+}
+
+.mesa-inicial__ticket-tiene {
+	position: absolute;
+	top: 50%;
+	right: -22px;
+	width: 24px;
+	height: 36px;
+	transform: translateY(-50%);
+	z-index: 2;
+	pointer-events: none;
 }
 
 .mesa-inicial__puntos-contrincante {
@@ -72,6 +97,7 @@
 	transition: opacity 0.18s ease, transform 0.18s ease;
 	pointer-events: none;
 	box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+	z-index: 3;
 }
 
 .cartas-en-mesa {
