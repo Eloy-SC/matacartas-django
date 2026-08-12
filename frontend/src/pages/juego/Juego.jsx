@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import CartasPropias from "./CartasPropias.jsx";
 import TicketJugador from "./TicketJugador.jsx";
 import {
-	formatCartas,
 	handleCambiarCartas,
 	handleEleccionCambio,
 	handleEleccionComodin,
@@ -16,6 +15,7 @@ import {
 import CartasEnMesa from "./CartasEnMesa.jsx";
 import InfoSuperior from "./InfoSuperior.jsx";
 import MesaInicialContrincantes from "./MesaInicialContrincantes.jsx";
+import ResumenPartidaOverlay from "./ResumenPartidaOverlay.jsx";
 import "../../styles/mesa.css";
 
 const COLORJUGADOR = {
@@ -37,6 +37,7 @@ export default function Juego() {
 	const [cartaComodinSeleccionada, setCartaComodinSeleccionada] = useState(null);
 	const [cuentaAtrasFinMano, setCuentaAtrasFinMano] = useState(null);
 	const [manoFinalizadaId, setManoFinalizadaId] = useState(null);
+	const [datosFinalPartida, setDatosFinalPartida] = useState(null);
 	const finManoProgramadaRef = useRef(null);
 	const siguienteManoSolicitadaRef = useRef(null);
 	const esJugadorPosicionCeroRef = useRef(false);
@@ -161,6 +162,12 @@ export default function Juego() {
 	}, [mano?.mano_id]);
 
 	useEffect(() => {
+		if (!mano?.mano_id) {
+			setDatosFinalPartida(null);
+		}
+	}, [mano?.mano_id]);
+
+	useEffect(() => {
 		if (manoFinalizadaId == null) {
 			return;
 		}
@@ -237,6 +244,12 @@ export default function Juego() {
 					return;
 				}
 
+				if (data.type === "partida_finalizada") {
+					setDatosFinalPartida(data.datos_final_partida ?? null);
+					await loadMesa({ showLoading: false });
+					return;
+				}
+
 				if (data.type === "mesa_updated") {
 					await loadMesa({ showLoading: false });
 				}
@@ -268,139 +281,144 @@ export default function Juego() {
 			) : error ? (
 				<p role="alert">{error}</p>
 			) : (
-				<div className="juego-mesa">
-					<InfoSuperior
-								partida={partida}
-								mano={mano}
-								jugador={jugador}
-							/>
-					{mesaInicial && (
-						<MesaInicialContrincantes
-							partida={mesaInicial.partida}
+				<>
+					<div className="juego-mesa">
+						<InfoSuperior
+							partida={partida}
+							mano={mano}
 							jugador={jugador}
-							contrincantes={contrincantes}
-							rondas={rondas}
-							partidaId={partidaId}
 						/>
-					)}
+						{mesaInicial && (
+							<MesaInicialContrincantes
+								partida={mesaInicial.partida}
+								jugador={jugador}
+								contrincantes={contrincantes}
+								rondas={rondas}
+								partidaId={partidaId}
+							/>
+						)}
 
-					<div className="juego-mesa__cartas-y-acciones">
+						<div className="juego-mesa__cartas-y-acciones">
 							{/* Contenedor lateral izquierdo: ticket del jugador */}
 							<div className="juego-mesa__lado-izquierdo">
 								<TicketJugador ticket={jugador?.ticket} partidaId={partidaId} loadMesa={loadMesa} />
 							</div>
-						{jugador ? (
-							<div className="juego-mesa__cartas-jugador-propio">
-								<CartasEnMesa participante={jugador} rondas={rondas} className="cartas-en-mesa--jugador-propio" partidaId={partidaId} esJugadorPropio />
+							{jugador ? (
+								<div className="juego-mesa__cartas-jugador-propio">
+									<CartasEnMesa participante={jugador} rondas={rondas} className="cartas-en-mesa--jugador-propio" partidaId={partidaId} esJugadorPropio />
+								</div>
+							) : null}
+
+							<div className="juego-mesa__cartas">
+								<CartasPropias
+									cartas={jugador?.cartas}
+									seleccionable={puedeCambiarCartas || puedeElegirComodin || puedeJugarCarta}
+									cartasSeleccionadas={puedeCambiarCartas ? cartasSeleccionadas : cartaComodinSeleccionada ? [cartaComodinSeleccionada] : []}
+									partidaId={partidaId}
+									onToggleCarta={async (carta) => {
+										if (puedeCambiarCartas) {
+											handleToggleCartaSeleccionada(puedeCambiarCartas, setCartasSeleccionadas, carta);
+											return;
+										}
+
+										if (puedeElegirComodin) {
+											handleToggleCartaSeleccionadaUnica(puedeElegirComodin, setCartaComodinSeleccionada, carta);
+											return;
+										}
+
+										if (puedeJugarCarta) {
+											await handleJugarCarta(partidaId, carta, loadMesa);
+										}
+									}}
+								/>
+
+								<div className="recuadro-indicaciones">
+									{cuentaAtrasFinMano !== null ? (
+										<p className="texto-indicaciones">Nueva mano en {cuentaAtrasFinMano} s.</p>
+									) : (
+										<>
+											{indicacionTuTurno ? (
+												<span className="texto-indicaciones">Es tu turno.</span>
+											) : indicacionTurnoAjeno ? (
+												<span className="texto-indicaciones">
+													Es el turno del jugador{" "}
+													<span className="texto-indicaciones" style={{ color: COLORJUGADOR[partida?.turno_actual] }}>
+														{partida?.turno_actual}
+													</span>.
+												</span>
+											) : null}
+											{indicacionQuererCambiar ? (
+												<p className="texto-indicaciones">¡Di si quieres cambiar cartas!</p>
+											) : indicacionCambiarCartas ? (
+												<p className="texto-indicaciones">¡Elige las cartas que quieres cambiar!</p>
+											) : indicacionElegirComodin ? (
+												<p className="texto-indicaciones">¡Elige que carta quieres usar como comodín!</p>
+											) : indicacionJugarCarta ? (
+												<p className="texto-indicaciones">¡Elige la carta que quieres lanzar!</p>
+											) : null}
+										</>
+									)}
+								</div>
 							</div>
-						) : null}
 
-						<div className="juego-mesa__cartas">
-							<CartasPropias
-								cartas={jugador?.cartas}
-								seleccionable={puedeCambiarCartas || puedeElegirComodin || puedeJugarCarta}
-								cartasSeleccionadas={puedeCambiarCartas ? cartasSeleccionadas : cartaComodinSeleccionada ? [cartaComodinSeleccionada] : []}
-								partidaId={partidaId}
-								onToggleCarta={async (carta) => {
-									if (puedeCambiarCartas) {
-										handleToggleCartaSeleccionada(puedeCambiarCartas, setCartasSeleccionadas, carta);
-										return;
-									}
-
-									if (puedeElegirComodin) {
-										handleToggleCartaSeleccionadaUnica(puedeElegirComodin, setCartaComodinSeleccionada, carta);
-										return;
-									}
-
-									if (puedeJugarCarta) {
-										await handleJugarCarta(partidaId, carta, loadMesa);
-									}
-								}}
-							/>
-
-							<div className="recuadro-indicaciones">
-								{cuentaAtrasFinMano !== null ? (
-									<p className="texto-indicaciones">Nueva mano en {cuentaAtrasFinMano} s.</p>
-								) : (
-									<>
-										{indicacionTuTurno ? (
-											<span className="texto-indicaciones">Es tu turno.</span>
-										) : indicacionTurnoAjeno ? (
-											<span className="texto-indicaciones">
-												Es el turno del jugador{" "}
-												<span className="texto-indicaciones" style={{ color: COLORJUGADOR[partida?.turno_actual] }}>
-													{partida?.turno_actual}
-												</span>.
-											</span>
-										) : null}
-										{indicacionQuererCambiar ? (
-											<p className="texto-indicaciones">¡Di si quieres cambiar cartas!</p>
-										) : indicacionCambiarCartas ? (
-											<p className="texto-indicaciones">¡Elige las cartas que quieres cambiar!</p>
-										) : indicacionElegirComodin ? (
-											<p className="texto-indicaciones">¡Elige que carta quieres usar como comodín!</p>
-										) : indicacionJugarCarta ? (
-											<p className="texto-indicaciones">¡Elige la carta que quieres lanzar!</p>
-										) : null}
-									</>
-								)}
-							</div>
+							{puedeCambiarCartas ? (
+								<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">
+									<button
+										type="button"
+										className="main-primary-button"
+										onClick={() => void handleCambiarCartas(partidaId, cartasSeleccionadas, loadMesa, setCartasSeleccionadas)}
+									>
+										Cambiar cartas
+									</button>
+								</div>
+							) : puedeSolicitarCambio ? (
+								<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">
+									<button
+										type="button"
+										className="main-primary-button"
+										onClick={() => void handleEleccionCambio(partidaId, "quiero-cambio", loadMesa)}
+									>
+										Quiero cambio
+									</button>
+									<button
+										type="button"
+										className="main-primary-button"
+										onClick={() => void handleEleccionCambio(partidaId, "no-quiero-cambio", loadMesa)}
+									>
+										No quiero cambio
+									</button>
+								</div>
+							) : puedeElegirComodin ? (
+								<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">
+									<button
+										type="button"
+										className="main-primary-button"
+										disabled={!cartaComodinSeleccionada}
+										onClick={() => void handleEleccionComodin(partidaId, cartaComodinSeleccionada, loadMesa)}
+									>
+										Elegir carta comodín
+									</button>
+								</div>
+							) : mostrarBotonRetirada ? (
+								<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">
+									<button
+										type="button"
+										className="main-primary-button"
+										disabled={!puedeRetirarseDeMano}
+										onClick={() => void handleRetirarseDeMano(partidaId, loadMesa)}
+									>
+										Retirarse de la mano
+									</button>
+								</div>
+							) : null}
 						</div>
-
-						
-
-						{puedeCambiarCartas ? (
-							<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">
-								<button
-									type="button"
-									className="main-primary-button"
-									onClick={() => void handleCambiarCartas(partidaId, cartasSeleccionadas, loadMesa, setCartasSeleccionadas)}
-								>
-									Cambiar cartas
-								</button>
-							</div>
-						) : puedeSolicitarCambio ? (
-							<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">
-								<button
-									type="button"
-									className="main-primary-button"
-									onClick={() => void handleEleccionCambio(partidaId, "quiero-cambio", loadMesa)}
-								>
-									Quiero cambio
-								</button>
-								<button
-									type="button"
-									className="main-primary-button"
-									onClick={() => void handleEleccionCambio(partidaId, "no-quiero-cambio", loadMesa)}
-								>
-									No quiero cambio
-								</button>
-							</div>
-						) : puedeElegirComodin ? (
-							<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">
-								<button
-									type="button"
-									className="main-primary-button"
-									disabled={!cartaComodinSeleccionada}
-									onClick={() => void handleEleccionComodin(partidaId, cartaComodinSeleccionada, loadMesa)}
-								>
-									Elegir carta comodín
-								</button>
-							</div>
-						) : mostrarBotonRetirada ? (
-							<div className="juego-mesa__acciones-cambio" aria-label="Acciones de cambio">
-								<button
-									type="button"
-									className="main-primary-button"
-									disabled={!puedeRetirarseDeMano}
-									onClick={() => void handleRetirarseDeMano(partidaId, loadMesa)}
-								>
-									Retirarse de la mano
-								</button>
-							</div>
-						) : null}
 					</div>
-				</div>
+					{datosFinalPartida ? (
+						<ResumenPartidaOverlay
+							datosFinalPartida={datosFinalPartida}
+						/>
+					) : null}
+				</>
 			)}
 		</div>
 	);

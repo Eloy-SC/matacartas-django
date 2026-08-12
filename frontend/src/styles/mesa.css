@@ -366,3 +366,127 @@
 	color: #000000;
 	text-align: left;
 }
+
+.juego-resumen-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 2000;
+	display: grid;
+	place-items: center;
+	padding: 24px;
+	box-sizing: border-box;
+	pointer-events: auto;
+}
+
+.juego-resumen-overlay__backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.82);
+	backdrop-filter: blur(2px);
+	pointer-events: auto;
+}
+
+.juego-resumen-overlay__card {
+	position: relative;
+	z-index: 1;
+	width: min(980px, 72vw);
+	min-width: 320px;
+	max-width: calc(100vw - 48px);
+	max-height: calc(100vh - 48px);
+	overflow: auto;
+	padding: 24px;
+	box-sizing: border-box;
+	display: grid;
+	gap: 18px;
+}
+
+.juego-resumen-overlay__title {
+	margin: 0;
+	text-align: center;
+	font-size: 1.5rem;
+	font-weight: 800;
+	color: #000000;
+}
+
+.juego-resumen-overlay__kv-list,
+.juego-resumen-overlay__positions {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 12px;
+}
+
+.juego-resumen-overlay__kv-row,
+.juego-resumen-overlay__position-block {
+	padding: 12px;
+	border: 2px solid rgba(0, 0, 0, 0.2);
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.78);
+	box-sizing: border-box;
+}
+
+.juego-resumen-overlay__label,
+.juego-resumen-overlay__subtitle,
+.juego-resumen-overlay__player-name,
+.juego-resumen-overlay__player-data,
+.juego-resumen-overlay__value {
+	margin: 0;
+	color: #000000;
+}
+
+.juego-resumen-overlay__label {
+	font-size: 0.8rem;
+	font-weight: 800;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.juego-resumen-overlay__value {
+	margin-top: 6px;
+	font-size: 1rem;
+	font-weight: 700;
+}
+
+.juego-resumen-overlay__section {
+	display: grid;
+	gap: 12px;
+}
+
+.juego-resumen-overlay__subtitle {
+	font-size: 1.15rem;
+	font-weight: 800;
+}
+
+.juego-resumen-overlay__player-data {
+	font-size: 0.95rem;
+	font-weight: 600;
+}
+
+.juego-resumen-overlay__position-title {
+	margin: 0 0 6px;
+	font-size: 1rem;
+	font-weight: 800;
+	color: #000000;
+}
+
+.juego-resumen-overlay__actions {
+	display: flex;
+	justify-content: center;
+	padding-top: 4px;
+}
+
+@media (max-width: 900px) {
+	.juego-resumen-overlay__kv-list,
+	.juego-resumen-overlay__positions {
+		grid-template-columns: 1fr;
+	}
+
+	.juego-resumen-overlay__card {
+		width: min(980px, 92vw);
+	}
+}
+
+@media (max-width: 640px) {
+	.juego-resumen-overlay__card {
+		padding: 18px;
+	}
+}

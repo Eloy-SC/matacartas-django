@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from ..services import partida_service
-from ..utils.web_sockets import notificar_inicio_partida, notificar_sala_actualizada
+from ..utils.web_sockets import notificar_inicio_partida, notificar_sala_actualizada, notificar_finalizacion_partida
 
 def _parse_bool_param(value):
     if value is None:
@@ -400,6 +400,6 @@ def finalizar_partida(request, partida_id):
     except ValueError as e:
         return Response({"detail": str(e)}, status=404)
     
-    #notificar_finalizacion_partida(partida_id, datos_final_partida)
+    notificar_finalizacion_partida(partida_id, datos_final_partida)
 
     return Response(datos_final_partida, status=200)
