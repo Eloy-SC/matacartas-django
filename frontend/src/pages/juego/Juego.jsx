@@ -35,11 +35,15 @@ export default function Juego() {
 	const [error, setError] = useState("");
 	const [cartasSeleccionadas, setCartasSeleccionadas] = useState([]);
 	const [cartaComodinSeleccionada, setCartaComodinSeleccionada] = useState(null);
+	const [cuentaAtrasTurno, setCuentaAtrasTurno] = useState(null);
 	const [cuentaAtrasFinMano, setCuentaAtrasFinMano] = useState(null);
 	const [manoFinalizadaId, setManoFinalizadaId] = useState(null);
 	const [datosFinalPartida, setDatosFinalPartida] = useState(null);
 	const finManoProgramadaRef = useRef(null);
 	const resumenFinalSolicitadoRef = useRef(false);
+	const accionAutomaticaTurnoClaveRef = useRef(null);
+	const accionAutomaticaTurnoEjecutadaRef = useRef(null);
+	const accionAutomaticaTurnoEnCursoRef = useRef(false);
 
 	const partida = mesa?.partida ?? null;
 	const mano = mesa?.mano ?? null;
@@ -106,6 +110,8 @@ export default function Juego() {
 		esTurnoJugador &&
 		Boolean(rondaActual && rondaActual.ronda_num >= 1 && rondaActual.ronda_num <= 3);
 
+	const claveEstadoTurnoActual = `${mano?.mano_id ?? "sin-mano"}-${rondaActual?.ronda_id ?? "sin-ronda"}-${rondaActual?.ronda_num ?? "x"}-${rondaActual?.cambios ?? "x"}-${partida?.turno_actual ?? "sin-turno"}`;
+
 	const loadMesa = useCallback(async ({ showLoading = true, guardarMesaInicial = false } = {}) => {
 		if (showLoading) {
 			setLoading(true);
@@ -164,8 +170,103 @@ export default function Juego() {
 	}, [puedeElegirComodin]);
 
 	useEffect(() => {
+		if (!esTurnoJugador || partidaFinalizada || esFinMano || !rondaActual) {
+			setCuentaAtrasTurno(null);
+			return;
+		}
+
+		const tiempoMaxTurno = Number(partida?.tiempo_max_turno ?? 0);
+		if (tiempoMaxTurno <= 0) {
+			setCuentaAtrasTurno(0);
+			return;
+		}
+
+		if (accionAutomaticaTurnoClaveRef.current !== claveEstadoTurnoActual) {
+			accionAutomaticaTurnoClaveRef.current = claveEstadoTurnoActual;
+			accionAutomaticaTurnoEjecutadaRef.current = null;
+			accionAutomaticaTurnoEnCursoRef.current = false;
+			setCuentaAtrasTurno(tiempoMaxTurno);
+		}
+	}, [claveEstadoTurnoActual, esFinMano, esTurnoJugador, partida?.tiempo_max_turno, partidaFinalizada, rondaActual]);
+
+	useEffect(() => {
+		if (cuentaAtrasTurno === null || cuentaAtrasTurno <= 0) {
+			return;
+		}
+
+		const timeoutId = window.setTimeout(() => {
+			setCuentaAtrasTurno((valorActual) => {
+				if (valorActual === null) {
+					return valorActual;
+				}
+
+				return Math.max(valorActual - 1, 0);
+			});
+		}, 1000);
+
+		return () => window.clearTimeout(timeoutId);
+	}, [cuentaAtrasTurno]);
+
+	useEffect(() => {
+		if (cuentaAtrasTurno !== 0 || !esTurnoJugador || !rondaActual || partidaFinalizada || esFinMano) {
+			return;
+		}
+
+		if (
+			accionAutomaticaTurnoEnCursoRef.current ||
+			accionAutomaticaTurnoEjecutadaRef.current === claveEstadoTurnoActual
+		) {
+			return;
+		}
+
+		accionAutomaticaTurnoEnCursoRef.current = true;
+		accionAutomaticaTurnoEjecutadaRef.current = claveEstadoTurnoActual;
+
+		void (async () => {
+			try {
+				if (rondaActual.ronda_num === 0 && rondaActual.cambios === 0) {
+					await handleEleccionCambio(partidaId, "quiero-cambio", loadMesa);
+					return;
+				}
+
+				if (rondaActual.ronda_num === 0 && rondaActual.cambios === 1) {
+					const primeraCarta = Array.isArray(jugador?.cartas) && jugador.cartas.length > 0
+						? jugador.cartas[0]
+						: null;
+
+					if (primeraCarta) {
+						await handleCambiarCartas(partidaId, [primeraCarta], loadMesa, setCartasSeleccionadas);
+					}
+
+					return;
+				}
+
+				if (rondaActual.ronda_num === 0 && rondaActual.cambios === 2) {
+					const primeraCarta = Array.isArray(jugador?.cartas) && jugador.cartas.length > 0
+						? jugador.cartas[0]
+						: null;
+
+					if (primeraCarta) {
+						await handleEleccionComodin(partidaId, primeraCarta, loadMesa);
+					}
+
+					return;
+				}
+
+				if (rondaActual.ronda_num > 0) {
+					await handleRetirarseDeMano(partidaId, loadMesa);
+				}
+			} finally {
+				accionAutomaticaTurnoEnCursoRef.current = false;
+				setCuentaAtrasTurno(null);
+			}
+		})();
+	}, [claveEstadoTurnoActual, cuentaAtrasTurno, esFinMano, esTurnoJugador, jugador?.cartas, loadMesa, partidaFinalizada, partidaId, rondaActual]);
+
+	useEffect(() => {
 		finManoProgramadaRef.current = null;
 		setCuentaAtrasFinMano(null);
+		setCuentaAtrasTurno(null);
 	}, [mano?.mano_id]);
 
 	useEffect(() => {
@@ -264,6 +365,7 @@ export default function Juego() {
 					setDatosFinalPartida(data.datos_final_partida ?? null);
 					finManoProgramadaRef.current = null;
 					setCuentaAtrasFinMano(null);
+					setCuentaAtrasTurno(null);
 					await loadMesa({ showLoading: false });
 					return;
 				}
@@ -373,6 +475,9 @@ export default function Juego() {
 												<p className="texto-indicaciones">¡Elige que carta quieres usar como comodín!</p>
 											) : indicacionJugarCarta ? (
 												<p className="texto-indicaciones">¡Elige la carta que quieres lanzar!</p>
+											) : null}
+											{indicacionTuTurno && cuentaAtrasTurno !== null ? (
+												<p className="texto-indicaciones">Tienes {cuentaAtrasTurno} s.</p>
 											) : null}
 										</>
 									)}
