@@ -46,6 +46,7 @@ class PartidaDTO:
     disposicion_jugadores: list[str]
     turno_actual: str | None
     tiempo_max_turno: int
+    partida_finalizada: bool
 
 @dataclass
 class MesaDTO:

@@ -7,7 +7,6 @@ import {
 	handleEleccionCambio,
 	handleEleccionComodin,
 	handleJugarCarta,
-	handleSiguienteMano,
 	handleToggleCartaSeleccionada,
 	handleToggleCartaSeleccionadaUnica,
 	handleRetirarseDeMano,
@@ -16,6 +15,7 @@ import CartasEnMesa from "./CartasEnMesa.jsx";
 import InfoSuperior from "./InfoSuperior.jsx";
 import MesaInicialContrincantes from "./MesaInicialContrincantes.jsx";
 import ResumenPartidaOverlay from "./ResumenPartidaOverlay.jsx";
+import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
 import "../../styles/mesa.css";
 
 const COLORJUGADOR = {
@@ -39,8 +39,7 @@ export default function Juego() {
 	const [manoFinalizadaId, setManoFinalizadaId] = useState(null);
 	const [datosFinalPartida, setDatosFinalPartida] = useState(null);
 	const finManoProgramadaRef = useRef(null);
-	const siguienteManoSolicitadaRef = useRef(null);
-	const esJugadorPosicionCeroRef = useRef(false);
+	const resumenFinalSolicitadoRef = useRef(false);
 
 	const partida = mesa?.partida ?? null;
 	const mano = mesa?.mano ?? null;
@@ -48,7 +47,6 @@ export default function Juego() {
 	const contrincantes = mesa?.contrincantes ?? [];
 	const rondas = mesa?.rondas ?? [];
 	const rondaActual = rondas[rondas.length - 1] ?? null;
-	const esJugadorPosicionCero = partida?.disposicion_jugadores?.[0] === jugador?.color;
 	const rondaCambio = rondas.length === 1 ? rondas[0] : null;
 	const esTurnoJugador = Boolean(partida?.turno_actual && jugador?.color && partida.turno_actual === jugador.color);
 	const puedeJugarCarta =
@@ -65,6 +63,18 @@ export default function Juego() {
 		Boolean(rondaCambio && rondaCambio.ronda_num === 0 && rondaCambio.cambios === 2);
 
 	const esFinMano = Boolean(mano?.ganador);
+	const esUltimaMano = Boolean(mano?.mano_num && partida?.longitud && mano.mano_num >= partida.longitud);
+
+	const partidaFinalizada = Boolean(partida?.partida_finalizada);
+	const resumenFinalIncompleto = Boolean(
+		partidaFinalizada && (
+			!datosFinalPartida ||
+			typeof datosFinalPartida !== "object" ||
+			!("puntos_ganados_por_kills" in datosFinalPartida) ||
+			!("puntos_perdidos_por_deaths" in datosFinalPartida) ||
+			!("puntuacion_ganada_por_jugadores" in datosFinalPartida)
+		),
+	);
 
 	const mostrarBotonRetirada = 
 		Boolean(rondaActual && rondaActual.ronda_num >= 1 && rondaActual.ronda_num <= 3);
@@ -95,10 +105,6 @@ export default function Juego() {
 	const indicacionJugarCarta =
 		esTurnoJugador &&
 		Boolean(rondaActual && rondaActual.ronda_num >= 1 && rondaActual.ronda_num <= 3);
-
-	useEffect(() => {
-		esJugadorPosicionCeroRef.current = esJugadorPosicionCero;
-	}, [esJugadorPosicionCero]);
 
 	const loadMesa = useCallback(async ({ showLoading = true, guardarMesaInicial = false } = {}) => {
 		if (showLoading) {
@@ -141,6 +147,7 @@ export default function Juego() {
 
 	useEffect(() => {
 		setMesaInicial(null);
+		resumenFinalSolicitadoRef.current = false;
 		void loadMesa({ showLoading: true, guardarMesaInicial: true });
 	}, [partidaId]);
 
@@ -168,6 +175,35 @@ export default function Juego() {
 	}, [mano?.mano_id]);
 
 	useEffect(() => {
+		if (!resumenFinalIncompleto || resumenFinalSolicitadoRef.current) {
+			return;
+		}
+
+		resumenFinalSolicitadoRef.current = true;
+
+		void (async () => {
+			try {
+				const csrfToken = await obtenerCsrfToken();
+				const res = await fetch(`/api/partida/${partidaId}/finalizar/`, {
+					method: "PUT",
+					credentials: "include",
+					headers: {
+						"Content-Type": "application/json",
+						"X-CSRFToken": csrfToken,
+					},
+				});
+
+				const data = await res.json().catch(() => null);
+				if (res.ok && data) {
+					setDatosFinalPartida(data);
+				}
+			} catch (e) {
+				console.error("No se pudo recuperar el resumen final de la partida", e);
+			}
+		})();
+	}, [partidaId, resumenFinalIncompleto]);
+
+	useEffect(() => {
 		if (manoFinalizadaId == null) {
 			return;
 		}
@@ -186,29 +222,9 @@ export default function Juego() {
 		}
 
 		if (cuentaAtrasFinMano === 0) {
-			if (mano?.mano_id == null || siguienteManoSolicitadaRef.current === mano.mano_id) {
-				return () => undefined;
-			}
-
-			siguienteManoSolicitadaRef.current = mano.mano_id;
-			let cancelado = false;
-
-			if (jugador?.color === partida?.disposicion_jugadores?.[0]) {
-				void (async () => {
-					try {
-						await handleSiguienteMano(partidaId, loadMesa);
-					} finally {
-						if (!cancelado) {
-							finManoProgramadaRef.current = null;
-							setCuentaAtrasFinMano(null);
-						}
-					}
-				})();
-			}
-
-			return () => {
-				cancelado = true;
-			};
+			finManoProgramadaRef.current = null;
+			setCuentaAtrasFinMano(null);
+			return () => undefined;
 		}
 
 		const timeoutId = window.setTimeout(() => {
@@ -216,7 +232,7 @@ export default function Juego() {
 		}, 1000);
 
 		return () => window.clearTimeout(timeoutId);
-	}, [cuentaAtrasFinMano, loadMesa, partidaId]);
+	}, [cuentaAtrasFinMano]);
 
 	useEffect(() => {
 		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -235,7 +251,7 @@ export default function Juego() {
 				const data = JSON.parse(event.data);
 
 				if (data.type === "mano_finalizada") {
-						if (data.mano_id != null && siguienteManoSolicitadaRef.current !== data.mano_id) {
+						if (data.mano_id != null) {
 							setManoFinalizadaId(data.mano_id);
 						}
 
@@ -246,6 +262,8 @@ export default function Juego() {
 
 				if (data.type === "partida_finalizada") {
 					setDatosFinalPartida(data.datos_final_partida ?? null);
+					finManoProgramadaRef.current = null;
+					setCuentaAtrasFinMano(null);
 					await loadMesa({ showLoading: false });
 					return;
 				}
@@ -334,7 +352,7 @@ export default function Juego() {
 
 								<div className="recuadro-indicaciones">
 									{cuentaAtrasFinMano !== null ? (
-										<p className="texto-indicaciones">Nueva mano en {cuentaAtrasFinMano} s.</p>
+										<p className="texto-indicaciones">{esUltimaMano ? "Finalizando partida" : "Nueva mano"} en {cuentaAtrasFinMano} s.</p>
 									) : (
 										<>
 											{indicacionTuTurno ? (
@@ -413,7 +431,7 @@ export default function Juego() {
 							) : null}
 						</div>
 					</div>
-					{datosFinalPartida ? (
+					{partidaFinalizada ? (
 						<ResumenPartidaOverlay
 							datosFinalPartida={datosFinalPartida}
 						/>

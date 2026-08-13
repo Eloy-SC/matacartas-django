@@ -182,7 +182,7 @@ def aux_fin_partida_posiciones(jugadores):
 
     jugadores_ordenados = sorted(
         jugadores,
-        key=lambda jugador: jugador.puntos,
+        key=lambda jugador: jugador["puntos"] if isinstance(jugador, dict) else jugador.puntos,
         reverse=True
     )
 
@@ -190,11 +190,12 @@ def aux_fin_partida_posiciones(jugadores):
     i = 0
 
     while i < len(jugadores_ordenados):
-        puntos = jugadores_ordenados[i].puntos
+        jugador_actual = jugadores_ordenados[i]
+        puntos = jugador_actual["puntos"] if isinstance(jugador_actual, dict) else jugador_actual.puntos
 
         empatados = [
             jugador for jugador in jugadores_ordenados
-            if jugador.puntos == puntos
+            if (jugador["puntos"] if isinstance(jugador, dict) else jugador.puntos) == puntos
         ]
 
         posiciones[posicion] = empatados

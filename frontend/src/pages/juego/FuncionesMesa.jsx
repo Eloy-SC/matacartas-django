@@ -189,6 +189,33 @@ export async function handleSiguienteMano(partidaId, loadMesa) {
 	}
 }
 
+export async function handleFinalizarPartida(partidaId, loadMesa) {
+	try {
+		const csrfToken = await obtenerCsrfToken();
+
+		const finalizarRes = await fetch(`/api/partida/${partidaId}/finalizar/`, {
+			method: "PUT",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json",
+				"X-CSRFToken": csrfToken,
+			},
+		});
+
+		const finalizarData = await finalizarRes.json().catch(() => ({}));
+
+		if (!finalizarRes.ok) {
+			throw new Error(finalizarData?.detail || "Error finalizando la partida");
+		}
+
+		await loadMesa({ showLoading: false });
+		return finalizarData;
+	} catch (e) {
+		alert(e instanceof Error ? e.message : "Error finalizando la partida");
+		return null;
+	}
+}
+
 export async function handleCambiarCartas(partidaId, cartasSeleccionadas, loadMesa, setCartasSeleccionadas) {
 	if (cartasSeleccionadas.length === 0) {
 		alert("Selecciona al menos una carta para cambiar.");

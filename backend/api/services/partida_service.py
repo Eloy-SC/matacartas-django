@@ -573,6 +573,73 @@ def aux_generar_disposicion_jugadores(partida_id):
 
     return disposicion
 
+
+def _serializar_posiciones_para_resumen(posiciones):
+    """
+    Reduce las posiciones finales a campos primitivos aptos para JSON y frontend.
+    """
+    posiciones_serializadas = {}
+
+    for pos, jugadores_pos in posiciones.items():
+        posiciones_serializadas[pos] = []
+
+        for jugador in jugadores_pos:
+            if isinstance(jugador, dict):
+                posiciones_serializadas[pos].append({
+                    "id": jugador.get("id"),
+                    "nombre": jugador.get("nombre"),
+                    "color": jugador.get("color"),
+                    "puntos": jugador.get("puntos"),
+                })
+            else:
+                posiciones_serializadas[pos].append({
+                    "id": getattr(jugador, "id", None),
+                    "nombre": getattr(jugador, "nombre", None),
+                    "color": getattr(jugador, "color", None),
+                    "puntos": getattr(jugador, "puntos", None),
+                })
+
+    return posiciones_serializadas
+
+
+def _calcular_resumen_kills_deaths(jugadores):
+    """
+    Calcula un resumen no destructivo de puntos por kills/deaths.
+    """
+    puntos_ganados_por_kills = {}
+    puntos_perdidos_por_deaths = {}
+
+    for jugador in jugadores:
+        color = jugador.get("color") if isinstance(jugador, dict) else getattr(jugador, "color", None)
+        acumulador_kills = jugador.get("acumulador_kills", 0) if isinstance(jugador, dict) else getattr(jugador, "acumulador_kills", 0)
+        acumulador_deaths = jugador.get("acumulador_deaths", 0) if isinstance(jugador, dict) else getattr(jugador, "acumulador_deaths", 0)
+
+        if color is None:
+            continue
+
+        puntos_ganados_por_kills[color] = acumulador_kills // 2
+        puntos_perdidos_por_deaths[color] = acumulador_deaths // 4
+
+    return puntos_ganados_por_kills, puntos_perdidos_por_deaths
+
+
+def _calcular_puntuacion_ganada_por_jugadores(partida, posiciones):
+    """
+    Calcula la puntuación global ganada por posición final.
+    """
+    puntuacion_ganada = {}
+
+    if not (partida.cartas_especiales and partida.tickets):
+        return puntuacion_ganada
+
+    n = partida.num_jugadores
+    for pos, jugadores_pos in posiciones.items():
+        for jugador in jugadores_pos:
+            color = jugador["color"] if isinstance(jugador, dict) else jugador.color
+            puntuacion_ganada[color] = (n / pos) * 100 if n > pos else 0
+
+    return puntuacion_ganada
+
 def finalizar_partida(actor, partida_id):
     """
     Finaliza la partida y determina el ganador.
@@ -587,6 +654,18 @@ def finalizar_partida(actor, partida_id):
     if mano_actual.num < partida.get_num_manos():
         raise ValueError("No se puede finalizar la partida antes de que se jueguen todas las manos.")
 
+    if partida.fecha_fin is not None:
+        jugadores = get_jugadores_actuales_de_partida(partida_id)
+        posiciones = aux_fin_partida_posiciones(jugadores)
+        puntos_ganados_por_kills, puntos_perdidos_por_deaths = _calcular_resumen_kills_deaths(jugadores)
+        puntuacion_ganada = _calcular_puntuacion_ganada_por_jugadores(partida, posiciones)
+        return {
+            "puntos_ganados_por_kills": puntos_ganados_por_kills,
+            "puntos_perdidos_por_deaths": puntos_perdidos_por_deaths,
+            "posiciones": _serializar_posiciones_para_resumen(posiciones),
+            "puntuacion_ganada_por_jugadores": puntuacion_ganada,
+        }
+
     jugadores = get_jugadores_actuales_de_partida(partida_id)
 
     datos_puntos_finales = aux_fin_partida_mod_puntos(partida_id, jugadores)
@@ -594,14 +673,17 @@ def finalizar_partida(actor, partida_id):
     posiciones = aux_fin_partida_posiciones(jugadores)
 
     # Actualizar puntuación de los usuarios si la partida tiene cartas especiales y tickets
+    puntuacion_ganada = _calcular_puntuacion_ganada_por_jugadores(partida, posiciones)
     if partida.cartas_especiales and partida.tickets:
         for pos, jugadores_pos in posiciones.items():
             for jugador in jugadores_pos:
-                partida_usuario = get_partida_usuario_by_partida_and_color(partida_id, jugador.color)
+                color = jugador["color"] if isinstance(jugador, dict) else jugador.color
+                partida_usuario = get_partida_usuario_by_partida_and_color(partida_id, color)
                 usuario = partida_usuario.usuario
                 n = partida.num_jugadores
                 if n > pos:
                     usuario.puntuacion += (n/pos) * 100
+                    usuario.save()
 
     # Guardar la fecha de finalización de la partida
     partida.fecha_fin = timezone.now()
@@ -611,7 +693,8 @@ def finalizar_partida(actor, partida_id):
     res = {
         "puntos_ganados_por_kills": datos_puntos_finales["puntos_ganados_por_kills"],
         "puntos_perdidos_por_deaths": datos_puntos_finales["puntos_perdidos_por_deaths"],
-        "posiciones": posiciones
+        "posiciones": _serializar_posiciones_para_resumen(posiciones),
+        "puntuacion_ganada_por_jugadores": puntuacion_ganada,
     }
     if "jug_as_extranjero" in datos_puntos_finales:
         res["jug_as_extranjero"] = datos_puntos_finales["jug_as_extranjero"]

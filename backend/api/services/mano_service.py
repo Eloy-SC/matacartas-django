@@ -65,7 +65,8 @@ def get_mesa(actor, partida_id):
         longitud=partida.get_num_manos(),
         disposicion_jugadores=partida.disposicion_jugadores,
         turno_actual=partida.turno_actual,
-        tiempo_max_turno=partida.tiempo_max_turno
+        tiempo_max_turno=partida.tiempo_max_turno,
+        partida_finalizada=partida.fecha_fin is not None
     )
 
     mano_dto = ManoDTO(
@@ -266,6 +267,8 @@ def siguiente_mano(actor, partida_id):
         raise ValueError("Partida no encontrada.")
 
     mano_actual = get_mano_actual(partida_id)
+    if not mano_actual or not mano_actual.ganador:
+        raise ValueError("No se puede iniciar la siguiente mano hasta que termine la mano actual.")
 
     for ronda in get_rondas_de_mano(mano_actual.id):
         for carta in ronda.cartas.values():
