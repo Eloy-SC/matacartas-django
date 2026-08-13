@@ -685,8 +685,9 @@ def finalizar_partida(actor, partida_id):
                     usuario.puntuacion += (n/pos) * 100
                     usuario.save()
 
-    # Guardar la fecha de finalización de la partida
+    # Guardar la fecha de finalización de la partida y limipiar turno actual para evitar acciones de juego
     partida.fecha_fin = timezone.now()
+    partida.turno_actual = None
     partida.save()
 
     # Recopilacion de datos para mostrar en front

@@ -2,7 +2,7 @@ from ..models.catalogo_cartas import CATALOGO
 
 from ..models.ronda import Ronda
 
-from ..selectors.ronda_selector import get_cartas_lanzadas_en_mano, get_cartas_lanzadas_en_mano_hasta_ronda, get_cartas_lanzadas_en_mano_por_jugador, get_cartas_matadoras_de_carta_equivalente, get_jugador_lanzador_carta_mayor_fuerza, get_rondas_de_mano
+from ..selectors.ronda_selector import get_carta_equivalente, get_cartas_lanzadas_en_mano, get_cartas_lanzadas_en_mano_hasta_ronda, get_cartas_lanzadas_en_mano_por_jugador, get_cartas_matadoras_de_carta_equivalente, get_jugador_lanzador_carta_mayor_fuerza, get_rondas_de_mano
 
 from ..utils.funciones_aux import aux_siguiente_turno, obtener_primer_jugador_activo
 
@@ -94,7 +94,7 @@ def ganador_ronda(partida_id):
             cartas_especiales.append(c)
 
     # Comprobacion de la carta Martirizado y su efecto, debe haber otra carta especial lanzada
-    if any(carta == "MARTIRIZADO" for carta in cartas_especiales) and len(cartas_especiales) > 2:
+    if any(carta == "MARTIRIZADO" for carta in cartas_especiales) and len(cartas_especiales) >= 2:
         lanzador_martirizado = next(
             (jugador for jugador, carta in cartas_jugadas.items()
             if carta == "MARTIRIZADO"),
@@ -142,8 +142,17 @@ def ganador_ronda(partida_id):
             if carta == cartas_matadoras[-1]),  # La carta matadora de mayor fuerza, pues en el catalogo ya están ordenadas así
             None
         )
-        aux_producir_efecto_muerte(partida_id, lanzador_carta_asesina, lanzador_carta_mayor_fuerza)
-        ronda_actual.ganador = lanzador_carta_asesina
+        if not any(carta == "CORRUPTOR" for carta in cartas_jugadas.values()):
+            aux_producir_efecto_muerte(partida_id, lanzador_carta_asesina, lanzador_carta_mayor_fuerza)
+            ronda_actual.ganador = lanzador_carta_asesina
+        else:
+            aux_producir_efecto_muerte(partida_id, lanzador_carta_asesina, lanzador_carta_mayor_fuerza, corruptor=True)
+            lanzador_corruptor = next(
+                (jugador for jugador, carta in cartas_jugadas.items()
+                if carta == "CORRUPTOR"),
+                None
+            )
+            ronda_actual.ganador = lanzador_corruptor
         ronda_actual.save()
     else: # Si no hay muerte de ningun tipo, gana directamente el jugador que lanzó la carta de mayor fuerza
         ronda_actual.ganador = lanzador_carta_mayor_fuerza
@@ -199,7 +208,7 @@ def retirarse_de_mano(actor, partida_id):
     else:
         aux_siguiente_turno(partida)  # Avanzar al siguiente turno
         if partida.turno_actual == obtener_primer_jugador_activo(partida):  # Si el turno vuelve al primer jugador activo, iniciar nueva ronda
-                ganador_ronda(partida_id)  # Determinar ganador de la ronda y preparar la siguiente
+            ganador_ronda(partida_id)  # Determinar ganador de la ronda y preparar la siguiente
 
     mano_actualizada = get_mano_actual(partida_id)
     if mano_actualizada and mano_actualizada.ganador is not None:
@@ -213,17 +222,20 @@ def aux_get_carta_mayor_fuerza(partida_id):
     cartas_jugadas = ronda_actual.cartas
     # Comprobar el efecto de la carta Bufón
     if any(carta == "BUFON" for carta in cartas_jugadas.values()):
+        cartas_mag_uni = []
         for carta in cartas_jugadas.values():
-            if not (CATALOGO[carta]["tipo"] == "especial_mag" or CATALOGO[carta]["tipo"] == "especial_uni") \
+            if (CATALOGO[carta]["tipo"] == "especial_mag" or CATALOGO[carta]["tipo"] == "especial_uni") \
                 and carta != "BUFON":
-                return "BUFON"
-    else:
-        cartas_jugadas_fuerza = {
-            (nombre, CATALOGO[nombre]["fuerza"])
-            for nombre in cartas_jugadas.values()
-        }
-        carta_mayor_fuerza = max(cartas_jugadas_fuerza, key=lambda x: x[1])
-        return carta_mayor_fuerza[0]
+                cartas_mag_uni.append(carta)
+        if len(cartas_mag_uni) == 0:
+            return "BUFON"
+
+    cartas_jugadas_fuerza = {
+        (nombre, CATALOGO[nombre]["fuerza"])
+        for nombre in cartas_jugadas.values()
+    }
+    carta_mayor_fuerza = max(cartas_jugadas_fuerza, key=lambda x: x[1])
+    return carta_mayor_fuerza[0]
 
 def aux_get_carta_mayor_fuerza_de_conj(partida_id, conjunto):
     ronda_actual = get_rondas_de_mano(get_mano_actual(partida_id).id)[-1]
@@ -255,12 +267,36 @@ def aux_producir_efecto_muerte(partida_id, matador, matado, corruptor=False):
         (carta for color, carta in cartas_jugadas.items() if color == matado),
         None
     )
+    carta_matadora = next(
+        (carta for color, carta in cartas_jugadas.items() if color == matador),
+        None
+    )
 
     jugador_matado.acumulador_deaths += 1
 
+    jugador_saqueador = None
+    for carta in cartas_jugadas.values():
+        if carta == "SAQUEADOR_TUMBAS":
+            lanzador_saqueador = next(
+                (jugador for jugador, carta in cartas_jugadas.items() if carta == "SAQUEADOR_TUMBAS"),
+                None
+            )
+            jugador_saqueador = get_partida_usuario_by_partida_and_color(partida_id, lanzador_saqueador)
+            jugador_saqueador.puntos += 2  # Recompensa por efecto de la carta Saqueador de Tumbas
+
     if not corruptor:
         jugador_matador.acumulador_kills += 1
-        jugador_matador.puntos += CATALOGO[carta_matada]["recompensa"]
+        if carta_matadora.endswith("_BASTOS_PUNTIAGUDOS"):
+            carta_equivalente = get_carta_equivalente(carta_matadora)
+            if jugador_saqueador:
+                jugador_saqueador.puntos += CATALOGO[carta_equivalente]["recompensa"]
+            else:
+                jugador_matador.puntos += CATALOGO[carta_equivalente]["recompensa"]
+        else:
+            if jugador_saqueador:
+                jugador_saqueador.puntos += CATALOGO[carta_matada]["recompensa"]
+            else:
+                jugador_matador.puntos += CATALOGO[carta_matada]["recompensa"]
         jugador_matador.save()
     else:
         lanzador_corruptor = next(
@@ -268,9 +304,15 @@ def aux_producir_efecto_muerte(partida_id, matador, matado, corruptor=False):
             None
         )
         jugador_corruptor = get_partida_usuario_by_partida_and_color(partida_id, lanzador_corruptor)
-        jugador_corruptor.puntos += 1
+        if jugador_saqueador:
+            jugador_saqueador.puntos += 1
+        else:
+            jugador_corruptor.puntos += 1
         jugador_corruptor.acumulador_kills += 1
         jugador_corruptor.save()
+
+    if jugador_saqueador:
+        jugador_saqueador.save()
     
     jugador_matado.save()
 
