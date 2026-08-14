@@ -6,6 +6,7 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 5173,
+    allowedHosts: ["matacartas.e0607.eu", "localhost"],
     watch: {
       usePolling: true,
       interval: 200,
