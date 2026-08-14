@@ -12,9 +12,7 @@ from ..selectors.mano_selector import get_jugadores_en_mesa, get_mano_actual
 
 from ..models.dtos import ContrincanteDTO, JugadorDTO, MesaDTO, RondaDTO, ManoDTO, PartidaDTO
 
-import random
-
-from ..utils.funciones_aux import aux_siguiente_turno, obtener_primer_jugador_activo
+from ..utils.funciones_aux import aux_siguiente_turno, obtener_primer_jugador_activo, repartir_cartas
 
 def get_mesa(actor, partida_id):
     """
@@ -91,39 +89,6 @@ def get_mesa(actor, partida_id):
     )
 
     return mesa_dto
-
-def repartir_cartas(actor, partida_id):
-    """
-    Reparte cartas a los jugadores de una partida.
-    """
-
-    partida = get_partida_by_id(partida_id).first()
-    jugadores = get_jugadores_en_mesa(partida_id, partida.disposicion_jugadores)
-    primer_jugador_activo = obtener_primer_jugador_activo(partida)
-    if not primer_jugador_activo:
-        raise ValueError("No hay jugadores activos para repartir la mano.")
-
-    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
-        raise PermissionError("No participas en la partida.")
-
-    random.shuffle(partida.baraja)
-    vuelta = 1
-    while vuelta < 5:
-        for jugador in jugadores:
-            if len(jugador.cartas) < 4:
-                carta = partida.baraja.pop(0)  # Saca la primera carta de la baraja
-                jugador.cartas.append(carta)  # Añade la carta a las cartas del jugador
-            else:
-                pass
-        vuelta += 1
-
-    partida.turno_actual = primer_jugador_activo # El primer jugador activo en la disposición de jugadores comienza el turno.
-
-    # Guardar cambios
-    for jugador in jugadores:
-        jugador.save()
-    partida.save()
 
 def jugador_quiere_cambiar(actor, partida_id):
     """

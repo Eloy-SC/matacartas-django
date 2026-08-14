@@ -439,7 +439,7 @@ export const CARTAS_A_RENDERIZAR = {
     },
 	"SAQUEADOR_TUMBAS": {
         imagen: "carta_saqueador.png",
-        efecto: "Si se produce una muerte en la ronda en la que se lanza esta carta, el jugador que la haya lanzado obtendrá 3 puntos, además de robarle la recompensa al jugador que haya lanzado la carta asesina. No obstante, el jugador que haya matado seguirá siendo el vencedor de la ronda.",
+        efecto: "Si se produce una muerte en la ronda en la que se lanza esta carta, el jugador que la haya lanzado obtendrá 2 puntos, además de robarle la recompensa al jugador que haya lanzado la carta asesina. No obstante, el jugador que haya matado seguirá siendo el vencedor de la ronda.",
         nombre: "El saqueador de tumbas",
     },
 	"CORRUPTOR": {
