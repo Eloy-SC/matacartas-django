@@ -114,9 +114,10 @@ CORS_ALLOW_CREDENTIALS = True
 
 # CSRF
 # Needed when the frontend is served from a different origin (e.g. Vite dev server)
-CSRF_TRUSTED_ORIGINS = os.environ.get(
-    "CSRF_TRUSTED_ORIGINS", "http://localhost:5173,http://localhost:3000"
-).split(",")
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "https://matacartas.e0607.eu",
+]
 
 # USUARIOS
 AUTH_USER_MODEL = "api.Usuario"
