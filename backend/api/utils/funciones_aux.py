@@ -1,5 +1,9 @@
 import random
 
+from django.db import transaction
+
+from ..models.partida import Partida
+
 from ..selectors.mano_selector import get_jugadores_en_mesa
 
 from ..selectors.partida_selector import get_partida_by_id, get_partida_usuario_by_partida_and_color, get_partida_usuario_by_partida_and_usuario
@@ -200,35 +204,47 @@ def aux_fin_partida_posiciones(jugadores):
         i += len(empatados)
     return posiciones
 
+@transaction.atomic
 def repartir_cartas(actor, partida_id):
-    """
-    Reparte cartas a los jugadores de una partida.
-    """
+    partida = (
+        Partida.objects
+        .select_for_update()
+        .get(id=partida_id)
+    )
 
-    partida = get_partida_by_id(partida_id).first()
-    jugadores = get_jugadores_en_mesa(partida_id, partida.disposicion_jugadores)
+    jugadores = get_jugadores_en_mesa(
+        partida_id,
+        partida.disposicion_jugadores
+    )
+
     primer_jugador_activo = obtener_primer_jugador_activo(partida)
+
     if not primer_jugador_activo:
         raise ValueError("No hay jugadores activos para repartir la mano.")
 
-    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(
+        partida_id,
+        actor.id
+    )
+
     if not partida_usuario:
         raise PermissionError("No participas en la partida.")
 
     random.shuffle(partida.baraja)
+
     vuelta = 1
+
     while vuelta < 5:
         for jugador in jugadores:
             if len(jugador.cartas) < 4:
-                carta = partida.baraja.pop(0)  # Saca la primera carta de la baraja
-                jugador.cartas.append(carta)  # Añade la carta a las cartas del jugador
-            else:
-                pass
+                carta = partida.baraja.pop(0)
+                jugador.cartas.append(carta)
+
         vuelta += 1
 
-    partida.turno_actual = primer_jugador_activo # El primer jugador activo en la disposición de jugadores comienza el turno.
+    partida.turno_actual = primer_jugador_activo
 
-    # Guardar cambios
     for jugador in jugadores:
         jugador.save()
+
     partida.save()
