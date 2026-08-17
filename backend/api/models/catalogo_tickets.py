@@ -134,12 +134,12 @@ TICKETS = {
     "ticket_ro_azar": {
         "seccion": "retirada_obligada",
         "clase": 3,
-        "usable": "cambios",
+        "usable": "general",
     },
     "ticket_ro_primero": {
         "seccion": "retirada_obligada",
         "clase": 2,
-        "usable": "cambios",
+        "usable": "general",
     },
 
     ###### TICKETS ROBO DE TICKET ######

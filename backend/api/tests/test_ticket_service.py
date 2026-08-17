@@ -7,7 +7,6 @@ from api.models.partida import Partida
 from api.models.partida_usuario import PartidaUsuario
 from api.services import ticket_service
 from api.models.catalogo_cartas import CATALOGO
-from api.selectors.partida_selector import get_partida_usuario_by_partida_and_usuario
 
 
 class TicketServiceTests(TestCase):
@@ -154,6 +153,8 @@ class TicketServiceTests(TestCase):
         self.assertNotEqual(self.partida.baraja, baraja_original)
         self.assertIsNone(self.pu_creator.ticket)
 
+        self.assertEqual(self.partida.turno_actual, self.partida.disposicion_jugadores[0])
+
     def test_usar_ticket_cb_con_unicas_cambia_baraja_y_elimina_ticket(self):
         self.pu_creator.ticket = "ticket_cb_con_unicas"
         self.pu_creator.save(update_fields=["ticket"])
@@ -193,6 +194,8 @@ class TicketServiceTests(TestCase):
         self.assertNotEqual(self.partida.baraja, baraja_original)
         self.assertIsNone(self.pu_creator.ticket)
 
+        self.assertEqual(self.partida.turno_actual, self.partida.disposicion_jugadores[0])
+
     def test_usar_ticket_cb_valiosa_cambia_baraja_y_elimina_ticket(self):
         self.pu_creator.ticket = "ticket_cb_valiosa"
         self.pu_creator.save(update_fields=["ticket"])
@@ -229,6 +232,8 @@ class TicketServiceTests(TestCase):
 
         self.assertNotEqual(self.partida.baraja, baraja_original)
         self.assertIsNone(self.pu_creator.ticket)
+
+        self.assertEqual(self.partida.turno_actual, self.partida.disposicion_jugadores[0])
 
     def test_usar_ticket_cb_magica_cambia_baraja_y_elimina_ticket(self):
         self.pu_creator.ticket = "ticket_cb_magica"
@@ -267,6 +272,8 @@ class TicketServiceTests(TestCase):
         self.assertNotEqual(self.partida.baraja, baraja_original)
         self.assertIsNone(self.pu_creator.ticket)
 
+        self.assertEqual(self.partida.turno_actual, self.partida.disposicion_jugadores[0])
+
     def test_usar_ticket_cb_unica_cambia_baraja_y_elimina_ticket(self):
         self.pu_creator.ticket = "ticket_cb_unica"
         self.pu_creator.save(update_fields=["ticket"])
@@ -303,6 +310,8 @@ class TicketServiceTests(TestCase):
         self.assertNotEqual(self.partida.baraja, baraja_original)
         self.assertIsNone(self.pu_creator.ticket)
 
+        self.assertEqual(self.partida.turno_actual, self.partida.disposicion_jugadores[0])
+
     def test_usar_ticket_cb_todas_cambia_baraja_y_elimina_ticket(self):
         self.pu_creator.ticket = "ticket_cb_todas"
         self.pu_creator.save(update_fields=["ticket"])
@@ -328,6 +337,8 @@ class TicketServiceTests(TestCase):
         self.assertTrue(todas_especiales)
         self.assertNotEqual(self.partida.baraja, baraja_original)
         self.assertIsNone(self.pu_creator.ticket)
+
+        self.assertEqual(self.partida.turno_actual, self.partida.disposicion_jugadores[0])
 
     ## INTERCAMBIO COMODINES
     def test_usar_ticket_ic_azar_intercambia_comodines(self):
@@ -567,6 +578,92 @@ class TicketServiceTests(TestCase):
         self.assertEqual(self.pu_player2.puntos, 7)
         self.assertIsNone(self.pu_creator.ticket)
 
+    ## RETIRADA OBLIGADA
+    def test_usar_ticket_ro_azar_retirada_obligada_y_elimina_ticket(self):
+        self.pu_creator.ticket = "ticket_ro_azar"
+        self.pu_creator.save(update_fields=["ticket"])
+        ticket_service.usar_ticket(self.creator, self.partida.id, "ticket_ro_azar")
+
+        self.pu_creator.refresh_from_db()
+        self.pu_player.refresh_from_db()
+        self.pu_player2.refresh_from_db()
+
+        if self.pu_player.retirado:
+            self.assertEqual(self.pu_player2.retirado, False)
+        else:
+            self.assertEqual(self.pu_player.retirado, False)
+            self.assertEqual(self.pu_player2.retirado, True)
+        self.assertIsNone(self.pu_creator.ticket)
+
+    def test_usar_ticket_ro_primero_retirada_obligada_y_elimina_ticket(self):
+        self.pu_creator.ticket = "ticket_ro_primero"
+        self.pu_creator.save(update_fields=["ticket"])
+        ticket_service.usar_ticket(self.creator, self.partida.id, "ticket_ro_primero")
+
+        self.pu_creator.refresh_from_db()
+        self.pu_player.refresh_from_db()
+        self.pu_player2.refresh_from_db()
+
+        self.assertEqual(self.pu_player2.retirado, True)
+        self.assertIsNone(self.pu_creator.ticket)
+
+    ## ROBO DE TICKET
+
+    def test_usar_ticket_rt_azar_roba_ticket(self):
+        self.pu_creator.ticket = "ticket_rt_azar"
+        self.pu_creator.save(update_fields=["ticket"])
+        self.pu_player.ticket = "ticket_cp_2"
+        self.pu_player.save(update_fields=["ticket"])
+        self.pu_player2.ticket = "ticket_cp_4"
+        self.pu_player2.save(update_fields=["ticket"])
+        ticket_service.usar_ticket(self.creator, self.partida.id, "ticket_rt_azar")
+
+        self.pu_creator.refresh_from_db()
+        self.pu_player.refresh_from_db()
+        self.pu_player2.refresh_from_db()
+
+        self.assertIn(self.pu_creator.ticket, ["ticket_cp_2", "ticket_cp_4"])
+        if self.pu_creator.ticket == "ticket_cp_2":
+            self.assertIsNone(self.pu_player.ticket)
+            self.assertEqual(self.pu_player2.ticket, "ticket_cp_4")
+        else:
+            self.assertIsNone(self.pu_player2.ticket)
+            self.assertEqual(self.pu_player.ticket, "ticket_cp_2")
+
+    def test_usar_ticket_rt_primero_roba_ticket(self):
+        self.pu_creator.ticket = "ticket_rt_primero"
+        self.pu_creator.save(update_fields=["ticket"])
+        self.pu_player.ticket = "ticket_cp_2"
+        self.pu_player.save(update_fields=["ticket"])
+        self.pu_player2.ticket = "ticket_cp_4"
+        self.pu_player2.save(update_fields=["ticket"])
+        ticket_service.usar_ticket(self.creator, self.partida.id, "ticket_rt_primero")
+
+        self.pu_creator.refresh_from_db()
+        self.pu_player.refresh_from_db()
+        self.pu_player2.refresh_from_db()
+
+        self.assertEqual(self.pu_creator.ticket, "ticket_cp_4")
+        self.assertEqual(self.pu_player.ticket, "ticket_cp_2")
+        self.assertEqual(self.pu_player2.ticket, None)
+
+    def test_usar_ticket_rt_mayor_clase_roba_ticket(self):
+        self.pu_creator.ticket = "ticket_rt_mayor_clase"
+        self.pu_creator.save(update_fields=["ticket"])
+        self.pu_player.ticket = "ticket_cp_2"
+        self.pu_player.save(update_fields=["ticket"])
+        self.pu_player2.ticket = "ticket_cp_4"
+        self.pu_player2.save(update_fields=["ticket"])
+        ticket_service.usar_ticket(self.creator, self.partida.id, "ticket_rt_mayor_clase")
+
+        self.pu_creator.refresh_from_db()
+        self.pu_player.refresh_from_db()
+        self.pu_player2.refresh_from_db()
+
+        self.assertEqual(self.pu_creator.ticket, "ticket_cp_4")
+        self.assertEqual(self.pu_player.ticket, "ticket_cp_2")
+        self.assertEqual(self.pu_player2.ticket, None)
+
     ## CANJEAR PUNTOS
     def test_usar_ticket_cp_2_suma_puntos_y_elimina_ticket(self):
         self.pu_creator.ticket = "ticket_cp_2"
@@ -604,40 +701,4 @@ class TicketServiceTests(TestCase):
         self.pu_creator.refresh_from_db()
         self.assertEqual(self.pu_creator.puntos, 15)
         self.assertIsNone(self.pu_creator.ticket)
-
-
-
-"""
-    def test_repartir_tickets_asigna_ticket_al_ultimo_cuando_hay_probabilidad(self):
-        self.pu_creator.puntos = 20
-        self.pu_creator.save(update_fields=["puntos"])
-        self.pu_player.puntos = 10
-        self.pu_player.save(update_fields=["puntos"])
-
-        pu_tercero = PartidaUsuario.objects.create(
-            partida=self.partida,
-            usuario=self.outsider,
-            creador=False,
-            listo=True,
-            color=PartidaUsuario.ColorJugador.VERDE,
-            puntos=0,
-            ticket=None,
-        )
-
-        with patch("api.services.ticket_service.random.random", return_value=0.0), patch(
-            "api.services.ticket_service.random.choices",
-            return_value=[3],
-        ), patch(
-            "api.services.ticket_service.random.choice",
-            return_value="ticket_cp_2",
-        ):
-            ticket_service.repartir_tickets(self.partida.id)
-
-        self.pu_creator.refresh_from_db()
-        self.pu_player.refresh_from_db()
-        pu_tercero.refresh_from_db()
-
-        self.assertIsNone(self.pu_creator.ticket)
-        self.assertEqual(self.pu_player.ticket, "ticket_cp_2")
-        self.assertEqual(pu_tercero.ticket, "ticket_cp_2")
-"""
+        

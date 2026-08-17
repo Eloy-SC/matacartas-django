@@ -99,8 +99,9 @@ def usar_ticket(actor, partida_id, ticket):
         raise ValueError("Ticket no reconocido.")
 
     # Después de usar el ticket, se elimina del jugador.
-    partida_usuario.ticket = None
-    partida_usuario.save(update_fields=["ticket"])
+    if not ticket.startswith("ticket_rt"): # En caso de robo de ticket NO eliminamos el ticket
+        partida_usuario.ticket = None
+        partida_usuario.save(update_fields=["ticket"])
 
 def aux_usar_ticket_cb(partida_id, ticket, jugador_actor):
     partida = get_partida_by_id(partida_id).first()
@@ -241,7 +242,7 @@ def aux_usar_ticket_cp(ticket, jugador_actor):
     else:
         raise ValueError("Ticket no reconocido.")
 
-    jugador_actor.save()
+    jugador_actor.save(update_fields=["puntos"])
 
 def aux_usar_ticket_ro(partida_id, ticket, jugador_actor):
     dic_colores = get_colores_ordenados_por_puntuacion(partida_id)
@@ -269,7 +270,7 @@ def aux_usar_ticket_ro(partida_id, ticket, jugador_actor):
 
     objetivo = get_partida_usuario_by_partida_and_color(partida_id, color_objetivo)
     objetivo.retirado = True
-    objetivo.save()
+    objetivo.save(update_fields=["retirado"])
 
 def aux_usar_ticket_rt(partida_id, ticket, jugador_actor):
     dic_colores = get_colores_ordenados_por_puntuacion_con_ticket(partida_id)
@@ -308,6 +309,6 @@ def aux_usar_ticket_rt(partida_id, ticket, jugador_actor):
     actor = get_partida_usuario_by_partida_and_color(partida_id, jugador_actor.color)
     objetivo = get_partida_usuario_by_partida_and_color(partida_id, color_objetivo)
     actor.ticket = objetivo.ticket
-    actor.save()
+    actor.save(update_fields=["ticket"])
     objetivo.ticket = None
-    objetivo.save()
+    objetivo.save(update_fields=["ticket"])
