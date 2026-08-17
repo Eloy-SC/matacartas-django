@@ -175,46 +175,64 @@ def retirarse_de_mano(actor, partida_id):
     """
     Permite a un jugador retirarse de la mano actual.
     """
-    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(
+        partida_id,
+        actor.id
+    )
+
     if not partida_usuario:
         raise PermissionError("No participas en la partida.")
-    if partida_usuario.color != get_partida_by_id(partida_id).first().turno_actual:
-        raise PermissionError("No es tu turno.")
 
     partida = get_partida_by_id(partida_id).first()
+
     if not partida:
         raise ValueError("Partida no encontrada.")
 
+    if partida_usuario.color != partida.turno_actual:
+        raise PermissionError("No es tu turno.")
+
+    # Guardamos quién era el primer jugador activo ANTES de retirarse
+    primer_jugador_activo = obtener_primer_jugador_activo(partida)
+
     partida_usuario.retirado = True
-    partida_usuario.puntos -= 1  # Penalizacion por retirarse de la mano
+    partida_usuario.puntos -= 1
     partida_usuario.save()
+
     cantidad_retirados = 0
-    for jugador in get_jugadores_actuales_de_partida(partida_id):
+    jugadores = get_jugadores_actuales_de_partida(partida_id)
+
+    for jugador in jugadores:
         if jugador["retirado"]:
             cantidad_retirados += 1
-    if cantidad_retirados == len(get_jugadores_actuales_de_partida(partida_id)) - 1:
-        # Si todos los jugadores menos uno se han retirado, el jugador restante gana la mano
-        for jugador in get_jugadores_actuales_de_partida(partida_id):
+
+    if cantidad_retirados == len(jugadores) - 1:
+        # Solo queda un jugador activo: gana la mano
+        for jugador in jugadores:
             if not jugador["retirado"]:
                 mano_actual = get_mano_actual(partida_id)
                 mano_actual.ganador = jugador["color"]
                 mano_actual.save()
-                ganador_usuario = get_partida_usuario_by_partida_and_color(partida_id, jugador["color"])
+
+                ganador_usuario = get_partida_usuario_by_partida_and_color(
+                    partida_id,
+                    jugador["color"]
+                )
+
                 ganador_usuario.puntos += 4
                 ganador_usuario.save()
-                aux_asignar_puntos_extra_final_mano(partida_id)
-                aux_asignar_puntos_extra_ganador_mano(partida_id, jugador["color"])
-                break
-    else:
-        aux_siguiente_turno(partida)  # Avanzar al siguiente turno
-        if partida.turno_actual == obtener_primer_jugador_activo(partida):  # Si el turno vuelve al primer jugador activo, iniciar nueva ronda
-            ganador_ronda(partida_id)  # Determinar ganador de la ronda y preparar la siguiente
 
-    mano_actualizada = get_mano_actual(partida_id)
-    if mano_actualizada and mano_actualizada.ganador is not None:
-        return True  # Indica que la mano ha terminado
+                aux_asignar_puntos_extra_final_mano(partida_id)
+                aux_asignar_puntos_extra_ganador_mano(
+                    partida_id,
+                    jugador["color"]
+                )
+                break
+
     else:
-        return False  # Indica que la mano sigue en curso
+        aux_siguiente_turno(partida)
+
+        if partida.turno_actual == primer_jugador_activo:
+            ganador_ronda(partida_id)
 
 ## ESTAS FUNCIONES QUIZAS ESTARÍAN MEJOR EN RONDA_SELECTOR
 def aux_get_carta_mayor_fuerza(partida_id):

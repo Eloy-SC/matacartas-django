@@ -41,7 +41,7 @@ def aux_siguiente_turno(partida):
         partida_usuario = get_partida_usuario_by_partida_and_color(partida.id, color_turno_actual)
         if partida_usuario and not partida_usuario.retirado:
             partida.turno_actual = color_turno_actual
-            partida.save()
+            partida.save(update_fields=["turno_actual"])
             return
 
     raise ValueError("No hay jugadores activos disponibles.")
