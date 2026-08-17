@@ -31,12 +31,12 @@ const DiccionarioTicketsFront = {
   },
 
   ticket_ic_azar: {
-    nombre: "Intercambio de comodín: azar",
+    nombre: "Intercambio de comodín: al azar",
     clase: "3ª clase",
     descripcion: "Intercambia tu comodín por el de un jugador seleccionado al azar. Este ticket sólo se puede utilizar durante la primera, segunda o tercera ronda.",
   },
   ticket_ic_primero: {
-    nombre: "Intercambio de comodín: primero",
+    nombre: "Intercambio de comodín: al primero",
     clase: "2ª clase",
     descripcion: "Intercambia tu comodín por el del jugador con más puntos. Este ticket sólo se puede utilizar durante la primera, segunda o tercera ronda.",
   },
