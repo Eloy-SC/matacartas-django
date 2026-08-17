@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CARTAS_A_RENDERIZAR } from "./DiccionarioCartasFront.jsx";
+import { CARTAS_A_RENDERIZAR } from "./DiccionarioCartasFront.js";
 
 export function obtenerNombreVisibleCarta(cartaId, datos) {
 	const clave = typeof cartaId === "string" ? cartaId.trim().toUpperCase() : "";

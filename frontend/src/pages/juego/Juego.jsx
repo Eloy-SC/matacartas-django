@@ -10,7 +10,7 @@ import {
 	handleToggleCartaSeleccionada,
 	handleToggleCartaSeleccionadaUnica,
 	handleRetirarseDeMano,
-} from "./FuncionesMesa.jsx";
+} from "./FuncionesMesa.js";
 import CartasEnMesa from "./CartasEnMesa.jsx";
 import InfoSuperior from "./InfoSuperior.jsx";
 import MesaInicialContrincantes from "./MesaInicialContrincantes.jsx";
