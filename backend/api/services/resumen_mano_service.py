@@ -40,38 +40,38 @@ def create_resumen_mano(partida_id):
         efectos_extra_fin_mano=[]
     )
 
-def recopilar_ticket_usado(resumen_id, ronda_num, color, ticket):
+def recopilar_ticket_usado(mano_id, ronda_num, color, ticket):
 
-    resumen_mano = get_resumen_mano_by_id(resumen_id)
+    resumen_mano = get_resumen_mano_by_mano_id(mano_id)
     resumen_mano.tickets_usados[ronda_num].append((color, ticket))
     resumen_mano.save(update_fields=["tickets_usados"])
 
-def recopilar_victoria(resumen_id, color, tipo_victoria, ronda_num):
+def recopilar_victoria(mano_id, color, tipo_victoria, ronda_num):
 
-    resumen_mano = get_resumen_mano_by_id(resumen_id)
+    resumen_mano = get_resumen_mano_by_mano_id(mano_id)
     resumen_mano.victorias[ronda_num] = (color, tipo_victoria)
     resumen_mano.save(update_fields=["victorias"])
 
-def recopilar_muerte(resumen_id, ronda_num, color_matador, color_matado):
+def recopilar_muerte(mano_id, ronda_num, color_matador, color_matado):
 
-    resumen_mano = get_resumen_mano_by_id(resumen_id)
+    resumen_mano = get_resumen_mano_by_mano_id(mano_id)
     resumen_mano.muertes[ronda_num] = (color_matador, color_matado)
     resumen_mano.save(update_fields=["muertes"])
 
-def recopilar_retirada(resumen_id, ronda_num, color_retirado):
+def recopilar_retirada(mano_id, ronda_num, color_retirado):
 
-    resumen_mano = get_resumen_mano_by_id(resumen_id)
+    resumen_mano = get_resumen_mano_by_mano_id(mano_id)
     resumen_mano.retiradas[ronda_num].append(color_retirado)
     resumen_mano.save(update_fields=["retiradas"])
 
-def recopilar_efecto_inmediato_ronda(resumen_id, ronda_num, color_beneficiado, efecto):
+def recopilar_efecto_inmediato_ronda(mano_id, ronda_num, color_beneficiado, efecto):
 
-    resumen_mano = get_resumen_mano_by_id(resumen_id)
+    resumen_mano = get_resumen_mano_by_mano_id(mano_id)
     resumen_mano.efectos_inmediatos_ronda[ronda_num].append((color_beneficiado, efecto))
     resumen_mano.save(update_fields=["efectos_inmediatos_ronda"])
 
-def recopilar_efecto_extra_fin_mano(resumen_id, ronda_num, color_beneficiado, efecto):
+def recopilar_efecto_extra_fin_mano(mano_id, color_beneficiado, efecto):
 
-    resumen_mano = get_resumen_mano_by_id(resumen_id)
-    resumen_mano.efectos_extra_fin_mano[ronda_num].append((color_beneficiado, efecto))
+    resumen_mano = get_resumen_mano_by_mano_id(mano_id)
+    resumen_mano.efectos_extra_fin_mano.append((color_beneficiado, efecto))
     resumen_mano.save(update_fields=["efectos_extra_fin_mano"])

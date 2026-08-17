@@ -11,6 +11,8 @@ from ..selectors.ticket_selector import get_tickets_clase_0, get_tickets_clase_1
 
 from ..selectors.partida_selector import get_colores_jugadores, get_colores_ordenados_por_puntuacion, get_colores_ordenados_por_puntuacion_con_ticket, get_partida_by_id, get_partida_usuario_by_partida_and_color, get_partida_usuario_by_partida_and_usuario
 
+from ..services.resumen_mano_service import recopilar_ticket_usado
+
 
 def repartir_tickets(partida_id):
     partida_num_jug = get_partida_by_id(partida_id).first().num_jugadores
@@ -112,6 +114,10 @@ def usar_ticket(actor, partida_id, ticket):
     if not ticket.startswith("ticket_rt"): # En caso de robo de ticket NO eliminamos el ticket
         partida_usuario.ticket = None
         partida_usuario.save(update_fields=["ticket"])
+
+    # Recopilar el uso
+    mano_id = get_mano_actual(partida_id).id
+    recopilar_ticket_usado(mano_id, ronda_actual.num, actor.color, ticket)
 
 def aux_usar_ticket_cb(partida_id, ticket, jugador_actor):
     partida = get_partida_by_id(partida_id).first()

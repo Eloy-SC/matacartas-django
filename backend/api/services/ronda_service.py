@@ -1,3 +1,5 @@
+from ..services.resumen_mano_service import recopilar_efecto_extra_fin_mano, recopilar_efecto_inmediato_ronda, recopilar_retirada, recopilar_victoria, recopilar_muerte
+
 from ..models.catalogo_cartas import CATALOGO
 
 from ..models.ronda import Ronda
@@ -53,7 +55,8 @@ def jugar_carta(user, partida_id, carta):
 def ganador_ronda(partida_id):
 
     # Detectar si hay especiales y asignar puntos (extra) inmediatos
-    ronda_actual = get_rondas_de_mano(get_mano_actual(partida_id).id)[-1]
+    mano_actual = get_mano_actual(partida_id)
+    ronda_actual = get_rondas_de_mano(mano_actual.id)[-1]
     cartas_jugadas = ronda_actual.cartas
 
     # Detectar si no hay cartas porque todos menos uno se han retirado antes de lanzar carta
@@ -64,6 +67,7 @@ def ganador_ronda(partida_id):
         if jugador_no_retirado:
             ronda_actual.ganador = jugador_no_retirado["color"]
             ronda_actual.save()
+            recopilar_victoria(mano_actual.id, jugador_no_retirado["color"], "RETIRADAS", ronda_actual.num)
             aux_siguiente_ronda(partida_id)
             return
         else:
@@ -110,6 +114,7 @@ def ganador_ronda(partida_id):
         aux_producir_efecto_muerte(partida_id, lanzador_martirizado, lanzador_mayor_especial)
         ronda_actual.ganador = lanzador_martirizado
         ronda_actual.save()
+        recopilar_victoria(mano_actual.id, lanzador_martirizado, "MARTIRIZADO", ronda_actual.num)
 
     # Comprobacion de carta de bastos puntiagudos
     elif carta_mayor_fuerza.endswith("_BASTOS_PUNTIAGUDOS"):
@@ -126,6 +131,7 @@ def ganador_ronda(partida_id):
                 aux_producir_efecto_muerte(partida_id, lanzador_carta_mayor_fuerza, lanzador_carta_asesina)
                 ronda_actual.ganador = lanzador_carta_mayor_fuerza
                 ronda_actual.save()
+                recopilar_victoria(mano_actual.id, lanzador_carta_mayor_fuerza, "MAYOR_FUERZA", ronda_actual.num)
             else:
                 # Lo mismo, pero si hay corruptor es el el que recibe la recompensa y la muerte
                 aux_producir_efecto_muerte(partida_id, lanzador_carta_mayor_fuerza, lanzador_carta_asesina, corruptor=True)
@@ -136,6 +142,7 @@ def ganador_ronda(partida_id):
                 )
                 ronda_actual.ganador = lanzador_corruptor
                 ronda_actual.save()
+                recopilar_victoria(mano_actual.id, lanzador_corruptor, "CORRUPTOR", ronda_actual.num)
     elif len(cartas_matadoras) > 0:
         lanzador_carta_asesina = next(
             (jugador for jugador, carta in cartas_jugadas.items()
@@ -145,6 +152,7 @@ def ganador_ronda(partida_id):
         if not any(carta == "CORRUPTOR" for carta in cartas_jugadas.values()):
             aux_producir_efecto_muerte(partida_id, lanzador_carta_asesina, lanzador_carta_mayor_fuerza)
             ronda_actual.ganador = lanzador_carta_asesina
+            recopilar_victoria(mano_actual.id, lanzador_carta_asesina, "MUERTE", ronda_actual.num)
         else:
             aux_producir_efecto_muerte(partida_id, lanzador_carta_asesina, lanzador_carta_mayor_fuerza, corruptor=True)
             lanzador_corruptor = next(
@@ -153,10 +161,12 @@ def ganador_ronda(partida_id):
                 None
             )
             ronda_actual.ganador = lanzador_corruptor
+            recopilar_victoria(mano_actual.id, lanzador_corruptor, "CORRUPTOR", ronda_actual.num)
         ronda_actual.save()
     else: # Si no hay muerte de ningun tipo, gana directamente el jugador que lanzó la carta de mayor fuerza
         ronda_actual.ganador = lanzador_carta_mayor_fuerza
         ronda_actual.save()
+        recopilar_victoria(mano_actual.id, lanzador_carta_mayor_fuerza, "MAYOR_FUERZA", ronda_actual.num)
 
     # Siguiente ronda
     aux_siguiente_ronda(partida_id)
@@ -198,6 +208,11 @@ def retirarse_de_mano(actor, partida_id):
     partida_usuario.puntos -= 1
     partida_usuario.save()
 
+    # Recopilar retirada
+    mano_actual = get_mano_actual(partida_id)
+    ronda_actual = get_rondas_de_mano(mano_actual)[-1]
+    recopilar_retirada(mano_actual.id, ronda_actual.num, partida_usuario.color)
+
     cantidad_retirados = 0
     jugadores = get_jugadores_actuales_de_partida(partida_id)
 
@@ -209,7 +224,6 @@ def retirarse_de_mano(actor, partida_id):
         # Solo queda un jugador activo: gana la mano
         for jugador in jugadores:
             if not jugador["retirado"]:
-                mano_actual = get_mano_actual(partida_id)
                 mano_actual.ganador = jugador["color"]
                 mano_actual.save()
 
@@ -220,6 +234,9 @@ def retirarse_de_mano(actor, partida_id):
 
                 ganador_usuario.puntos += 4
                 ganador_usuario.save()
+
+                # Recopilar victoria
+                recopilar_victoria(mano_actual.id, ganador_usuario.color, "RETIRADAS", ronda_actual.num)
 
                 aux_asignar_puntos_extra_final_mano(partida_id)
                 aux_asignar_puntos_extra_ganador_mano(
@@ -330,9 +347,15 @@ def aux_producir_efecto_muerte(partida_id, matador, matado, corruptor=False):
         jugador_corruptor.save()
 
     if jugador_saqueador:
+        recopilar_efecto_inmediato_ronda(mano_actual.id, ronda_actual.id, jugador_saqueador.color, "SAQUEADOR")
         jugador_saqueador.save()
     
     jugador_matado.save()
+
+    # Recopilar la muerte
+    mano_actual = get_mano_actual(partida_id)
+    ronda_actual = get_rondas_de_mano(mano_actual)[-1]
+    recopilar_muerte(mano_actual.id, ronda_actual.num, matador, matado)
 
 def aux_resolver_ganador_mano(partida_id):
     mano_actual = get_mano_actual(partida_id)
@@ -405,7 +428,8 @@ def aux_resolver_desempate_comodines(partida_id, ganadores, especiales):
     return ganador
 
 def aux_asignar_puntos_inmediatos_por_cartas_especiales(partida_id):
-    ronda_actual = get_rondas_de_mano(get_mano_actual(partida_id).id)[-1]
+    mano_actual = get_mano_actual(partida_id)
+    ronda_actual = get_rondas_de_mano(mano_actual.id)[-1]
     cartas_jugadas = ronda_actual.cartas
 
     # VINOS VIEJOS
@@ -417,6 +441,7 @@ def aux_asignar_puntos_inmediatos_por_cartas_especiales(partida_id):
                     jugador = get_partida_usuario_by_partida_and_color(partida_id, color)
                     jugador.puntos += 2
                     jugador.save()
+                    recopilar_efecto_inmediato_ronda(mano_actual.id, ronda_actual.id, color, "VINOS_VIEJOS")
                 break
 
 def aux_asignar_puntos_extra_ganador_mano(partida_id, ganador_mano):
@@ -431,14 +456,17 @@ def aux_asignar_puntos_extra_ganador_mano(partida_id, ganador_mano):
             cartas_joyas.append(carta)
     if len(cartas_joyas) > 1:
         jugador.puntos += 3
+        recopilar_efecto_extra_fin_mano(mano_actual.id, jugador.color, "JOYAS_REALES_3")
     elif len(cartas_joyas) > 0:
         jugador.puntos += 2
+        recopilar_efecto_extra_fin_mano(mano_actual.id, jugador.color, "JOYAS_REALES_2")
     jugador.save()
 
     # CARTAS ÚNICAS
     for carta in cartas_lanzadas_por_jugador:
         if CATALOGO[carta]["tipo"] == "especial_uni":
             jugador.puntos += 4
+            recopilar_efecto_extra_fin_mano(mano_actual.id, jugador.color, "CARTA_UNICA")
     jugador.save()
 
 def aux_asignar_puntos_extra_final_mano(partida_id):
@@ -465,22 +493,26 @@ def aux_asignar_puntos_extra_final_mano(partida_id):
             cartas_lanzadas_mano_hasta_ronda = get_cartas_lanzadas_en_mano_hasta_ronda(mano_actual.id, ronda_mercader_lanzado)
             cartas_mercancias = sum(1 for carta in cartas_lanzadas_mano_hasta_ronda if carta.endswith(sufijos_mercancia))
             puntos_extra += min(cartas_mercancias, 6)
+            recopilar_efecto_extra_fin_mano(mano_actual.id, color, "MERCADER")
 
         # REBELDE
         if any(carta.endswith("REBELDE") for carta in cartas_lanzadas_por_jugador):
             cartas_bastos = sum(1 for carta in cartas_lanzadas_mano if carta.endswith(sufijos_bastos))
             puntos_extra += min(cartas_bastos, 8)
+            recopilar_efecto_extra_fin_mano(mano_actual.id, color, "REBELDE")
 
         # SEGADOR
         if any(carta.endswith("SEGADOR") for carta in cartas_lanzadas_por_jugador):
             cartas_valiosas_lanzadas = sum(1 for carta in cartas_lanzadas_mano if CATALOGO[carta]["tipo"] == "especial_val")
             puntos_extra += min(cartas_valiosas_lanzadas, 6) * 2
+            recopilar_efecto_extra_fin_mano(mano_actual.id, color, "SEGADOR")
 
         # MONEDERO PECULIAR
         if any(carta.endswith("MONEDERO_PECULIAR") for carta in cartas_lanzadas_por_jugador):
             puntos_extra += jugador.eff_acum_monedero
             jugador.eff_acum_monedero = 0
             necesita_guardar = True
+            recopilar_efecto_extra_fin_mano(mano_actual.id, color, "MONEDERO")
 
         if puntos_extra > 0:
             jugador.puntos += puntos_extra
