@@ -6,8 +6,6 @@ from ..selectors.mano_selector import get_mano_actual
 
 from ..services.mano_service import repartir_cartas
 
-from ..models.catalogo_cartas import CATALOGO
-
 from ..models.partida_usuario import PartidaUsuario
 
 from ..selectors.rango_selector import get_rango_by_id

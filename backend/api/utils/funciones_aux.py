@@ -85,24 +85,18 @@ def aux_generar_baraja_inicial(cartas_especiales, num_jugadores, valiosas=None, 
         else:
             valiosas_selec = random.sample(cartas_valiosas, valiosas)
 
-        if magicas is None:
+        if magicas is None and unicas is None:
             if num_aleatorio < 0.7:
                 magicas_selec = random.sample(cartas_magicas, 4)
-            elif num_aleatorio < 0.95:
-                magicas_selec = random.sample(cartas_magicas, 3)
-            else:
-                magicas_selec = random.sample(cartas_magicas, 2)
-        else:
-            magicas_selec = random.sample(cartas_magicas, magicas)
-
-        if unicas is None:
-            if num_aleatorio < 0.7:
                 unicas_selec = []
             elif num_aleatorio < 0.95:
+                magicas_selec = random.sample(cartas_magicas, 3)
                 unicas_selec = random.sample(cartas_unicas, 1)
             else:
+                magicas_selec = random.sample(cartas_magicas, 2)
                 unicas_selec = random.sample(cartas_unicas, 2)
         else:
+            magicas_selec = random.sample(cartas_magicas, magicas)
             unicas_selec = random.sample(cartas_unicas, unicas)
 
         cartas_especiales_selec = valiosas_selec + magicas_selec + unicas_selec

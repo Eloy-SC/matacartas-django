@@ -100,7 +100,7 @@ def usar_ticket(actor, partida_id, ticket):
 
     # Después de usar el ticket, se elimina del jugador.
     partida_usuario.ticket = None
-    partida_usuario.save()
+    partida_usuario.save(update_fields=["ticket"])
 
 def aux_usar_ticket_cb(partida_id, ticket, jugador_actor):
     partida = get_partida_by_id(partida_id).first()
@@ -132,23 +132,32 @@ def aux_usar_ticket_cb(partida_id, ticket, jugador_actor):
     for jugador in get_colores_jugadores(partida_id):
         partida_usuario = get_partida_usuario_by_partida_and_color(partida_id, jugador)
         partida_usuario.cartas = []
-        partida_usuario.cartas_comodin = None
-        partida_usuario.save()
+        partida_usuario.carta_comodin = None
+        partida_usuario.save(update_fields=["cartas", "carta_comodin"])
 
     repartir_cartas(jugador_actor.usuario, partida_id)
 
 def aux_usar_ticket_ic(partida_id, ticket, jugador_actor):
     dic_colores = get_colores_ordenados_por_puntuacion(partida_id)
-    for puntuacion, colores in dic_colores.items():
+    for _, colores in dic_colores.items():
         if jugador_actor.color in colores:
             colores.remove(jugador_actor.color)
             break
 
     if ticket.endswith("azar"):
-        puntuacion = random.choice(list(dic_colores.keys()))
-        color_objetivo = random.choice(list(dic_colores[puntuacion].values()))
+        puntos_validos = [
+            puntos
+            for puntos, colores in dic_colores.items()
+            if colores
+        ]
+        puntos = random.choice(puntos_validos)
+        color_objetivo = random.choice(dic_colores[puntos])
     elif ticket.endswith("primero"):
-        color_objetivo = random.choice(list(dic_colores.values())[0])  # El primero de la lista es el que tiene más puntos
+        puntos = max(
+            puntos for puntos, colores in dic_colores.items()
+            if colores
+        )
+        color_objetivo = random.choice(dic_colores[puntos])
     else:
         raise ValueError("Ticket no reconocido.")
 
@@ -157,11 +166,11 @@ def aux_usar_ticket_ic(partida_id, ticket, jugador_actor):
     objetivo = get_partida_usuario_by_partida_and_color(partida_id, color_objetivo)
     comodin_objetivo = objetivo.carta_comodin
     intercambio = comodin_actor # variable de intercambio para almacenar el comodin del actor temporalmente
-    comodin_actor = comodin_objetivo
-    comodin_objetivo = intercambio
+    actor.carta_comodin = comodin_objetivo
+    objetivo.carta_comodin = intercambio
 
-    actor.save()
-    objetivo.save()
+    actor.save(update_fields=["carta_comodin"])
+    objetivo.save(update_fields=["carta_comodin"])
 
 def aux_usar_ticket_pp(partida_id, ticket, jugador_actor):
     dic_colores = get_colores_ordenados_por_puntuacion(partida_id)
@@ -171,11 +180,11 @@ def aux_usar_ticket_pp(partida_id, ticket, jugador_actor):
             break
 
     if "2" in ticket:
-        puntos = 2
+        puntos_a_perder = 2
     elif "4" in ticket:
-        puntos = 4
+        puntos_a_perder = 4
     elif "6" in ticket:
-        puntos = 6
+        puntos_a_perder = 6
     else:
         raise ValueError("Ticket no reconocido.")
 
@@ -187,25 +196,37 @@ def aux_usar_ticket_pp(partida_id, ticket, jugador_actor):
         for color in get_colores_jugadores(partida_id):
             if color in colores_objetivo:
                 jugador = get_partida_usuario_by_partida_and_color(partida_id, color)
-                jugador.puntos -= puntos
-                jugador.save()
+                jugador.puntos -= puntos_a_perder
+                jugador.save(update_fields=["puntos"])
     else:
         if ticket.endswith("azar"):
-            puntuacion = random.choice(list(dic_colores.keys()))
-            color_objetivo = random.choice(list(dic_colores[puntuacion].values()))
+            puntos_validos = [
+                puntos
+                for puntos, colores in dic_colores.items()
+                if colores
+            ]
+            puntos = random.choice(puntos_validos)
+            color_objetivo = random.choice(dic_colores[puntos])
         elif ticket.endswith("primero"):
-            color_objetivo = random.choice(list(dic_colores.values())[0])  # El primero de la lista es el que tiene más puntos
+            puntos = max(
+                puntos for puntos, colores in dic_colores.items()
+                if colores
+            )
+            color_objetivo = random.choice(dic_colores[puntos])
         else:
             raise ValueError("Ticket no reconocido.")
         objetivo = get_partida_usuario_by_partida_and_color(partida_id, color_objetivo)
-        objetivo.puntos -= puntos
-        objetivo.save()
+        objetivo.puntos -= puntos_a_perder
+        objetivo.save(update_fields=["puntos"])
 
 def aux_usar_ticket_rp(partida_id, ticket, jugador_actor):
 
     aux_usar_ticket_pp(partida_id, ticket, jugador_actor)
-    jugador_actor.puntos += 2
-    jugador_actor.save()
+    if ticket.endswith("todos"):
+        jugador_actor.puntos += 2 * (len(get_colores_jugadores(partida_id)) - 1)
+    else:
+        jugador_actor.puntos += 2
+    jugador_actor.save(update_fields=["puntos"])
 
 def aux_usar_ticket_cp(ticket, jugador_actor):
 
@@ -230,10 +251,19 @@ def aux_usar_ticket_ro(partida_id, ticket, jugador_actor):
             break
 
     if ticket.endswith("azar"):
-        puntuacion = random.choice(list(dic_colores.keys()))
-        color_objetivo = random.choice(list(dic_colores[puntuacion].values()))
+        puntos_validos = [
+            puntos
+            for puntos, colores in dic_colores.items()
+            if colores
+        ]
+        puntos = random.choice(puntos_validos)
+        color_objetivo = random.choice(dic_colores[puntos])
     elif ticket.endswith("primero"):
-        color_objetivo = random.choice(list(dic_colores.values())[0])  # El primero de la lista es el que tiene más puntos
+        puntos = max(
+            puntos for puntos, colores in dic_colores.items()
+            if colores
+        )
+        color_objetivo = random.choice(dic_colores[puntos])
     else:
         raise ValueError("Ticket no reconocido.")
 
@@ -251,10 +281,19 @@ def aux_usar_ticket_rt(partida_id, ticket, jugador_actor):
         raise ValueError("No hay jugadores con tickets para robar.")
 
     if ticket.endswith("azar"):
-        puntuacion = random.choice(list(dic_colores.keys()))
-        color_objetivo = random.choice(list(dic_colores[puntuacion].values()))
+        puntos_validos = [
+            puntos
+            for puntos, colores in dic_colores.items()
+            if colores
+        ]
+        puntos = random.choice(puntos_validos)
+        color_objetivo = random.choice(dic_colores[puntos])
     elif ticket.endswith("primero"):
-        color_objetivo = random.choice(list(dic_colores.values())[0])  # El primero de la lista es el que tiene más puntos
+        puntos = max(
+            puntos for puntos, colores in dic_colores.items()
+            if colores
+        )
+        color_objetivo = random.choice(dic_colores[puntos])
     elif ticket.endswith("mayor_clase"):
         color_objetivo = None
         for puntuacion in dic_colores:
