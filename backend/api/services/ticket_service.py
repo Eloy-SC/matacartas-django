@@ -1,5 +1,8 @@
 import random
 
+from ..selectors.mano_selector import get_mano_actual
+from ..selectors.ronda_selector import get_rondas_de_mano
+
 from ..utils.funciones_aux import aux_generar_baraja_inicial, repartir_cartas
 
 from ..models.catalogo_tickets import TICKETS, PROBABILIDAD_TICKET, PROBABILIDAD_TICKET_CLASE, PROBABILIDAD_TICKET_CLASE_ULTIMO
@@ -80,6 +83,13 @@ def usar_ticket(actor, partida_id, ticket):
         raise PermissionError("No se pueden usar tickets en esta partida.")
     if partida.turno_actual != partida_usuario.color:
         raise PermissionError("No es tu turno para usar un ticket.")
+    ronda_actual = get_rondas_de_mano(get_mano_actual(partida_id).id)[-1]
+
+    if TICKETS[ticket]["usable"] == "ronda" and ronda_actual.num < 1:
+        raise PermissionError("No puedes usar este ticket en la ronda actual.")
+    elif TICKETS[ticket]["usable"] == "cambios" and (ronda_actual.num > 0 or ronda_actual.cambios > 0):
+        raise PermissionError("No puedes usar este ticket en la ronda actual.")
+
 
     if ticket.startswith("ticket_cb"):
         aux_usar_ticket_cb(partida_id, ticket, partida_usuario)

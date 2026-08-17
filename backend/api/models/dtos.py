@@ -24,6 +24,7 @@ class JugadorDTO:
     acumulador_deaths: int
     retirado: bool
     ticket: str | None
+    ticket_usable: str | None
 
 @dataclass
 class RondaDTO:

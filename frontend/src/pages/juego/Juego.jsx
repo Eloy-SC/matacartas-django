@@ -421,7 +421,7 @@ export default function Juego() {
 						<div className="juego-mesa__cartas-y-acciones">
 							{/* Contenedor lateral izquierdo: ticket del jugador */}
 							<div className="juego-mesa__lado-izquierdo">
-								<TicketJugador ticket={jugador?.ticket} partidaId={partidaId} loadMesa={loadMesa} />
+								<TicketJugador ticket={jugador?.ticket} ticket_usable={jugador?.ticket_usable} ronda_actual={rondaActual.num} cambios={rondaActual.cambios} es_turno_actual={esTurnoJugador} partidaId={partidaId} loadMesa={loadMesa} />
 							</div>
 							{jugador ? (
 								<div className="juego-mesa__cartas-jugador-propio">

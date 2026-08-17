@@ -40,7 +40,7 @@ function normalizarClaseTicket(clase) {
   return Number.isFinite(claseComoNumero) ? claseComoNumero : 1;
 }
 
-export default function TicketJugador({ ticket, partidaId, loadMesa }) {
+export default function TicketJugador({ ticket, ticket_usable, ronda_actual, cambios, es_turno_actual, partidaId, loadMesa }) {
   const [hover, setHover] = useState(false);
   const botonRef = useRef(null);
 
@@ -63,6 +63,22 @@ export default function TicketJugador({ ticket, partidaId, loadMesa }) {
   };
 
   const imagenTicket = imagenPorClase[claseTicket] ?? imagenPorClase[1];
+
+  const puedeUsarTicket = (() => {
+      switch (ticket_usable) {
+          case "general":
+              return es_turno_actual;
+
+          case "ronda":
+              return es_turno_actual && ronda_actual > 0;
+
+          case "cambios":
+              return es_turno_actual && ronda_actual === 0 && cambios === 0;
+
+          default:
+              return false;
+      }
+  })();
 
   const usarTicket = async () => {
     try {
@@ -110,6 +126,7 @@ export default function TicketJugador({ ticket, partidaId, loadMesa }) {
         className="ticket-jugador__boton"
         onClick={usarTicket}
         aria-label={`Usar ticket ${info.nombre}`}
+        disabled={!puedeUsarTicket}
       >
         <img src={imagenTicket} alt={info.nombre} className="ticket-jugador__imagen" />
       </button>

@@ -1,5 +1,7 @@
 from datetime import timezone
 
+from ..models.catalogo_tickets import TICKETS
+
 from ..services.ticket_service import repartir_tickets
 
 from ..models.mano import Mano
@@ -43,7 +45,8 @@ def get_mesa(actor, partida_id):
                 acumulador_kills=jugador.get("acumulador_kills", 0),
                 acumulador_deaths=jugador.get("acumulador_deaths", 0),
                 retirado=jugador.get("retirado", False),
-                ticket=jugador.get("ticket")
+                ticket=jugador.get("ticket"),
+                ticket_usable=TICKETS[jugador.get("ticket")]["usable"] if jugador.get("ticket") in TICKETS else None
             )
         else:
             contrincantes_dto.append(ContrincanteDTO(
