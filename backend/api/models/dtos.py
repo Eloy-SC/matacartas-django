@@ -56,3 +56,22 @@ class MesaDTO:
     rondas: list[RondaDTO]
     jugador: JugadorDTO
     contrincantes: list[ContrincanteDTO]
+
+@dataclass
+class ResumenRondaDTO:
+    victoria: tuple[str, str] | None
+    muerte: tuple[str, str] | None
+    retiradas: list[str] | None
+    efectos_inmediatos: list[tuple[str, str]] | None
+    tickets_usados: list[tuple[str, str]] | None
+
+@dataclass
+class ResumenManoDTO:
+    mano_num: int
+    ronda_prep: ResumenRondaDTO
+    ronda_1: ResumenRondaDTO
+    ronda_2: ResumenRondaDTO
+    ronda_3: ResumenRondaDTO
+    ronda_com: ResumenRondaDTO
+    efectos_extra_fin_mano: list[tuple[str, str]]
+    ganador: str | None

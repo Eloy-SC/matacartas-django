@@ -1,3 +1,5 @@
+from dataclasses import asdict
+
 from ..services import resumen_mano_service
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -19,13 +21,14 @@ def get_resumen_ult_mano(request, partida_id):
 
     return Response(
         {
-            "mano_id": mano_resumen.mano_id,
-            "tickets_usados": mano_resumen.tickets_usados,
-            "victorias": mano_resumen.victorias,
-            "muertes": mano_resumen.muertes,
-            "retiradas": mano_resumen.retiradas,
-            "efectos_inmediatos_ronda": mano_resumen.efectos_inmediatos_ronda,
+            "mano_num": mano_resumen.mano_num,
+            "ronda_prep": asdict(mano_resumen.ronda_prep),
+            "ronda_1": asdict(mano_resumen.ronda_1),
+            "ronda_2": asdict(mano_resumen.ronda_2),
+            "ronda_3": asdict(mano_resumen.ronda_3),
+            "ronda_com": asdict(mano_resumen.ronda_com),
             "efectos_extra_fin_mano": mano_resumen.efectos_extra_fin_mano,
+            "ganador": mano_resumen.ganador,
         },
         status=200,
     )

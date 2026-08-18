@@ -117,7 +117,7 @@ def usar_ticket(actor, partida_id, ticket):
 
     # Recopilar el uso
     mano_id = get_mano_actual(partida_id).id
-    recopilar_ticket_usado(mano_id, ronda_actual.num, actor.color, ticket)
+    recopilar_ticket_usado(mano_id, ronda_actual.num, partida_usuario.color, ticket)
 
 def aux_usar_ticket_cb(partida_id, ticket, jugador_actor):
     partida = get_partida_by_id(partida_id).first()

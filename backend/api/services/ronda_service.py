@@ -131,7 +131,7 @@ def ganador_ronda(partida_id):
                 aux_producir_efecto_muerte(partida_id, lanzador_carta_mayor_fuerza, lanzador_carta_asesina)
                 ronda_actual.ganador = lanzador_carta_mayor_fuerza
                 ronda_actual.save()
-                recopilar_victoria(mano_actual.id, lanzador_carta_mayor_fuerza, "MAYOR_FUERZA", ronda_actual.num)
+                recopilar_victoria(mano_actual.id, lanzador_carta_mayor_fuerza, "CONTRAATAQUE", ronda_actual.num)
             else:
                 # Lo mismo, pero si hay corruptor es el el que recibe la recompensa y la muerte
                 aux_producir_efecto_muerte(partida_id, lanzador_carta_mayor_fuerza, lanzador_carta_asesina, corruptor=True)
@@ -143,6 +143,11 @@ def ganador_ronda(partida_id):
                 ronda_actual.ganador = lanzador_corruptor
                 ronda_actual.save()
                 recopilar_victoria(mano_actual.id, lanzador_corruptor, "CORRUPTOR", ronda_actual.num)
+        else:
+            # No hay cartas matadoras, gana el jugador que lanzó la carta de mayor fuerza
+            ronda_actual.ganador = lanzador_carta_mayor_fuerza
+            ronda_actual.save()
+            recopilar_victoria(mano_actual.id, lanzador_carta_mayor_fuerza, "MAYOR_FUERZA", ronda_actual.num)
     elif len(cartas_matadoras) > 0:
         lanzador_carta_asesina = next(
             (jugador for jugador, carta in cartas_jugadas.items()
