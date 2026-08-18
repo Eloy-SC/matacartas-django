@@ -1,5 +1,7 @@
 from django.urls import path
 
+from .views.resumen_mano_view import get_resumen_ult_mano
+
 from .views.ronda_view import (
     jugar_carta,
     retirarse_de_mano
@@ -124,6 +126,7 @@ urlpatterns = [
     path("partida/<int:partida_id>/mano/cambiar-cartas/", cambiar_cartas, name="cambiar-cartas"),
     path("partida/<int:partida_id>/mano/elegir-carta-comodin/", elegir_carta_comodin, name="elegir-carta-comodin"),
     path("partida/<int:partida_id>/mano/siguiente-mano/", siguiente_mano, name="siguiente-mano"),
+    path("partida/<int:partida_id>/mano/resumen/", get_resumen_ult_mano, name="get-resumen-ult-mano"),
 
     path("partida/<int:partida_id>/mano/ronda/jugar-carta/", jugar_carta, name="jugar-carta"),
     path("partida/<int:partida_id>/mano/ronda/retirarse/", retirarse_de_mano, name="retirarse-de-mano"),

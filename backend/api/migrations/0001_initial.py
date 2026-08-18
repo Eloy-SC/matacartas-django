@@ -339,4 +339,31 @@ class Migration(migrations.Migration):
                 ("ganador", models.CharField(max_length=10, null=True, default=None)),
             ],
         ),
+        migrations.CreateModel(
+            name="ResumenMano",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "mano",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="api.mano",
+                    ),
+                ),
+                ("tickets_usados", models.JSONField(default=dict)),
+                ("victorias", models.JSONField(default=dict)),
+                ("muertes", models.JSONField(default=dict)),
+                ("retiradas", models.JSONField(default=dict)),
+                ("efectos_inmediatos_ronda", models.JSONField(default=dict)),
+                ("efectos_extra_fin_mano", models.JSONField(default=list)),
+            ],
+        ),
     ]

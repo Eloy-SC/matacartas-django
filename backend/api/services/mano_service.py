@@ -1,5 +1,7 @@
 from datetime import timezone
 
+from ..services.resumen_mano_service import create_resumen_mano
+
 from ..models.catalogo_tickets import TICKETS
 
 from ..services.ticket_service import repartir_tickets
@@ -285,6 +287,9 @@ def siguiente_mano(actor, partida_id):
         partida.disposicion_jugadores.remove(empezador)
         partida.disposicion_jugadores.append(empezador)
         partida.save()
+
+        # Crear resumen mano para la siguiente mano
+        create_resumen_mano(partida_id)
 
         # Repartir cartas
         repartir_cartas(actor, partida_id)

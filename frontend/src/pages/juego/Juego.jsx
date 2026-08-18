@@ -14,6 +14,7 @@ import {
 import CartasEnMesa from "./CartasEnMesa.jsx";
 import InfoSuperior from "./InfoSuperior.jsx";
 import MesaInicialContrincantes from "./MesaInicialContrincantes.jsx";
+import ResumenManoPanel from "./ResumenManoPanel.jsx";
 import ResumenPartidaOverlay from "./ResumenPartidaOverlay.jsx";
 import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
 import "../../styles/mesa.css";
@@ -38,8 +39,12 @@ export default function Juego() {
 	const [cuentaAtrasTurno, setCuentaAtrasTurno] = useState(null);
 	const [cuentaAtrasFinMano, setCuentaAtrasFinMano] = useState(null);
 	const [manoFinalizadaId, setManoFinalizadaId] = useState(null);
+	const [resumenMano, setResumenMano] = useState(null);
+	const [cargandoResumenMano, setCargandoResumenMano] = useState(false);
+	const [errorResumenMano, setErrorResumenMano] = useState("");
 	const [datosFinalPartida, setDatosFinalPartida] = useState(null);
 	const finManoProgramadaRef = useRef(null);
+	const resumenManoSolicitadoRef = useRef(null);
 	const resumenFinalSolicitadoRef = useRef(false);
 	const accionAutomaticaTurnoClaveRef = useRef(null);
 	const accionAutomaticaTurnoEjecutadaRef = useRef(null);
@@ -265,6 +270,10 @@ export default function Juego() {
 
 	useEffect(() => {
 		finManoProgramadaRef.current = null;
+		resumenManoSolicitadoRef.current = null;
+		setResumenMano(null);
+		setCargandoResumenMano(false);
+		setErrorResumenMano("");
 		setCuentaAtrasFinMano(null);
 		setCuentaAtrasTurno(null);
 	}, [mano?.mano_id]);
@@ -314,8 +323,43 @@ export default function Juego() {
 		}
 
 		finManoProgramadaRef.current = manoFinalizadaId;
-		setCuentaAtrasFinMano(7);
+		setCuentaAtrasFinMano(10);
 	}, [manoFinalizadaId]);
+
+	useEffect(() => {
+		if (cuentaAtrasFinMano === null || !esFinMano || !mano?.mano_id) {
+			return;
+		}
+
+		if (resumenManoSolicitadoRef.current === mano.mano_id) {
+			return;
+		}
+
+		resumenManoSolicitadoRef.current = mano.mano_id;
+		setCargandoResumenMano(true);
+		setErrorResumenMano("");
+
+		void (async () => {
+			try {
+				const res = await fetch(`/api/partida/${partidaId}/mano/resumen/`, {
+					method: "GET",
+					credentials: "include",
+				});
+
+				const data = await res.json().catch(() => ({}));
+				if (!res.ok) {
+					throw new Error(data?.detail || "No se pudo cargar el resumen de la mano");
+				}
+
+				setResumenMano(data);
+			} catch (e) {
+				setErrorResumenMano(e instanceof Error ? e.message : "No se pudo cargar el resumen de la mano");
+				setResumenMano(null);
+			} finally {
+				setCargandoResumenMano(false);
+			}
+		})();
+	}, [cuentaAtrasFinMano, esFinMano, mano?.mano_id, partidaId]);
 
 	useEffect(() => {
 		if (cuentaAtrasFinMano === null) {
@@ -364,6 +408,10 @@ export default function Juego() {
 				if (data.type === "partida_finalizada") {
 					setDatosFinalPartida(data.datos_final_partida ?? null);
 					finManoProgramadaRef.current = null;
+					resumenManoSolicitadoRef.current = null;
+					setResumenMano(null);
+					setCargandoResumenMano(false);
+					setErrorResumenMano("");
 					setCuentaAtrasFinMano(null);
 					setCuentaAtrasTurno(null);
 					await loadMesa({ showLoading: false });
@@ -453,34 +501,28 @@ export default function Juego() {
 								/>
 
 								<div className="recuadro-indicaciones">
-									{cuentaAtrasFinMano !== null ? (
-										<p className="texto-indicaciones">{esUltimaMano ? "Finalizando partida" : "Nueva mano"} en {cuentaAtrasFinMano} s.</p>
-									) : (
-										<>
-											{indicacionTuTurno ? (
-												<span className="texto-indicaciones">Es tu turno.</span>
-											) : indicacionTurnoAjeno ? (
-												<span className="texto-indicaciones">
-													Es el turno del jugador{" "}
-													<span className="texto-indicaciones" style={{ color: COLORJUGADOR[partida?.turno_actual] }}>
-														{partida?.turno_actual}
-													</span>.
-												</span>
-											) : null}
-											{indicacionQuererCambiar ? (
-												<p className="texto-indicaciones">¡Di si quieres cambiar cartas!</p>
-											) : indicacionCambiarCartas ? (
-												<p className="texto-indicaciones">¡Elige las cartas que quieres cambiar!</p>
-											) : indicacionElegirComodin ? (
-												<p className="texto-indicaciones">¡Elige que carta quieres usar como comodín!</p>
-											) : indicacionJugarCarta ? (
-												<p className="texto-indicaciones">¡Elige la carta que quieres lanzar!</p>
-											) : null}
-											{indicacionTuTurno && cuentaAtrasTurno !== null ? (
-												<p className="texto-indicaciones">Tienes {cuentaAtrasTurno} s.</p>
-											) : null}
-										</>
-									)}
+									{indicacionTuTurno ? (
+										<span className="texto-indicaciones">Es tu turno.</span>
+									) : indicacionTurnoAjeno ? (
+										<span className="texto-indicaciones">
+											Es el turno del jugador{" "}
+											<span className="texto-indicaciones" style={{ color: COLORJUGADOR[partida?.turno_actual] }}>
+												{partida?.turno_actual}
+											</span>.
+										</span>
+									) : null}
+									{indicacionQuererCambiar ? (
+										<p className="texto-indicaciones">¡Di si quieres cambiar cartas!</p>
+									) : indicacionCambiarCartas ? (
+										<p className="texto-indicaciones">¡Elige las cartas que quieres cambiar!</p>
+									) : indicacionElegirComodin ? (
+										<p className="texto-indicaciones">¡Elige que carta quieres usar como comodín!</p>
+									) : indicacionJugarCarta ? (
+										<p className="texto-indicaciones">¡Elige la carta que quieres lanzar!</p>
+									) : null}
+									{indicacionTuTurno && cuentaAtrasTurno !== null ? (
+										<p className="texto-indicaciones">Tienes {cuentaAtrasTurno} s.</p>
+									) : null}
 								</div>
 							</div>
 
@@ -536,6 +578,20 @@ export default function Juego() {
 							) : null}
 						</div>
 					</div>
+					{cuentaAtrasFinMano !== null ? (
+						<div className="juego-resumen-mano-centro" role="presentation">
+							<div className="form-card juego-resumen-mano-centro__card">
+								<ResumenManoPanel
+									cuentaAtras={cuentaAtrasFinMano}
+									ganador={mano?.ganador}
+									resumenMano={resumenMano}
+									cargandoResumen={cargandoResumenMano}
+									errorResumen={errorResumenMano}
+									esUltimaMano={esUltimaMano}
+								/>
+							</div>
+						</div>
+					) : null}
 					{partidaFinalizada ? (
 						<ResumenPartidaOverlay
 							datosFinalPartida={datosFinalPartida}

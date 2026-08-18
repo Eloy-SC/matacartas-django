@@ -79,9 +79,10 @@ class RondaAPITest(APITestCase):
 
     @patch("api.views.ronda_view.notificar_mano_finalizada")
     @patch("api.views.ronda_view.notificar_mesa_actualizada")
+    @patch("api.views.ronda_view._programar_transicion_fin_mano")
     @patch("api.views.ronda_view.get_mano_actual")
     @patch("api.views.ronda_view.ronda_service.jugar_carta")
-    def test_jugar_carta_notifies_when_mano_finishes(self, service_mock, mano_mock, _notify_mesa_mock, notify_mano_mock):
+    def test_jugar_carta_notifies_when_mano_finishes(self, service_mock, mano_mock, transicion_mock, _notify_mesa_mock, notify_mano_mock):
         service_mock.return_value = True
         mano_mock.return_value = self.mano
         url = reverse("jugar-carta", args=[self.partida.id])
@@ -90,3 +91,4 @@ class RondaAPITest(APITestCase):
         response = self.client.put(url, {"carta": "CARTA_A"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         notify_mano_mock.assert_called_once_with(self.partida.id, self.mano.id)
+        transicion_mock.assert_called_once_with(self.partida.id, self.creator.id)

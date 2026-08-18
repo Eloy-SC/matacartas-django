@@ -347,7 +347,7 @@ def aux_producir_efecto_muerte(partida_id, matador, matado, corruptor=False):
         jugador_corruptor.save()
 
     if jugador_saqueador:
-        recopilar_efecto_inmediato_ronda(mano_actual.id, ronda_actual.id, jugador_saqueador.color, "SAQUEADOR")
+        recopilar_efecto_inmediato_ronda(mano_actual.id, ronda_actual.num, jugador_saqueador.color, "SAQUEADOR")
         jugador_saqueador.save()
     
     jugador_matado.save()
@@ -425,6 +425,8 @@ def aux_resolver_desempate_comodines(partida_id, ganadores, especiales):
                         jugador_perdedor.eff_as_extranjero = False
                         jugador_perdedor.save()
 
+    recopilar_victoria(get_mano_actual(partida_id).id, ganador, "DESEMPATE_COMODINES", 4)
+
     return ganador
 
 def aux_asignar_puntos_inmediatos_por_cartas_especiales(partida_id):
@@ -441,7 +443,7 @@ def aux_asignar_puntos_inmediatos_por_cartas_especiales(partida_id):
                     jugador = get_partida_usuario_by_partida_and_color(partida_id, color)
                     jugador.puntos += 2
                     jugador.save()
-                    recopilar_efecto_inmediato_ronda(mano_actual.id, ronda_actual.id, color, "VINOS_VIEJOS")
+                    recopilar_efecto_inmediato_ronda(mano_actual.id, ronda_actual.num, color, "VINOS_VIEJOS")
                 break
 
 def aux_asignar_puntos_extra_ganador_mano(partida_id, ganador_mano):

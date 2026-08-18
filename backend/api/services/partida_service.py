@@ -2,6 +2,8 @@ import random
 from sqlite3 import IntegrityError
 from django.utils import timezone
 
+from ..services.resumen_mano_service import create_resumen_mano
+
 from ..selectors.mano_selector import get_mano_actual
 
 from ..services.mano_service import repartir_cartas
@@ -556,6 +558,7 @@ def iniciar_partida(actor, partida_id, manual=False):
 
     partida.save()
     mano.save()
+    create_resumen_mano(partida_id)
     ronda.save()
 
     repartir_cartas(actor, partida_id)  # Reparte las cartas a los jugadores al iniciar la partida

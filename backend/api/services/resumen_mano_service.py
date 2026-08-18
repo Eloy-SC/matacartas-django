@@ -1,8 +1,9 @@
 
 
 from ..models.resumen_mano import ResumenMano
+from ..models.mano import Mano
 
-from ..selectors.resumen_mano_selector import get_resumen_mano_by_id, get_resumen_mano_by_mano_id
+from ..selectors.resumen_mano_selector import get_resumen_mano_by_mano_id
 
 from ..selectors.mano_selector import get_mano_actual
 
@@ -23,15 +24,24 @@ def get_resumen_ult_mano(actor, partida_id):
         raise ValueError("La partida no existe")
 
     mano_actual = get_mano_actual(partida_id)
-    resumen_mano = get_resumen_mano_by_mano_id(mano_actual.id)
+    if not mano_actual:
+        raise ValueError("La partida no tiene manos registradas")
 
-    resumen_mano
+    mano_finalizada = Mano.objects.filter(partida_id=partida_id, ganador__isnull=False).order_by("-num").first()
+    if not mano_finalizada:
+        raise ValueError("No hay ninguna mano finalizada todavía")
+
+    resumen_mano = get_resumen_mano_by_mano_id(mano_finalizada.id)
+    if not resumen_mano:
+        raise ValueError("No existe resumen de la última mano finalizada")
+
+    return resumen_mano
 
 def create_resumen_mano(partida_id):
 
     mano_actual = get_mano_actual(partida_id)
     ResumenMano.objects.create(
-        mano=mano_actual.id,
+        mano=mano_actual,
         tickets_usados={0:[], 1:[], 2:[], 3:[]},
         victorias={},
         muertes={},
