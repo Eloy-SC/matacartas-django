@@ -456,6 +456,13 @@ export default function Juego() {
 							mano={mano}
 							jugador={jugador}
 						/>
+						<button
+							type="button"
+							className="main-primary-button"
+							onClick={() => void handleAbandonarPartida(partidaId, loadMesa)}
+						>
+							Abandonar partida
+						</button>
 						{mesaInicial && (
 							<MesaInicialContrincantes
 								partida={mesaInicial.partida}

@@ -1,4 +1,5 @@
 import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
+import { useNavigate } from "react-router-dom";
 
 export function formatCartas(cartas) {
 	if (Array.isArray(cartas)) {
@@ -158,6 +159,35 @@ export async function handleRetirarseDeMano(partidaId, loadMesa) {
 		return retirarseData;
 	} catch (e) {
 		alert(e instanceof Error ? e.message : "Error retirándose de la mano");
+		return null;
+	}
+}
+
+export async function handleAbandonarPartida(partidaId, loadMesa) {
+	try {
+		const navigate = useNavigate();
+		const csrfToken = await obtenerCsrfToken();
+
+		const abandonarRes = await fetch(`/api/partida/${partidaId}/abandonar/`, {
+			method: "PUT",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json",
+				"X-CSRFToken": csrfToken,
+			},
+		});
+
+		const abandonarData = await abandonarRes.json().catch(() => ({}));
+
+		if (!abandonarRes.ok) {
+			throw new Error(abandonarData?.detail || "Error abandonando la partida");
+		}
+
+		await loadMesa({ showLoading: false });
+		navigate("/inicio");
+		return abandonarData;
+	} catch (e) {
+		alert(e instanceof Error ? e.message : "Error abandonando la partida");
 		return null;
 	}
 }

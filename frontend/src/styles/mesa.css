@@ -431,6 +431,13 @@
     z-index: 1;
 }
 
+.boton-abandono-arriba-dcha {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	z-index: 1;
+}
+
 .recuadro-info-superior {
 	border: 3px solid #000000;
 	border-radius: 8px;

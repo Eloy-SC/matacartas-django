@@ -117,6 +117,7 @@ def get_jugadores_actuales_de_partida(id):
             'eff_acum_monedero': pu.eff_acum_monedero,
             'eff_as_extranjero': pu.eff_as_extranjero,
             'retirado': pu.retirado,
+            'abandono': pu.abandono,
         })
     return jugadores
 
@@ -195,3 +196,6 @@ def get_colores_ordenados_por_puntuacion_con_ticket(partida_id):
         colores_por_puntuacion[pu.puntos].append(pu.color)
 
     return colores_por_puntuacion
+
+def get_jugadores_no_abandono_de_partida(partida_id):
+    return PartidaUsuario.objects.filter(partida_id=partida_id, abandono=False).count()

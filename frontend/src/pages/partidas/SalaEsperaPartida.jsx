@@ -308,7 +308,7 @@ export default function SalaEsperaPartida() {
 				throw new Error("Token CSRF no disponible");
 			}
 
-			const abandonarRes = await fetch(`/api/partidas/${partidaId}/abandonar/`, {
+			const abandonarRes = await fetch(`/api/partidas/${partidaId}/sala-espera/abandonar/`, {
 				method: "DELETE",
 				credentials: "include",
 				headers: {

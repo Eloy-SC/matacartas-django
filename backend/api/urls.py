@@ -24,6 +24,7 @@ from .views.mano_view import (
 
 from .views.partida_view import (
     abandonar_partida,
+    abandonar_partida_sala_espera,
     crear_partida,
     editar_partida,
     expulsar_jugador,
@@ -109,7 +110,7 @@ urlpatterns = [
     path("partidas/<int:partida_id>/jugadores/", get_jugadores_partida, name="get-jugadores-partida"),
     path("partidas/<int:partida_id>/participa/", get_jugador_participa_en_partida, name="get-jugador-participa-en-partida"),
     path("partidas/<str:clave>/participa/", get_jugador_participa_en_partida_privada, name="get-jugador-participa-en-partida-privada"),
-    path("partidas/<int:partida_id>/abandonar/", abandonar_partida, name="abandonar-partida"),
+    path("partidas/<int:partida_id>/sala-espera/abandonar/", abandonar_partida_sala_espera, name="abandonar-partida-sala-espera"),
     path("partidas/<int:partida_id>/unirse/", unirse_a_partida_publica, name="unirse-a-partida-publica"),
     path("partidas/<str:clave>/unirse/", unirse_a_partida_privada, name="unirse-a-partida-privada"),
     path("partidas/<int:partida_id>/toggle-listo/", toggle_listo, name="toggle-listo"),
@@ -133,4 +134,5 @@ urlpatterns = [
     path("partida/<int:partida_id>/mano/ronda/usar-ticket/", usar_ticket, name="usar-ticket"),
 
     path("partida/<int:partida_id>/finalizar/", finalizar_partida, name="finalizar-partida"),
+    path("partida/<int:partida_id>/abandonar/", abandonar_partida, name="abandonar-partida")
 ]

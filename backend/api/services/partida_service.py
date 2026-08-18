@@ -306,7 +306,7 @@ def get_partida_jugador(actor, partida_id):
     
     return partida_usuario
 
-def abandonar_partida(actor, partida_id):
+def abandonar_partida_sala_espera(actor, partida_id):
     """
     Permite a un jugador abandonar una partida en la que está participando.
     """
@@ -704,3 +704,31 @@ def finalizar_partida(actor, partida_id):
         res["puntuacion_extra_jug_as_extranjero"] = datos_puntos_finales["puntuacion_extra_jug_as_extranjero"]
 
     return res
+
+def abandonar_partida(actor, partida_id):
+    """
+    Permite a un jugador abandonar una partida en la que está participando.
+    """
+
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    partida = get_partida_by_id(partida_id).first()
+    if partida.fecha_inicio is None:
+        raise ValueError("No puedes abandonar una partida que aún no ha comenzado. Debes abandonar la sala de espera")
+    if not partida_usuario or partida_usuario.abandono:
+        raise ValueError("No estás participando en esta partida")
+
+    partida_usuario.puntos = -1000
+    partida_usuario.abandono = True
+    partida_usuario.save()
+
+def get_jugadores_no_abandono(actor, partida_id):
+    """
+    Devuelve una lista de los jugadores que no han abandonado la partida.
+    """
+
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para ver cuántos jugadores no han abandonado esta partida")
+    
+    jugadores = get_jugadores_no_abandono_de_partida(partida_id)
+    
+    return jugadores
