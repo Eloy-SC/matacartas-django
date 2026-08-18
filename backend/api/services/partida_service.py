@@ -653,7 +653,7 @@ def finalizar_partida(actor, partida_id):
     if not partida_jugador_actor:
         raise PermissionError("No tienes permiso para finalizar esta partida.")
     mano_actual = get_mano_actual(partida_id)
-    if mano_actual.num < partida.get_num_manos():
+    if mano_actual.num < partida.get_num_manos() and get_jugadores_no_abandono(actor, partida_id) > 1:
         raise ValueError("No se puede finalizar la partida antes de que se jueguen todas las manos.")
 
     if partida.fecha_fin is not None:

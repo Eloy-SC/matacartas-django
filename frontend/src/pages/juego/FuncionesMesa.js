@@ -1,5 +1,4 @@
 import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
-import { useNavigate } from "react-router-dom";
 
 export function formatCartas(cartas) {
 	if (Array.isArray(cartas)) {
@@ -163,9 +162,8 @@ export async function handleRetirarseDeMano(partidaId, loadMesa) {
 	}
 }
 
-export async function handleAbandonarPartida(partidaId, loadMesa) {
+export async function handleAbandonarPartida(partidaId, loadMesa, navigate) {
 	try {
-		const navigate = useNavigate();
 		const csrfToken = await obtenerCsrfToken();
 
 		const abandonarRes = await fetch(`/api/partida/${partidaId}/abandonar/`, {

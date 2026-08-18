@@ -20,7 +20,7 @@ def obtener_primer_jugador_activo(partida):
 
     for color in partida.disposicion_jugadores:
         partida_usuario = get_partida_usuario_by_partida_and_color(partida.id, color)
-        if partida_usuario and not partida_usuario.retirado:
+        if partida_usuario and not partida_usuario.retirado and not partida_usuario.abandono:
             return color
 
     return None
@@ -39,7 +39,7 @@ def aux_siguiente_turno(partida):
         indice_siguiente = (indice_actual + offset) % len(disposicion)
         color_turno_actual = disposicion[indice_siguiente]
         partida_usuario = get_partida_usuario_by_partida_and_color(partida.id, color_turno_actual)
-        if partida_usuario and not partida_usuario.retirado:
+        if partida_usuario and not partida_usuario.retirado and not partida_usuario.abandono:
             partida.turno_actual = color_turno_actual
             partida.save(update_fields=["turno_actual"])
             return
@@ -236,7 +236,7 @@ def repartir_cartas(actor, partida_id):
 
     while vuelta < 5:
         for jugador in jugadores:
-            if len(jugador.cartas) < 4:
+            if len(jugador.cartas) < 4 and not jugador.abandono:
                 carta = partida.baraja.pop(0)
                 jugador.cartas.append(carta)
 

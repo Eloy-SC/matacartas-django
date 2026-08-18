@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import CartasPropias from "./CartasPropias.jsx";
 import TicketJugador from "./TicketJugador.jsx";
 import {
@@ -10,6 +10,7 @@ import {
 	handleToggleCartaSeleccionada,
 	handleToggleCartaSeleccionadaUnica,
 	handleRetirarseDeMano,
+	handleAbandonarPartida,
 } from "./FuncionesMesa.js";
 import CartasEnMesa from "./CartasEnMesa.jsx";
 import InfoSuperior from "./InfoSuperior.jsx";
@@ -29,6 +30,7 @@ const COLORJUGADOR = {
 }
 
 export default function Juego() {
+	const navigate = useNavigate();
 	const { partidaId } = useParams();
 	const [mesa, setMesa] = useState(null);
 	const [mesaInicial, setMesaInicial] = useState(null);
@@ -49,6 +51,9 @@ export default function Juego() {
 	const accionAutomaticaTurnoClaveRef = useRef(null);
 	const accionAutomaticaTurnoEjecutadaRef = useRef(null);
 	const accionAutomaticaTurnoEnCursoRef = useRef(false);
+	const abandonarPartida = () => {
+		handleAbandonarPartida(partidaId, loadMesa, navigate);
+	};
 
 	const partida = mesa?.partida ?? null;
 	const mano = mesa?.mano ?? null;
@@ -458,8 +463,8 @@ export default function Juego() {
 						/>
 						<button
 							type="button"
-							className="main-primary-button"
-							onClick={() => void handleAbandonarPartida(partidaId, loadMesa)}
+							className="main-primary-button boton-abandono-arriba-dcha"
+							onClick={abandonarPartida}
 						>
 							Abandonar partida
 						</button>
