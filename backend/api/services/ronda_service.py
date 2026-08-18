@@ -248,7 +248,7 @@ def retirarse_de_mano(actor, partida_id):
                     partida_id,
                     jugador["color"]
                 )
-                break
+                return True  # Indica que la mano ha terminado
 
     else:
         aux_siguiente_turno(partida)

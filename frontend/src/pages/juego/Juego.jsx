@@ -323,7 +323,7 @@ export default function Juego() {
 		}
 
 		finManoProgramadaRef.current = manoFinalizadaId;
-		setCuentaAtrasFinMano(10);
+		setCuentaAtrasFinMano(20);
 	}, [manoFinalizadaId]);
 
 	useEffect(() => {

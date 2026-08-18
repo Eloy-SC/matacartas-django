@@ -69,7 +69,7 @@ def get_resumen_ult_mano(actor, partida_id):
     )
 
     resumen_ronda_com = ResumenRondaDTO(
-        victoria=resumen_mano.victorias["4"],
+        victoria=resumen_mano.victorias["4"] if "4" in resumen_mano.victorias.keys() else None,
         muerte=None,
         retiradas=None,
         efectos_inmediatos=None,
@@ -82,7 +82,7 @@ def get_resumen_ult_mano(actor, partida_id):
         ronda_1=resumen_ronda_1,
         ronda_2=resumen_ronda_2,
         ronda_3=resumen_ronda_3,
-        ronda_com=resumen_ronda_com,
+        ronda_com=resumen_ronda_com if resumen_ronda_com.victoria is not None else None,
         efectos_extra_fin_mano=resumen_mano.efectos_extra_fin_mano,
         ganador=mano_finalizada.ganador
     )

@@ -13,7 +13,7 @@ from ..selectors.partida_selector import get_partida_by_id
 from ..utils.web_sockets import notificar_mano_finalizada, notificar_mesa_actualizada, notificar_finalizacion_partida
 
 
-FIN_MANO_DELAY_SECONDS = 10
+FIN_MANO_DELAY_SECONDS = 20
 _partidas_en_transicion = set()
 _partidas_en_transicion_lock = threading.Lock()
 

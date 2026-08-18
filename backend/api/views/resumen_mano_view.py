@@ -26,7 +26,7 @@ def get_resumen_ult_mano(request, partida_id):
             "ronda_1": asdict(mano_resumen.ronda_1),
             "ronda_2": asdict(mano_resumen.ronda_2),
             "ronda_3": asdict(mano_resumen.ronda_3),
-            "ronda_com": asdict(mano_resumen.ronda_com),
+            "ronda_com": asdict(mano_resumen.ronda_com) if mano_resumen.ronda_com else None,
             "efectos_extra_fin_mano": mano_resumen.efectos_extra_fin_mano,
             "ganador": mano_resumen.ganador,
         },

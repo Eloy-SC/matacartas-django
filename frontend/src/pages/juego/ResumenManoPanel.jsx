@@ -99,7 +99,7 @@ export default function ResumenManoPanel({
                             <div key={claveRonda}>
                                 <p className="resumen-mano-panel__subtitle">{etiquetaRonda}</p>
                                 {victoria ? (
-                                    <p className="resumen-mano-panel__line"><span className="juego-resumen-overlay__label" style={{ color: COLORJUGADOR[victoria[0]] }}>{victoria[0]}</span> ha ganado la ronda por {equivalenciasVictorias[victoria[1]]}.</p>
+                                    <p className="resumen-mano-panel__line"><span className="juego-resumen-overlay__label" style={{ color: COLORJUGADOR[victoria[0]] }}>{victoria[0]}</span> ha ganado la ronda por {equivalenciasVictorias[victoria[1]]}</p>
                                 ) : null}
                                 {muerte ? (
                                     <p className="resumen-mano-panel__line"><span className="juego-resumen-overlay__label" style={{ color: COLORJUGADOR[muerte[0]] }}>{muerte[0]}</span> ha matado a <span className="juego-resumen-overlay__label" style={{ color: COLORJUGADOR[muerte[1]] }}>{muerte[1]}</span>.</p>
