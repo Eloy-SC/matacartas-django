@@ -17,7 +17,7 @@ def get_resumen_ult_mano(actor, partida_id):
     """
 
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise PermissionError("No participas en la partida.")
 
     partida = get_partida_by_id(partida_id)

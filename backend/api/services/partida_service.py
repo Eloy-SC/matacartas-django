@@ -4,7 +4,7 @@ from django.utils import timezone
 
 from ..services.resumen_mano_service import create_resumen_mano
 
-from ..selectors.mano_selector import get_mano_actual
+from ..selectors.mano_selector import get_mano_actual, get_manos_de_partida
 
 from ..services.mano_service import repartir_cartas
 
@@ -301,7 +301,7 @@ def get_partida_jugador(actor, partida_id):
         raise PermissionError("No tienes permiso para ver esta partida")
     
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise ValueError("No estás participando en esta partida")
     
     return partida_usuario
@@ -312,7 +312,7 @@ def abandonar_partida(actor, partida_id):
     """
     
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise ValueError("No estás participando en esta partida")
     if partida_usuario.creador:
         aux_asignar_nuevo_creador(partida_id, actor.id)
@@ -347,7 +347,7 @@ def aux_asignar_nuevo_creador(partida_id, usuario_id):
         return
     
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, nuevo_creador["id"])
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise ValueError("El nuevo creador no está participando en esta partida")
     
     partida_usuario.creador = True
@@ -476,7 +476,7 @@ def toggle_listo(actor, partida_id):
     """
 
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise ValueError("No estás participando en esta partida")
     
     if partida_usuario.listo:
@@ -634,10 +634,11 @@ def _calcular_puntuacion_ganada_por_jugadores(partida, posiciones):
         return puntuacion_ganada
 
     n = partida.num_jugadores
+    m = get_manos_de_partida(partida.id).count()
     for pos, jugadores_pos in posiciones.items():
         for jugador in jugadores_pos:
             color = jugador["color"] if isinstance(jugador, dict) else jugador.color
-            puntuacion_ganada[color] = (n / pos) * 100 if n > pos else 0
+            puntuacion_ganada[color] = (((n / pos) * 100) + (m*5)) if n > pos else 0
 
     return puntuacion_ganada
 

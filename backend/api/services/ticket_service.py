@@ -74,7 +74,7 @@ def usar_ticket(actor, partida_id, ticket):
     Permite a un jugador usar un ticket en la partida.
     """
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise PermissionError("No participas en la partida.")
 
     if partida_usuario.ticket != ticket:

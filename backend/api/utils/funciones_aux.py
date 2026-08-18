@@ -227,7 +227,7 @@ def repartir_cartas(actor, partida_id):
         actor.id
     )
 
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise PermissionError("No participas en la partida.")
 
     random.shuffle(partida.baraja)

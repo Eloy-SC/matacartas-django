@@ -15,3 +15,9 @@ def get_mano_actual(partida_id):
     Obtiene la mano actual de una partida.
     """
     return Mano.objects.filter(partida_id=partida_id).order_by('-num').first()
+
+def get_manos_de_partida(partida_id):
+    """
+    Obtiene las manos jugadas de una partida.
+    """
+    return Mano.objects.filter(partida_id=partida_id).order_by('num')

@@ -22,7 +22,7 @@ def jugar_carta(user, partida_id, carta):
         raise ValueError("Partida no encontrada.")
     
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, user.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise PermissionError("No participas en la partida.")
     if partida.turno_actual != partida_usuario.color:
         raise PermissionError("No es tu turno para jugar.")
@@ -195,7 +195,7 @@ def retirarse_de_mano(actor, partida_id):
         actor.id
     )
 
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise PermissionError("No participas en la partida.")
 
     partida = get_partida_by_id(partida_id).first()
