@@ -14,6 +14,7 @@ import ListaPartidas from "./pages/partidas/ListaPartidas.jsx";
 import CrearPartida from "./pages/partidas/CrearPartida.jsx";
 import SalaEsperaPartida from "./pages/partidas/SalaEsperaPartida.jsx";
 import RecuperarPassword from "./pages/RecuperarPassword.jsx";
+import RestablecerPassword from "./pages/RestablecerPassword.jsx";
 import Juego from "./pages/juego/Juego.jsx";
 import "./index.css";
 import "./styles/main.css";
@@ -172,6 +173,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/" element={ <RedirectIfAuthed> <App /> </RedirectIfAuthed>} />
         <Route path="/login" element={ <RedirectIfAuthed> <Login /> </RedirectIfAuthed>} />
         <Route path="/recuperar-password" element={ <RecuperarPassword /> } />
+        <Route path="/restablecer-password/:uid/:token" element={ <RestablecerPassword /> } />
 
         {/* Necesario iniciar sesión */}
         <Route path="/inicio" element={ <RequireAuth> <Inicio /> </RequireAuth>}/>
