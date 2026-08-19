@@ -302,3 +302,17 @@ label {
   background-color: var(--ui-accent-hover);
   color: #000000;
 }
+
+.recuperar-password-button {
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  position: relative;
+  align-items: center;
+}
+
+.recuperar-password-button:hover {
+  color: var(--ui-accent-hover);
+  border: none;
+  background: transparent;
+}

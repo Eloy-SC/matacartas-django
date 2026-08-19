@@ -286,6 +286,21 @@ export default function Login() {
             </button>
           )}
         </div>
+        
+        {mode === "login" ? (
+          <div>
+            <button
+              type="button"
+              disabled={loading}
+              style={{ marginTop: 10 }}
+              className="recuperar-password-button"
+              onClick={() => navigate("/recuperar-password")}
+            >
+              ¿Has olvidado tu contraseña?
+            </button>
+          </div>
+        ) : null}
+        
 
         {error && (
           <p role="alert" style={{ marginTop: 12, whiteSpace: "pre-line", color: "red" }}>
