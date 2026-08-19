@@ -115,6 +115,12 @@ def confirmar_recuperacion_password(request):
                 "detail": (
                     "La contraseña no cumple "
                     "los requisitos."
+                    "No debe ser común."
+                    "Debe tener al menos 10 "
+                    "caracteres."
+                    "No debe tener sólo digitos"
+                    "No debe ser similar a la"
+                    "información personal."
                 ),
                 "errors": form.errors,
             },
