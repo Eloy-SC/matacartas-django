@@ -2,6 +2,8 @@ import random
 from sqlite3 import IntegrityError
 from django.utils import timezone
 
+from ..selectors.ronda_selector import get_rondas_de_mano
+
 from ..services.resumen_mano_service import create_resumen_mano
 
 from ..selectors.mano_selector import get_mano_actual, get_manos_de_partida
@@ -17,7 +19,7 @@ from ..models.partida import Partida
 from ..models.mano import Mano
 from ..models.ronda import Ronda
 from ..selectors.partida_selector import *
-from ..utils.funciones_aux import aux_fin_partida_mod_puntos, aux_fin_partida_posiciones, aux_generar_baraja_inicial
+from ..utils.funciones_aux import aux_fin_partida_mod_puntos, aux_fin_partida_posiciones, aux_generar_baraja_inicial, aux_siguiente_turno, obtener_primer_jugador_activo
 
 
 def listar_partidas_publicas(
@@ -637,8 +639,9 @@ def _calcular_puntuacion_ganada_por_jugadores(partida, posiciones):
     m = get_manos_de_partida(partida.id).count()
     for pos, jugadores_pos in posiciones.items():
         for jugador in jugadores_pos:
+            puntuable = (n > pos) and int(jugador["puntos"]) > -1000
             color = jugador["color"] if isinstance(jugador, dict) else jugador.color
-            puntuacion_ganada[color] = (((n / pos) * 100) + (m*5)) if n > pos else 0
+            puntuacion_ganada[color] = (((n / pos) * 100) + (m*5)) if puntuable else 0
 
     return puntuacion_ganada
 
@@ -720,6 +723,26 @@ def abandonar_partida(actor, partida_id):
     partida_usuario.puntos = -1000
     partida_usuario.abandono = True
     partida_usuario.save()
+
+    if partida.turno_actual == partida_usuario.color:
+        mano_actual = get_mano_actual(partida_id)
+        ronda_actual = get_rondas_de_mano(mano_actual.id)[-1]
+        aux_siguiente_turno(partida)
+        primer_jugador_activo = obtener_primer_jugador_activo(partida)
+        if partida.turno_actual == primer_jugador_activo:
+            if ronda_actual.num == 0:
+                if ronda_actual.cambios == 0:
+                    ronda_actual.cambios = 1
+                    ronda_actual.save(update_fields=["cambios"])
+                elif ronda_actual.cambios == 1:
+                    ronda_actual.cambios = 0
+                    ronda_actual.save(update_fields=["cambios"])
+                elif ronda_actual.cambios == 2:
+                    ronda_nueva = Ronda(mano=get_mano_actual(partida_id), num=1, cartas={}, cambios=2)
+                    ronda_nueva.save()
+            else:
+                ronda_nueva = Ronda(mano=get_mano_actual(partida_id), num=1, cartas={}, cambios=2)
+                ronda_nueva.save()
 
 def get_jugadores_no_abandono(actor, partida_id):
     """

@@ -328,12 +328,12 @@ def aux_producir_efecto_muerte(partida_id, matador, matado, corruptor=False):
         jugador_matador.acumulador_kills += 1
         if carta_matadora.endswith("_BASTOS_PUNTIAGUDOS"):
             carta_equivalente = get_carta_equivalente(carta_matadora)
-            if jugador_saqueador:
+            if jugador_saqueador and jugador_saqueador != jugador_matado:
                 jugador_saqueador.puntos += CATALOGO[carta_equivalente]["recompensa"]
             else:
                 jugador_matador.puntos += CATALOGO[carta_equivalente]["recompensa"]
         else:
-            if jugador_saqueador:
+            if jugador_saqueador and jugador_saqueador != jugador_matado:
                 jugador_saqueador.puntos += CATALOGO[carta_matada]["recompensa"]
             else:
                 jugador_matador.puntos += CATALOGO[carta_matada]["recompensa"]
@@ -344,21 +344,21 @@ def aux_producir_efecto_muerte(partida_id, matador, matado, corruptor=False):
             None
         )
         jugador_corruptor = get_partida_usuario_by_partida_and_color(partida_id, lanzador_corruptor)
-        if jugador_saqueador:
+        if jugador_saqueador and jugador_saqueador != jugador_matado:
             jugador_saqueador.puntos += 1
         else:
             jugador_corruptor.puntos += 1
         jugador_corruptor.acumulador_kills += 1
         jugador_corruptor.save()
 
-    if jugador_saqueador:
+    mano_actual = get_mano_actual(partida_id)
+    if jugador_saqueador and jugador_saqueador != jugador_matado:
         recopilar_efecto_inmediato_ronda(mano_actual.id, ronda_actual.num, jugador_saqueador.color, "SAQUEADOR")
         jugador_saqueador.save()
     
     jugador_matado.save()
 
     # Recopilar la muerte
-    mano_actual = get_mano_actual(partida_id)
     ronda_actual = get_rondas_de_mano(mano_actual)[-1]
     recopilar_muerte(mano_actual.id, ronda_actual.num, matador, matado)
 

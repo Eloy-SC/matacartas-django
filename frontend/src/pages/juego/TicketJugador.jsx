@@ -40,7 +40,7 @@ function normalizarClaseTicket(clase) {
   return Number.isFinite(claseComoNumero) ? claseComoNumero : 1;
 }
 
-export default function TicketJugador({ ticket, ticket_usable, ronda_actual, cambios, es_turno_actual, partidaId, loadMesa }) {
+export default function TicketJugador({ ticket, ticket_usable, ronda_actual, cambios, es_turno_actual, es_fin_mano, partidaId, loadMesa }) {
   const [hover, setHover] = useState(false);
   const botonRef = useRef(null);
 
@@ -65,18 +65,22 @@ export default function TicketJugador({ ticket, ticket_usable, ronda_actual, cam
   const imagenTicket = imagenPorClase[claseTicket] ?? imagenPorClase[1];
 
   const puedeUsarTicket = (() => {
-      switch (ticket_usable) {
-          case "general":
-              return es_turno_actual;
+      if (es_fin_mano) {
+          return false;
+      } else {
+        switch (ticket_usable) {
+            case "general":
+                return es_turno_actual;
 
-          case "ronda":
-              return es_turno_actual && ronda_actual > 0;
+            case "ronda":
+                return es_turno_actual && ronda_actual > 0;
 
-          case "cambios":
-              return es_turno_actual && ronda_actual === 0 && cambios === 0;
+            case "cambios":
+                return es_turno_actual && ronda_actual === 0 && cambios === 0;
 
-          default:
-              return false;
+            default:
+                return false;
+        }
       }
   })();
 

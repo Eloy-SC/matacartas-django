@@ -90,6 +90,8 @@ export default function Juego() {
 		),
 	);
 
+	const puedeAbandonarPartida = Boolean(!partidaFinalizada && !esFinMano);
+
 	const mostrarBotonRetirada = 
 		Boolean(rondaActual && rondaActual.ronda_num >= 1 && rondaActual.ronda_num <= 3);
 	const puedeRetirarseDeMano = 
@@ -465,6 +467,7 @@ export default function Juego() {
 							type="button"
 							className="main-primary-button boton-abandono-arriba-dcha"
 							onClick={abandonarPartida}
+							disabled={!puedeAbandonarPartida}
 						>
 							Abandonar partida
 						</button>
@@ -481,7 +484,7 @@ export default function Juego() {
 						<div className="juego-mesa__cartas-y-acciones">
 							{/* Contenedor lateral izquierdo: ticket del jugador */}
 							<div className="juego-mesa__lado-izquierdo">
-								<TicketJugador ticket={jugador?.ticket} ticket_usable={jugador?.ticket_usable} ronda_actual={rondaActual.num} cambios={rondaActual.cambios} es_turno_actual={esTurnoJugador} partidaId={partidaId} loadMesa={loadMesa} />
+								<TicketJugador ticket={jugador?.ticket} ticket_usable={jugador?.ticket_usable} ronda_actual={rondaActual.num} cambios={rondaActual.cambios} es_turno_actual={esTurnoJugador} es_fin_mano={esFinMano} partidaId={partidaId} loadMesa={loadMesa} />
 							</div>
 							{jugador ? (
 								<div className="juego-mesa__cartas-jugador-propio">
@@ -513,7 +516,9 @@ export default function Juego() {
 								/>
 
 								<div className="recuadro-indicaciones">
-									{indicacionTuTurno ? (
+									{esFinMano ? (
+										<p className="texto-indicaciones">La mano ha terminado.</p>
+									) : indicacionTuTurno ? (
 										<span className="texto-indicaciones">Es tu turno.</span>
 									) : indicacionTurnoAjeno ? (
 										<span className="texto-indicaciones">
@@ -523,16 +528,16 @@ export default function Juego() {
 											</span>.
 										</span>
 									) : null}
-									{indicacionQuererCambiar ? (
+									{!esFinMano && indicacionQuererCambiar ? (
 										<p className="texto-indicaciones">¡Di si quieres cambiar cartas!</p>
-									) : indicacionCambiarCartas ? (
+									) : !esFinMano && indicacionCambiarCartas ? (
 										<p className="texto-indicaciones">¡Elige las cartas que quieres cambiar!</p>
-									) : indicacionElegirComodin ? (
+									) : !esFinMano && indicacionElegirComodin ? (
 										<p className="texto-indicaciones">¡Elige que carta quieres usar como comodín!</p>
-									) : indicacionJugarCarta ? (
+									) : !esFinMano && indicacionJugarCarta ? (
 										<p className="texto-indicaciones">¡Elige la carta que quieres lanzar!</p>
 									) : null}
-									{indicacionTuTurno && cuentaAtrasTurno !== null ? (
+									{!esFinMano && indicacionTuTurno && cuentaAtrasTurno !== null ? (
 										<p className="texto-indicaciones">Tienes {cuentaAtrasTurno} s.</p>
 									) : null}
 								</div>

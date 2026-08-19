@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from ..services import partida_service
-from ..utils.web_sockets import notificar_inicio_partida, notificar_sala_actualizada, notificar_finalizacion_partida
+from ..utils.web_sockets import notificar_inicio_partida, notificar_mesa_actualizada, notificar_sala_actualizada, notificar_finalizacion_partida
 
 def _parse_bool_param(value):
     if value is None:
@@ -420,9 +420,7 @@ def abandonar_partida(request, partida_id):
     if jugadores_no_abandono == 1:
         datos_final_partida = partida_service.finalizar_partida(request.user, partida_id)
         notificar_finalizacion_partida(partida_id, datos_final_partida)
-        return
-    
-    notificar_sala_actualizada(partida_id)
-
+    else:
+        notificar_mesa_actualizada(partida_id)
 
     return Response({"detail": "Abandonada la partida correctamente."}, status=200)

@@ -120,9 +120,15 @@ export default function MesaInicialContrincantes({ partida, jugador, contrincant
 									) : null}
 								</div>
 								<div>
-									<span className="mesa-inicial__puntos-contrincante">
-										{contrincante?.puntos ?? "?"} ptos.
-									</span>
+									{contrincante?.puntos !== -1000 ? (
+										<span className="mesa-inicial__puntos-contrincante">
+											{contrincante?.puntos ?? 0} ptos.
+										</span>
+									) : (
+										<span className="mesa-inicial__puntos-contrincante">
+											FUERA
+										</span>
+									)}
 								</div>
 								<div className={`mesa-inicial__cartas-en-mesa mesa-inicial__cartas-en-mesa--${posicion.toLowerCase()}`}>
 									<CartasEnMesa participante={contrincante} rondas={rondas} partidaId={partidaId} />
