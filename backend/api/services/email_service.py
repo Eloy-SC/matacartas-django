@@ -67,7 +67,7 @@ def enviar_email_verificacion(usuario):
     }
 
     html_content = render_to_string(
-        "emails/verificacion_email.html",
+        "emails/verification_email.html",
         contexto,
     )
 

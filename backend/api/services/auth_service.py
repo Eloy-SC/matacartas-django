@@ -3,6 +3,7 @@ from django.db.utils import IntegrityError
 from django.contrib.auth import get_user_model
 from ..utils.exceptions import RegistrationError
 from ..selectors import user_selector
+from ..services.email_service import enviar_email_verificacion
 
 @transaction.atomic
 def registrar_usuario(username, password, email, nombre, imagen):
@@ -21,6 +22,8 @@ def registrar_usuario(username, password, email, nombre, imagen):
         if "email" in msg:
             raise RegistrationError({"email": ["El correo electrónico ya existe"]})
         raise RegistrationError({"detail": ["No se pudo crear el usuario"]})
+
+    enviar_email_verificacion(user)
 
     return user
 

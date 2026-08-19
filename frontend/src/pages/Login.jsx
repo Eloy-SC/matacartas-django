@@ -119,7 +119,7 @@ export default function Login() {
         throw new Error(formatApiError(data) || "No se pudo registrar el usuario");
       }
 
-      setSuccessMessage("Registro correcto. Ya puedes iniciar sesión.");
+      setSuccessMessage("Verifica tu correo electrónico antes de iniciar sesión.");
       setPassword("");
       setRepeatPassword("");
       setMode("login");

@@ -117,6 +117,10 @@ class Migration(migrations.Migration):
                         verbose_name="user permissions",
                     ),
                 ),
+                (
+                    "email_verificado",
+                    models.BooleanField(default=False),
+                ),
             ],
             options={
                 "abstract": False,
