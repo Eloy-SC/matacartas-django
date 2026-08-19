@@ -1,5 +1,9 @@
 import random
 
+from django.db import transaction
+
+from ..models.partida import Partida
+
 from ..selectors.mano_selector import get_jugadores_en_mesa
 
 from ..selectors.partida_selector import get_partida_by_id, get_partida_usuario_by_partida_and_color, get_partida_usuario_by_partida_and_usuario
@@ -16,7 +20,7 @@ def obtener_primer_jugador_activo(partida):
 
     for color in partida.disposicion_jugadores:
         partida_usuario = get_partida_usuario_by_partida_and_color(partida.id, color)
-        if partida_usuario and not partida_usuario.retirado:
+        if partida_usuario and not partida_usuario.retirado and not partida_usuario.abandono:
             return color
 
     return None
@@ -35,9 +39,9 @@ def aux_siguiente_turno(partida):
         indice_siguiente = (indice_actual + offset) % len(disposicion)
         color_turno_actual = disposicion[indice_siguiente]
         partida_usuario = get_partida_usuario_by_partida_and_color(partida.id, color_turno_actual)
-        if partida_usuario and not partida_usuario.retirado:
+        if partida_usuario and not partida_usuario.retirado and not partida_usuario.abandono:
             partida.turno_actual = color_turno_actual
-            partida.save()
+            partida.save(update_fields=["turno_actual"])
             return
 
     raise ValueError("No hay jugadores activos disponibles.")
@@ -85,24 +89,18 @@ def aux_generar_baraja_inicial(cartas_especiales, num_jugadores, valiosas=None, 
         else:
             valiosas_selec = random.sample(cartas_valiosas, valiosas)
 
-        if magicas is None:
+        if magicas is None and unicas is None:
             if num_aleatorio < 0.7:
                 magicas_selec = random.sample(cartas_magicas, 4)
-            elif num_aleatorio < 0.95:
-                magicas_selec = random.sample(cartas_magicas, 3)
-            else:
-                magicas_selec = random.sample(cartas_magicas, 2)
-        else:
-            magicas_selec = random.sample(cartas_magicas, magicas)
-
-        if unicas is None:
-            if num_aleatorio < 0.7:
                 unicas_selec = []
             elif num_aleatorio < 0.95:
+                magicas_selec = random.sample(cartas_magicas, 3)
                 unicas_selec = random.sample(cartas_unicas, 1)
             else:
+                magicas_selec = random.sample(cartas_magicas, 2)
                 unicas_selec = random.sample(cartas_unicas, 2)
         else:
+            magicas_selec = random.sample(cartas_magicas, magicas)
             unicas_selec = random.sample(cartas_unicas, unicas)
 
         cartas_especiales_selec = valiosas_selec + magicas_selec + unicas_selec
@@ -206,35 +204,47 @@ def aux_fin_partida_posiciones(jugadores):
         i += len(empatados)
     return posiciones
 
+@transaction.atomic
 def repartir_cartas(actor, partida_id):
-    """
-    Reparte cartas a los jugadores de una partida.
-    """
+    partida = (
+        Partida.objects
+        .select_for_update()
+        .get(id=partida_id)
+    )
 
-    partida = get_partida_by_id(partida_id).first()
-    jugadores = get_jugadores_en_mesa(partida_id, partida.disposicion_jugadores)
+    jugadores = get_jugadores_en_mesa(
+        partida_id,
+        partida.disposicion_jugadores
+    )
+
     primer_jugador_activo = obtener_primer_jugador_activo(partida)
+
     if not primer_jugador_activo:
         raise ValueError("No hay jugadores activos para repartir la mano.")
 
-    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(
+        partida_id,
+        actor.id
+    )
+
+    if not partida_usuario or partida_usuario.abandono:
         raise PermissionError("No participas en la partida.")
 
     random.shuffle(partida.baraja)
+
     vuelta = 1
+
     while vuelta < 5:
         for jugador in jugadores:
-            if len(jugador.cartas) < 4:
-                carta = partida.baraja.pop(0)  # Saca la primera carta de la baraja
-                jugador.cartas.append(carta)  # Añade la carta a las cartas del jugador
-            else:
-                pass
+            if len(jugador.cartas) < 4 and not jugador.abandono:
+                carta = partida.baraja.pop(0)
+                jugador.cartas.append(carta)
+
         vuelta += 1
 
-    partida.turno_actual = primer_jugador_activo # El primer jugador activo en la disposición de jugadores comienza el turno.
+    partida.turno_actual = primer_jugador_activo
 
-    # Guardar cambios
     for jugador in jugadores:
         jugador.save()
+
     partida.save()

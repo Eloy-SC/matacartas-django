@@ -1,5 +1,12 @@
 from django.urls import path
 
+from .views.email_view import (
+    confirmar_recuperacion_password, 
+    solicitar_recuperacion_password,
+)
+
+from .views.resumen_mano_view import get_resumen_ult_mano
+
 from .views.ronda_view import (
     jugar_carta,
     retirarse_de_mano
@@ -22,6 +29,7 @@ from .views.mano_view import (
 
 from .views.partida_view import (
     abandonar_partida,
+    abandonar_partida_sala_espera,
     crear_partida,
     editar_partida,
     expulsar_jugador,
@@ -67,6 +75,19 @@ urlpatterns = [
     path("auth/me/", me, name="me"),
     path("users/perfil/actualizar/", perfil_actualizar, name="perfil-actualizar"),
 
+    # RELACIONADO CON EMAIL
+    path(
+        "auth/password-reset/",
+        solicitar_recuperacion_password,
+        name="solicitar_recuperacion_password",
+    ),
+
+    path(
+        "auth/password-reset-confirm/",
+        confirmar_recuperacion_password,
+        name="confirmar_recuperacion_password",
+    ),
+
     # USUARIOS
     path("users/admin/listar/", listar_usuarios_admin, name="listar-usuarios-admin"),
     path("users/admin/crear/", crear_usuario_admin, name="crear-usuario-admin"),
@@ -107,7 +128,7 @@ urlpatterns = [
     path("partidas/<int:partida_id>/jugadores/", get_jugadores_partida, name="get-jugadores-partida"),
     path("partidas/<int:partida_id>/participa/", get_jugador_participa_en_partida, name="get-jugador-participa-en-partida"),
     path("partidas/<str:clave>/participa/", get_jugador_participa_en_partida_privada, name="get-jugador-participa-en-partida-privada"),
-    path("partidas/<int:partida_id>/abandonar/", abandonar_partida, name="abandonar-partida"),
+    path("partidas/<int:partida_id>/sala-espera/abandonar/", abandonar_partida_sala_espera, name="abandonar-partida-sala-espera"),
     path("partidas/<int:partida_id>/unirse/", unirse_a_partida_publica, name="unirse-a-partida-publica"),
     path("partidas/<str:clave>/unirse/", unirse_a_partida_privada, name="unirse-a-partida-privada"),
     path("partidas/<int:partida_id>/toggle-listo/", toggle_listo, name="toggle-listo"),
@@ -124,10 +145,12 @@ urlpatterns = [
     path("partida/<int:partida_id>/mano/cambiar-cartas/", cambiar_cartas, name="cambiar-cartas"),
     path("partida/<int:partida_id>/mano/elegir-carta-comodin/", elegir_carta_comodin, name="elegir-carta-comodin"),
     path("partida/<int:partida_id>/mano/siguiente-mano/", siguiente_mano, name="siguiente-mano"),
+    path("partida/<int:partida_id>/mano/resumen/", get_resumen_ult_mano, name="get-resumen-ult-mano"),
 
     path("partida/<int:partida_id>/mano/ronda/jugar-carta/", jugar_carta, name="jugar-carta"),
     path("partida/<int:partida_id>/mano/ronda/retirarse/", retirarse_de_mano, name="retirarse-de-mano"),
     path("partida/<int:partida_id>/mano/ronda/usar-ticket/", usar_ticket, name="usar-ticket"),
 
     path("partida/<int:partida_id>/finalizar/", finalizar_partida, name="finalizar-partida"),
+    path("partida/<int:partida_id>/abandonar/", abandonar_partida, name="abandonar-partida")
 ]

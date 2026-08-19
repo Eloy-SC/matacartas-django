@@ -2,11 +2,13 @@ import random
 from sqlite3 import IntegrityError
 from django.utils import timezone
 
-from ..selectors.mano_selector import get_mano_actual
+from ..selectors.ronda_selector import get_rondas_de_mano
+
+from ..services.resumen_mano_service import create_resumen_mano
+
+from ..selectors.mano_selector import get_mano_actual, get_manos_de_partida
 
 from ..services.mano_service import repartir_cartas
-
-from ..models.catalogo_cartas import CATALOGO
 
 from ..models.partida_usuario import PartidaUsuario
 
@@ -17,7 +19,7 @@ from ..models.partida import Partida
 from ..models.mano import Mano
 from ..models.ronda import Ronda
 from ..selectors.partida_selector import *
-from ..utils.funciones_aux import aux_fin_partida_mod_puntos, aux_fin_partida_posiciones, aux_generar_baraja_inicial
+from ..utils.funciones_aux import aux_fin_partida_mod_puntos, aux_fin_partida_posiciones, aux_generar_baraja_inicial, aux_siguiente_turno, obtener_primer_jugador_activo
 
 
 def listar_partidas_publicas(
@@ -301,18 +303,18 @@ def get_partida_jugador(actor, partida_id):
         raise PermissionError("No tienes permiso para ver esta partida")
     
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise ValueError("No estás participando en esta partida")
     
     return partida_usuario
 
-def abandonar_partida(actor, partida_id):
+def abandonar_partida_sala_espera(actor, partida_id):
     """
     Permite a un jugador abandonar una partida en la que está participando.
     """
     
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise ValueError("No estás participando en esta partida")
     if partida_usuario.creador:
         aux_asignar_nuevo_creador(partida_id, actor.id)
@@ -347,7 +349,7 @@ def aux_asignar_nuevo_creador(partida_id, usuario_id):
         return
     
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, nuevo_creador["id"])
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise ValueError("El nuevo creador no está participando en esta partida")
     
     partida_usuario.creador = True
@@ -476,7 +478,7 @@ def toggle_listo(actor, partida_id):
     """
 
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise ValueError("No estás participando en esta partida")
     
     if partida_usuario.listo:
@@ -558,6 +560,7 @@ def iniciar_partida(actor, partida_id, manual=False):
 
     partida.save()
     mano.save()
+    create_resumen_mano(partida_id)
     ronda.save()
 
     repartir_cartas(actor, partida_id)  # Reparte las cartas a los jugadores al iniciar la partida
@@ -633,10 +636,12 @@ def _calcular_puntuacion_ganada_por_jugadores(partida, posiciones):
         return puntuacion_ganada
 
     n = partida.num_jugadores
+    m = get_manos_de_partida(partida.id).count()
     for pos, jugadores_pos in posiciones.items():
         for jugador in jugadores_pos:
+            puntuable = (n > pos) and int(jugador["puntos"]) > -1000
             color = jugador["color"] if isinstance(jugador, dict) else jugador.color
-            puntuacion_ganada[color] = (n / pos) * 100 if n > pos else 0
+            puntuacion_ganada[color] = (((n / pos) * 100) + (m*5)) if puntuable else 0
 
     return puntuacion_ganada
 
@@ -651,7 +656,7 @@ def finalizar_partida(actor, partida_id):
     if not partida_jugador_actor:
         raise PermissionError("No tienes permiso para finalizar esta partida.")
     mano_actual = get_mano_actual(partida_id)
-    if mano_actual.num < partida.get_num_manos():
+    if mano_actual.num < partida.get_num_manos() and get_jugadores_no_abandono(actor, partida_id) > 1:
         raise ValueError("No se puede finalizar la partida antes de que se jueguen todas las manos.")
 
     if partida.fecha_fin is not None:
@@ -702,3 +707,51 @@ def finalizar_partida(actor, partida_id):
         res["puntuacion_extra_jug_as_extranjero"] = datos_puntos_finales["puntuacion_extra_jug_as_extranjero"]
 
     return res
+
+def abandonar_partida(actor, partida_id):
+    """
+    Permite a un jugador abandonar una partida en la que está participando.
+    """
+
+    partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
+    partida = get_partida_by_id(partida_id).first()
+    if partida.fecha_inicio is None:
+        raise ValueError("No puedes abandonar una partida que aún no ha comenzado. Debes abandonar la sala de espera")
+    if not partida_usuario or partida_usuario.abandono:
+        raise ValueError("No estás participando en esta partida")
+
+    partida_usuario.puntos = -1000
+    partida_usuario.abandono = True
+    partida_usuario.save()
+
+    if partida.turno_actual == partida_usuario.color:
+        mano_actual = get_mano_actual(partida_id)
+        ronda_actual = get_rondas_de_mano(mano_actual.id)[-1]
+        aux_siguiente_turno(partida)
+        primer_jugador_activo = obtener_primer_jugador_activo(partida)
+        if partida.turno_actual == primer_jugador_activo:
+            if ronda_actual.num == 0:
+                if ronda_actual.cambios == 0:
+                    ronda_actual.cambios = 1
+                    ronda_actual.save(update_fields=["cambios"])
+                elif ronda_actual.cambios == 1:
+                    ronda_actual.cambios = 0
+                    ronda_actual.save(update_fields=["cambios"])
+                elif ronda_actual.cambios == 2:
+                    ronda_nueva = Ronda(mano=get_mano_actual(partida_id), num=1, cartas={}, cambios=2)
+                    ronda_nueva.save()
+            else:
+                ronda_nueva = Ronda(mano=get_mano_actual(partida_id), num=1, cartas={}, cambios=2)
+                ronda_nueva.save()
+
+def get_jugadores_no_abandono(actor, partida_id):
+    """
+    Devuelve una lista de los jugadores que no han abandonado la partida.
+    """
+
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para ver cuántos jugadores no han abandonado esta partida")
+    
+    jugadores = get_jugadores_no_abandono_de_partida(partida_id)
+    
+    return jugadores

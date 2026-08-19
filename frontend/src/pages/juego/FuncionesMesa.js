@@ -162,6 +162,34 @@ export async function handleRetirarseDeMano(partidaId, loadMesa) {
 	}
 }
 
+export async function handleAbandonarPartida(partidaId, loadMesa, navigate) {
+	try {
+		const csrfToken = await obtenerCsrfToken();
+
+		const abandonarRes = await fetch(`/api/partida/${partidaId}/abandonar/`, {
+			method: "PUT",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json",
+				"X-CSRFToken": csrfToken,
+			},
+		});
+
+		const abandonarData = await abandonarRes.json().catch(() => ({}));
+
+		if (!abandonarRes.ok) {
+			throw new Error(abandonarData?.detail || "Error abandonando la partida");
+		}
+
+		await loadMesa({ showLoading: false });
+		navigate("/inicio");
+		return abandonarData;
+	} catch (e) {
+		alert(e instanceof Error ? e.message : "Error abandonando la partida");
+		return null;
+	}
+}
+
 export async function handleSiguienteMano(partidaId, loadMesa) {
 	try {
 		const csrfToken = await obtenerCsrfToken();

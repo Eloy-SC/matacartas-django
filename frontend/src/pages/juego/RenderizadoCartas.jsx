@@ -1,4 +1,4 @@
-import { CARTAS_A_RENDERIZAR, TIPOS_CARTA } from "./DiccionarioCartasFront.jsx";
+import { CARTAS_A_RENDERIZAR, TIPOS_CARTA } from "./DiccionarioCartasFront.js";
 
 const CARTAS_IMAGENES = import.meta.glob("../../assets/cartas/*.png", {
 	eager: true,

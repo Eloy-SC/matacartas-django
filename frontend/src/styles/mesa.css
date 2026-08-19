@@ -338,6 +338,106 @@
   text-align: center;
 }
 
+.resumen-mano-panel {
+	display: grid;
+	gap: 8px;
+	text-align: left;
+}
+
+.resumen-mano-panel__title {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 800;
+	text-align: center;
+}
+
+.resumen-mano-panel__countdown,
+.resumen-mano-panel__winner,
+.resumen-mano-panel__loading,
+.resumen-mano-panel__error,
+.resumen-mano-panel__empty,
+.resumen-mano-panel__line,
+.resumen-mano-panel__subtitle {
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 700;
+	line-height: 1.2;
+	color: #000000;
+}
+
+.resumen-mano-panel__countdown {
+	text-align: center;
+	font-size: 0.95rem;
+}
+
+.resumen-mano-panel__winner {
+	text-align: center;
+	font-size: 0.95rem;
+}
+
+.resumen-mano-panel__sections {
+	display: grid;
+	gap: 8px;
+}
+
+.resumen-mano-panel__subtitle {
+	font-size: 0.92rem;
+	text-transform: uppercase;
+}
+
+.resumen-mano-panel__error {
+	color: #8f1f1f;
+}
+
+.juego-resumen-mano-centro {
+	position: fixed;
+	inset: 0;
+	z-index: 1300;
+	display: grid;
+	place-items: center;
+	padding: 24px;
+	box-sizing: border-box;
+	pointer-events: none;
+}
+
+.juego-resumen-mano-centro__card {
+	position: relative;
+	width: min(640px, 92vw);
+	max-height: calc(100vh - 48px);
+	overflow: auto;
+	padding: 22px;
+	box-sizing: border-box;
+	pointer-events: auto;
+	background-image: none;
+}
+
+.juego-resumen-mano-centro__card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background-image: var(--form-card-texture);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    opacity: 0.85;
+
+    z-index: 0;
+}
+
+.juego-resumen-mano-centro__card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.boton-abandono-arriba-dcha {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	z-index: 1;
+}
+
 .recuadro-info-superior {
 	border: 3px solid #000000;
 	border-radius: 8px;
@@ -488,5 +588,20 @@
 @media (max-width: 640px) {
 	.juego-resumen-overlay__card {
 		padding: 18px;
+	}
+
+	.recuadro-indicaciones {
+		right: 8%;
+		width: 260px;
+		padding: 18px;
+	}
+
+	.juego-resumen-mano-centro {
+		padding: 14px;
+	}
+
+	.juego-resumen-mano-centro__card {
+		width: min(640px, 96vw);
+		padding: 16px;
 	}
 }

@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from ..services import partida_service
-from ..utils.web_sockets import notificar_inicio_partida, notificar_sala_actualizada, notificar_finalizacion_partida
+from ..utils.web_sockets import notificar_inicio_partida, notificar_mesa_actualizada, notificar_sala_actualizada, notificar_finalizacion_partida
 
 def _parse_bool_param(value):
     if value is None:
@@ -266,10 +266,11 @@ def get_jugador_participa_en_partida(request, partida_id):
     except ValueError as e:
         return Response({"detail": str(e)}, status=404)
     
-    if request.user.id in [jugador["id"] for jugador in jugadores]:
-        participa = True
-    else:
-        participa = False
+    participa = False
+    for jugador in jugadores:
+        if jugador["id"] == request.user.id and jugador["abandono"] == False:
+            participa = True
+            break
 
     return Response({"participa": participa}, status=200)
 
@@ -284,18 +285,19 @@ def get_jugador_participa_en_partida_privada(request, clave):
     except ValueError as e:
         return Response({"detail": str(e)}, status=404)
     
-    if request.user.id in [jugador["id"] for jugador in jugadores]:
-        participa = True
-    else:
-        participa = False
+    participa = False
+    for jugador in jugadores:
+        if jugador["id"] == request.user.id and jugador["abandono"] == False:
+            participa = True
+            break
 
     return Response({"participa": participa, "id": partida.id}, status=200)
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
-def abandonar_partida(request, partida_id):
+def abandonar_partida_sala_espera(request, partida_id):
     try:
-        partida_service.abandonar_partida(request.user, partida_id)
+        partida_service.abandonar_partida_sala_espera(request.user, partida_id)
     except PermissionError as e:
         return Response({"detail": str(e)}, status=403)
     except ValueError as e:
@@ -403,3 +405,22 @@ def finalizar_partida(request, partida_id):
     notificar_finalizacion_partida(partida_id, datos_final_partida)
 
     return Response(datos_final_partida, status=200)
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def abandonar_partida(request, partida_id):
+    try:
+        partida_service.abandonar_partida(request.user, partida_id)
+        jugadores_no_abandono = partida_service.get_jugadores_no_abandono(request.user, partida_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+
+    if jugadores_no_abandono == 1:
+        datos_final_partida = partida_service.finalizar_partida(request.user, partida_id)
+        notificar_finalizacion_partida(partida_id, datos_final_partida)
+    else:
+        notificar_mesa_actualizada(partida_id)
+
+    return Response({"detail": "Abandonada la partida correctamente."}, status=200)

@@ -1,5 +1,5 @@
 import { createPortal } from "react-dom";
-import { CARTAS_A_RENDERIZAR } from "./DiccionarioCartasFront.jsx";
+import { CARTAS_A_RENDERIZAR } from "./DiccionarioCartasFront.js";
 import { obtenerTipoVisual } from "./RenderizadoCartas.jsx";
 
 function obtenerEfectoCarta(carta) {

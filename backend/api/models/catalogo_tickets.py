@@ -36,12 +36,12 @@ TICKETS = {
     "ticket_ic_azar": {
         "seccion": "intercambio_comodin",
         "clase": 3,
-        "usable": "general",
+        "usable": "ronda",
     },
     "ticket_ic_primero": {
         "seccion": "intercambio_comodin",
         "clase": 2,
-        "usable": "general",
+        "usable": "ronda",
     },
 
     ###### TICKETS DE PERDIDA DE PUNTOS ######
@@ -68,6 +68,7 @@ TICKETS = {
     "ticket_pp_4_primero": {
         "seccion": "perdida_puntos",
         "clase": 2,
+        "usable": "general",
     },
     "ticket_pp_4_todos": {
         "seccion": "perdida_puntos",
@@ -134,12 +135,12 @@ TICKETS = {
     "ticket_ro_azar": {
         "seccion": "retirada_obligada",
         "clase": 3,
-        "usable": "cambios",
+        "usable": "ronda",
     },
     "ticket_ro_primero": {
         "seccion": "retirada_obligada",
         "clase": 2,
-        "usable": "cambios",
+        "usable": "ronda",
     },
 
     ###### TICKETS ROBO DE TICKET ######
@@ -147,17 +148,17 @@ TICKETS = {
     "ticket_rt_azar": {
         "seccion": "robo_ticket",
         "clase": 2,
-        "usable": "cambios",
+        "usable": "general",
     },
     "ticket_rt_primero": {
         "seccion": "robo_ticket",
         "clase": 2,
-        "usable": "cambios",
+        "usable": "general",
     },
     "ticket_rt_mayor_clase": {
         "seccion": "robo_ticket",
         "clase": 0,
-        "usable": "cambios",
+        "usable": "general",
     },
 }
 

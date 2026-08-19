@@ -1,5 +1,9 @@
 from datetime import timezone
 
+from ..services.resumen_mano_service import create_resumen_mano
+
+from ..models.catalogo_tickets import TICKETS
+
 from ..services.ticket_service import repartir_tickets
 
 from ..models.mano import Mano
@@ -19,7 +23,7 @@ def get_mesa(actor, partida_id):
     Obtiene la información de la mesa de juego de una partida.
     """
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise PermissionError("No participas en la partida.")
     
     partida = get_partida_by_id(partida_id).first()
@@ -43,7 +47,8 @@ def get_mesa(actor, partida_id):
                 acumulador_kills=jugador.get("acumulador_kills", 0),
                 acumulador_deaths=jugador.get("acumulador_deaths", 0),
                 retirado=jugador.get("retirado", False),
-                ticket=jugador.get("ticket")
+                ticket=jugador.get("ticket"),
+                ticket_usable=TICKETS[jugador.get("ticket")]["usable"] if jugador.get("ticket") in TICKETS else None
             )
         else:
             contrincantes_dto.append(ContrincanteDTO(
@@ -95,7 +100,7 @@ def jugador_quiere_cambiar(actor, partida_id):
     Indica que un jugador quiere cambiar cartas en la mano actual.
     """
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise PermissionError("No participas en la partida.")
     if partida_usuario.color != get_partida_by_id(partida_id).first().turno_actual:
         raise PermissionError("No es tu turno.")
@@ -118,7 +123,7 @@ def jugador_no_quiere_cambiar(actor, partida_id):
     Indica que un jugador no quiere cambiar cartas en la mano actual.
     """
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise PermissionError("No participas en la partida.")
     if partida_usuario.color != get_partida_by_id(partida_id).first().turno_actual:
         raise PermissionError("No es tu turno.")
@@ -141,7 +146,7 @@ def cambiar_cartas(actor, partida_id, cartas_a_cambiar):
     Cambia las cartas de un jugador en la mano actual.
     """
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise PermissionError("No participas en la partida.")
     if partida_usuario.color != get_partida_by_id(partida_id).first().turno_actual:
         raise PermissionError("No es tu turno.")
@@ -179,7 +184,7 @@ def elegir_carta_comodin(actor, partida_id, carta_comodin):
     Permite a un jugador elegir una carta comodín en la mano actual.
     """
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise PermissionError("No participas en la partida.")
     if partida_usuario.color != get_partida_by_id(partida_id).first().turno_actual:
         raise PermissionError("No es tu turno.")
@@ -203,7 +208,7 @@ def get_datos_carta(actor, carta, partida_id):
     Obtiene los datos de la carta comodín del jugador.
     """
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise PermissionError("No participas en la partida.")
 
     carta_normalizada = carta.strip().upper() if isinstance(carta, str) else ""
@@ -224,7 +229,7 @@ def siguiente_mano(actor, partida_id):
     Inicia la siguiente mano en la partida.
     """
     partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, actor.id)
-    if not partida_usuario:
+    if not partida_usuario or partida_usuario.abandono:
         raise PermissionError("No participas en la partida.")
 
     partida = get_partida_by_id(partida_id).first()
@@ -282,6 +287,9 @@ def siguiente_mano(actor, partida_id):
         partida.disposicion_jugadores.remove(empezador)
         partida.disposicion_jugadores.append(empezador)
         partida.save()
+
+        # Crear resumen mano para la siguiente mano
+        create_resumen_mano(partida_id)
 
         # Repartir cartas
         repartir_cartas(actor, partida_id)
