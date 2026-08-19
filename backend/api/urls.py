@@ -1,5 +1,10 @@
 from django.urls import path
 
+from .views.email_view import (
+    confirmar_recuperacion_password, 
+    solicitar_recuperacion_password,
+)
+
 from .views.resumen_mano_view import get_resumen_ult_mano
 
 from .views.ronda_view import (
@@ -69,6 +74,19 @@ urlpatterns = [
     path("auth/logout/", session_logout, name="session-logout"),
     path("auth/me/", me, name="me"),
     path("users/perfil/actualizar/", perfil_actualizar, name="perfil-actualizar"),
+
+    # RELACIONADO CON EMAIL
+    path(
+        "auth/password-reset/",
+        solicitar_recuperacion_password,
+        name="solicitar_recuperacion_password",
+    ),
+
+    path(
+        "auth/password-reset-confirm/",
+        confirmar_recuperacion_password,
+        name="confirmar_recuperacion_password",
+    ),
 
     # USUARIOS
     path("users/admin/listar/", listar_usuarios_admin, name="listar-usuarios-admin"),
