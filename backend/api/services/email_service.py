@@ -46,3 +46,45 @@ def enviar_email_recuperacion_password(usuario):
     )
 
     email.send()
+
+def enviar_email_verificacion(usuario):
+    uid = urlsafe_base64_encode(
+        force_bytes(usuario.pk)
+    )
+
+    token = default_token_generator.make_token(
+        usuario
+    )
+
+    verification_url = (
+        f"{settings.FRONTEND_URL}"
+        f"/verificar-email/{uid}/{token}"
+    )
+
+    contexto = {
+        "usuario": usuario,
+        "verification_url": verification_url,
+    }
+
+    html_content = render_to_string(
+        "emails/verificacion_email.html",
+        contexto,
+    )
+
+    email = EmailMultiAlternatives(
+        subject="Verifica tu cuenta - Matacartas",
+        body=(
+            "Verifica tu cuenta de Matacartas "
+            f"accediendo al siguiente enlace:\n\n"
+            f"{verification_url}"
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[usuario.email],
+    )
+
+    email.attach_alternative(
+        html_content,
+        "text/html",
+    )
+
+    email.send()

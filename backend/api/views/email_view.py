@@ -138,3 +138,64 @@ def confirmar_recuperacion_password(request):
         },
         status=status.HTTP_200_OK,
     )
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def verificar_email(request):
+    uid = request.data.get("uid")
+    token = request.data.get("token")
+
+    if not uid or not token:
+        return Response(
+            {"detail": "Datos de verificación incompletos."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        uid_decoded = force_str(
+            urlsafe_base64_decode(uid)
+        )
+
+        usuario = User.objects.get(
+            pk=uid_decoded
+        )
+
+    except (
+        TypeError,
+        ValueError,
+        OverflowError,
+        User.DoesNotExist,
+    ):
+        return Response(
+            {"detail": "El enlace no es válido."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not default_token_generator.check_token(
+        usuario,
+        token,
+    ):
+        return Response(
+            {
+                "detail": (
+                    "El enlace no es válido "
+                    "o ha caducado."
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    usuario.email_verificado = True
+    usuario.save(
+        update_fields=["email_verificado"]
+    )
+
+    return Response(
+        {
+            "detail": (
+                "Tu correo electrónico ha sido "
+                "verificado correctamente."
+            )
+        },
+        status=status.HTTP_200_OK,
+    )
