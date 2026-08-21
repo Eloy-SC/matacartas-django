@@ -27,6 +27,7 @@ services:
       - ./backend:/app
     ports:
       - "8000:8000"
+      - "8089:8089"
     env_file:
       - .env
     depends_on:

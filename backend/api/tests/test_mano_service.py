@@ -8,6 +8,7 @@ from api.models.partida import Partida
 from api.models.partida_usuario import PartidaUsuario
 from api.models.ronda import Ronda
 from api.services import mano_service
+from api.utils.funciones_aux import aux_siguiente_turno
 
 
 class ManoServiceTests(TestCase):
@@ -109,6 +110,37 @@ class ManoServiceTests(TestCase):
         self.assertEqual(self.partida.turno_actual, PartidaUsuario.ColorJugador.ROJO)
         self.assertEqual(self.ronda_cambios.cambios, 2)
 
+    def test_aux_siguiente_turno_skips_current_abandoned_player(self):
+        self.partida.turno_actual = PartidaUsuario.ColorJugador.ROJO
+        self.partida.save(update_fields=["turno_actual"])
+        self.pu_creator.abandono = True
+        self.pu_creator.save(update_fields=["abandono"])
+
+        aux_siguiente_turno(self.partida)
+
+        self.partida.refresh_from_db()
+        self.assertEqual(self.partida.turno_actual, PartidaUsuario.ColorJugador.AZUL)
+
+    def test_aux_siguiente_turno_wraps_when_next_player_abandoned(self):
+        self.partida.turno_actual = PartidaUsuario.ColorJugador.ROJO
+        self.partida.save(update_fields=["turno_actual"])
+        self.pu_player.abandono = True
+        self.pu_player.save(update_fields=["abandono"])
+
+        aux_siguiente_turno(self.partida)
+
+        self.partida.refresh_from_db()
+        self.assertEqual(self.partida.turno_actual, PartidaUsuario.ColorJugador.ROJO)
+
+    def test_aux_siguiente_turno_raises_when_all_players_abandoned(self):
+        self.pu_creator.abandono = True
+        self.pu_creator.save(update_fields=["abandono"])
+        self.pu_player.abandono = True
+        self.pu_player.save(update_fields=["abandono"])
+
+        with self.assertRaisesRegex(ValueError, "No hay jugadores activos"):
+            aux_siguiente_turno(self.partida)
+
     def test_cambiar_cartas_swaps_cards_and_refills_hand(self):
         self.partida.turno_actual = PartidaUsuario.ColorJugador.ROJO
         self.partida.save(update_fields=["turno_actual"])
@@ -140,6 +172,9 @@ class ManoServiceTests(TestCase):
         self.pu_creator.cartas = ["MONEDERO_PECULIAR", "CARTA_B", "CARTA_C"]
         self.pu_creator.carta_comodin = "MONEDERO_PECULIAR"
         self.pu_creator.save(update_fields=["cartas", "carta_comodin"])
+        
+        self.mano.ganador = self.pu_creator.color
+        self.mano.save(update_fields=["ganador"])
 
         mano_service.siguiente_mano(self.creator, self.partida.id)
 
@@ -156,8 +191,10 @@ class ManoServiceTests(TestCase):
         self.assertIn("tipo", datos)
 
     def test_siguiente_mano_creates_new_mano(self):
+        self.mano.ganador = self.pu_creator.color
+        self.mano.save(update_fields=["ganador"])
         with patch("api.services.mano_service.repartir_cartas") as repartir_mock:
             mano_service.siguiente_mano(self.creator, self.partida.id)
 
-        repartir_mock.assert_called_once_with(self.partida.id)
+        repartir_mock.assert_called_once_with(self.creator, self.partida.id)
         self.assertEqual(Mano.objects.filter(partida=self.partida).count(), 2)

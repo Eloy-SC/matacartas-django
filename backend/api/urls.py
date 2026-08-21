@@ -3,6 +3,7 @@ from django.urls import path
 from .views.email_view import (
     confirmar_recuperacion_password, 
     solicitar_recuperacion_password,
+    verificar_email,
 )
 
 from .views.resumen_mano_view import get_resumen_ult_mano
@@ -81,7 +82,11 @@ urlpatterns = [
         solicitar_recuperacion_password,
         name="solicitar_recuperacion_password",
     ),
-
+    path(
+        "auth/verificar-email/",
+        verificar_email,
+        name="verificar-email",
+    ),
     path(
         "auth/password-reset-confirm/",
         confirmar_recuperacion_password,

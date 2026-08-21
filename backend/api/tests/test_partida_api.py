@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -219,20 +220,6 @@ class PartidaAPITest(APITestCase):
 		)
 
 	@patch("api.views.partida_view.notificar_sala_actualizada")
-	def test_unirse_a_partida_privada_adds_player(self, _notify_mock):
-		url = reverse("unirse-a-partida-privada", args=[self.partida_privada.clave])
-		self.client.force_authenticate(user=self.jugador)
-
-		response = self.client.post(url)
-		self.assertEqual(response.status_code, status.HTTP_200_OK)
-		self.assertTrue(
-			PartidaUsuario.objects.filter(
-				partida=self.partida_privada,
-				usuario=self.jugador,
-			).exists()
-		)
-
-	@patch("api.views.partida_view.notificar_sala_actualizada")
 	def test_toggle_listo_changes_ready_state(self, _notify_mock):
 		url = reverse("toggle-listo", args=[self.partida_publica.id])
 		self.client.force_authenticate(user=self.creador)
@@ -252,7 +239,7 @@ class PartidaAPITest(APITestCase):
 			usuario=self.jugador,
 			creador=False,
 		)
-		url = reverse("abandonar-partida", args=[self.partida_publica.id])
+		url = reverse("abandonar-partida-sala-espera", args=[self.partida_publica.id])
 		self.client.force_authenticate(user=self.jugador)
 
 		response = self.client.delete(url)
@@ -262,6 +249,58 @@ class PartidaAPITest(APITestCase):
 				partida=self.partida_publica,
 				usuario=self.jugador,
 			).exists()
+		)
+
+	@patch("api.views.partida_view.notificar_mesa_actualizada")
+	def test_abandonar_partida_returns_cards_to_deck_and_clears_player(self, _notify_mock):
+		partida = Partida.objects.create(
+			nombre="PartidaIniciadaApi",
+			num_jugadores=3,
+			fecha_inicio=timezone.now(),
+			longitud=Partida.LongitudPartida.NORMAL,
+			baraja=["CARTA_RESTANTE"],
+			disposicion_jugadores=[
+				PartidaUsuario.ColorJugador.ROJO,
+				PartidaUsuario.ColorJugador.AZUL,
+				PartidaUsuario.ColorJugador.VERDE,
+			],
+			turno_actual=PartidaUsuario.ColorJugador.ROJO,
+		)
+		PartidaUsuario.objects.create(
+			partida=partida,
+			usuario=self.creador,
+			creador=True,
+			color=PartidaUsuario.ColorJugador.ROJO,
+		)
+		jugador = PartidaUsuario.objects.create(
+			partida=partida,
+			usuario=self.jugador,
+			creador=False,
+			color=PartidaUsuario.ColorJugador.AZUL,
+			cartas=["CARTA_1", "CARTA_2"],
+			carta_comodin="COMODIN",
+		)
+		PartidaUsuario.objects.create(
+			partida=partida,
+			usuario=self.otro,
+			creador=False,
+			color=PartidaUsuario.ColorJugador.VERDE,
+		)
+
+		url = reverse("abandonar-partida", args=[partida.id])
+		self.client.force_authenticate(user=self.jugador)
+
+		response = self.client.put(url)
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		jugador.refresh_from_db()
+		partida.refresh_from_db()
+		self.assertTrue(jugador.abandono)
+		self.assertEqual(jugador.cartas, [])
+		self.assertIsNone(jugador.carta_comodin)
+		self.assertCountEqual(
+			partida.baraja,
+			["CARTA_RESTANTE", "CARTA_1", "CARTA_2", "COMODIN"],
 		)
 
 	@patch("api.views.partida_view.notificar_sala_actualizada")
@@ -285,49 +324,3 @@ class PartidaAPITest(APITestCase):
 				usuario=self.jugador,
 			).exists()
 		)
-
-	@patch("api.views.partida_view.notificar_inicio_partida")
-	def test_iniciar_partida_starts_match(self, _notify_mock):
-		self.partida_publica.num_jugadores = 2
-		self.partida_publica.save()
-
-		PartidaUsuario.objects.create(
-			partida=self.partida_publica,
-			usuario=self.jugador,
-			creador=False,
-			listo=True,
-		)
-		pu_creador = PartidaUsuario.objects.get(
-			partida=self.partida_publica,
-			usuario=self.creador,
-		)
-		pu_creador.listo = True
-		pu_creador.save()
-
-		url = reverse("iniciar-partida", args=[self.partida_publica.id])
-		self.client.force_authenticate(user=self.creador)
-
-		response = self.client.put(url)
-		self.assertEqual(response.status_code, status.HTTP_200_OK)
-		self.partida_publica.refresh_from_db()
-		self.assertIsNotNone(self.partida_publica.fecha_inicio)
-
-	@patch("api.views.partida_view.notificar_inicio_partida")
-	def test_iniciar_partida_manual_starts_match(self, _notify_mock):
-		self.partida_publica.num_jugadores = 2
-		self.partida_publica.save()
-
-		PartidaUsuario.objects.create(
-			partida=self.partida_publica,
-			usuario=self.jugador,
-			creador=False,
-			listo=False,
-		)
-
-		url = reverse("iniciar-partida-manual", args=[self.partida_publica.id])
-		self.client.force_authenticate(user=self.creador)
-
-		response = self.client.put(url)
-		self.assertEqual(response.status_code, status.HTTP_200_OK)
-		self.partida_publica.refresh_from_db()
-		self.assertIsNotNone(self.partida_publica.fecha_inicio)

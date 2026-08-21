@@ -16,6 +16,7 @@ TEST_USERS = [
         "nombre": "El Administrador",
         "email": "admin@matacartas.es",
         "puntuacion": 2000,
+        "email_verificado": True,
         },
     {
         "username": "cervantes",
@@ -25,6 +26,7 @@ TEST_USERS = [
         "nombre": "Miguel de Cervantes",
         "email": "cervantes@complutum.es",
         "puntuacion": 1500,
+        "email_verificado": True,
         "imagen": "https://upload.wikimedia.org/wikipedia/commons/0/09/Cervantes_J%C3%A1uregui.jpg",
     },
     {
@@ -35,6 +37,7 @@ TEST_USERS = [
         "nombre": "Francisco de Quevedo",
         "email": "quevedo@cr.es",
         "puntuacion": 700,
+        "email_verificado": True,
         "imagen": "https://www.biografiasyvidas.com/biografia/q/fotos/quevedo_3.jpg",
     },
     {
@@ -45,6 +48,7 @@ TEST_USERS = [
         "nombre": "Luis de Góngora",
         "email": "gongora@cordoba.es",
         "puntuacion": 700,
+        "email_verificado": True,
         "imagen": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRF3cgLzG6YGAMSD3--dvCfw1S1nauUQBdmRnnfbRVD8w&s=10",
     },
     {
@@ -55,6 +59,7 @@ TEST_USERS = [
         "nombre": "Lope de Vega",
         "email": "lope@madrid.es",
         "puntuacion": 600,
+        "email_verificado": True,
         "imagen": "https://scenamalaga.com/wp-content/uploads/2024/01/Lope-de-Vega-2.jpg",
     },
     {
@@ -65,6 +70,7 @@ TEST_USERS = [
         "nombre": "Gustavo Adolfo Bécquer",
         "email": "becquer@sevilla.es",
         "puntuacion": 500,
+        "email_verificado": True,
         "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Portrait_of_Gustavo_Adolfo_B%C3%A9cquer%2C_by_his_brother_Valeriano_%281862%29.jpg/960px-Portrait_of_Gustavo_Adolfo_B%C3%A9cquer%2C_by_his_brother_Valeriano_%281862%29.jpg",
     },
     {
@@ -75,6 +81,7 @@ TEST_USERS = [
         "nombre": "Diego de Velázquez",
         "email": "velazquez@sevilla.es",
         "puntuacion": 400,
+        "email_verificado": True,
         "imagen": "https://historia-arte.com/_/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpbSI6WyJcL2FydGlzdFwvaW1hZ2VGaWxlXC9kaWVnby12ZWxhenF1ZXotYXV0b3JyZXRyYXRvLTQ1LXgtMzgtY20tY29sZWNjaW9uLXJlYWwtYWNhZGVtaWEtZGUtYmVsbGFzLWFydGVzLWRlLXNhbi1jYXJsb3M/tbXVzZW8tZGUtYmVsbGFzLWFydGVzLWRlLXZhbGVuY2lhLmpwZyIsInJlc2l6ZUNyb3AsNDAwLDQwMCxDUk9QX0VOVFJPUFkiXX0.mp__DKfdjxTtOlYE0KQ9zRGjdP0BaQkWTSuA7kqrb8I.jpg",
     },
     {
@@ -85,6 +92,7 @@ TEST_USERS = [
         "nombre": "Bartolomé Esteban Murillo",
         "email": "murillo@sevilla.es",
         "puntuacion": 300,
+        "email_verificado": True,
         "imagen": "https://explorersevilla.com/wp-content/uploads/2016/08/Bartolome-Esteban-Murillo.png",
     },
     {
@@ -95,6 +103,7 @@ TEST_USERS = [
         "nombre": "Calderón de la Barca",
         "email": "calderon@madrid.es",
         "puntuacion": 250,
+        "email_verificado": True,
         "imagen": "https://i0.wp.com/insulabaranaria.com/wp-content/uploads/2018/01/calderondelabarca.jpg?fit=960%2C1278&ssl=1",
     },
     {
@@ -105,6 +114,7 @@ TEST_USERS = [
         "nombre": "Garcilaso de la Vega",
         "email": "garcilaso@toledo.es",
         "puntuacion": 200,
+        "email_verificado": True,
         "imagen": "https://images.ecestaticos.com/DJJ3lWDXoH5pPbT-3KikgfGHffI=/0x0:0x0/1200x1200/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2Fe47%2F5cf%2Fe5a%2Fe475cfe5a9beb82ca4080b2971e1ab77.jpg",
     },
 
@@ -117,6 +127,7 @@ TEST_USERS = [
         "nombre": "Usuario Username Corto",
         "email": "u@example.com",
         "puntuacion": 15,
+        "email_verificado": True,
     },
     {
         "username": "usuario_con_username_long",
@@ -126,6 +137,7 @@ TEST_USERS = [
         "nombre": "Usuario Username Largo",
         "email": "usuariousernamemax@example.com",
         "puntuacion": 15,
+        "email_verificado": True,
     },
     {
         "username": "usuario_p_min",
@@ -135,6 +147,7 @@ TEST_USERS = [
         "nombre": "Usuario Contra Corta",
         "email": "usuariopmin@example.com",
         "puntuacion": 15,
+        "email_verificado": True,
     },
     {
         "username": "usuario_p_max",
@@ -144,6 +157,7 @@ TEST_USERS = [
         "nombre": "Usuario Contra Larga",
         "email": "usuariopmax@example.com",
         "puntuacion": 15,
+        "email_verificado": True,
     },
     {
         "username": "usuario_nom_min",
@@ -153,6 +167,7 @@ TEST_USERS = [
         "nombre": "N",
         "email": "usuarionommin@example.com",
         "puntuacion": 15,
+        "email_verificado": True,
     },
     {
         "username": "usuario_nom_max",
@@ -162,6 +177,7 @@ TEST_USERS = [
         "nombre": "Usuario Nombre Largo Largo Largo La",
         "email": "usuarionommax@example.com",
         "puntuacion": 15,
+        "email_verificado": True,
     },
     {
         "username": "usuario_email_min",
@@ -171,6 +187,7 @@ TEST_USERS = [
         "nombre": "Usuario Correo Corto",
         "email": "u@e",
         "puntuacion": 15,
+        "email_verificado": True,
     },
     {
         "username": "usuario_email_max",
@@ -180,6 +197,7 @@ TEST_USERS = [
         "nombre": "Usuario Correo Largo",
         "email": "usuarioemailmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxmaxma@example.com",
         "puntuacion": 15,
+        "email_verificado": True,
     },
     {
         "username": "usuario_puntos_max",
@@ -189,6 +207,7 @@ TEST_USERS = [
         "nombre": "Usuario Puntuación Máxima",
         "email": "usuariopuntosmax@example.com",
         "puntuacion": 99999999,
+        "email_verificado": True,
     },
     {
         "username": "usuario_puntos_min",
@@ -198,6 +217,7 @@ TEST_USERS = [
         "nombre": "Usuario Puntuación Mínima",
         "email": "usuariopuntosmin@example.com",
         "puntuacion": 0,
+        "email_verificado": True,
     },
 ]
 
@@ -266,6 +286,7 @@ def seed_test_users(apps, schema_editor):
             "nombre": user_spec["nombre"],
             "puntuacion": user_spec.get("puntuacion", 0),
             "imagen": user_spec.get("imagen", ""),
+            "email_verificado": user_spec.get("email_verificado", False),
         }
 
         UserModel.objects.update_or_create(username=username, defaults=defaults)

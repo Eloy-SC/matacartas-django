@@ -722,7 +722,19 @@ def abandonar_partida(actor, partida_id):
 
     partida_usuario.puntos = -1000
     partida_usuario.abandono = True
+
+    # Devolver cartas a la baraja
+    cartas_del_usuario = []
+    for carta in partida_usuario.cartas:
+        cartas_del_usuario.append(carta)
+    if partida_usuario.carta_comodin is not None:
+        cartas_del_usuario.append(partida_usuario.carta_comodin)
+    partida_usuario.cartas = []
+    partida_usuario.carta_comodin = None
     partida_usuario.save()
+    partida.baraja.extend(cartas_del_usuario)
+    partida.save(update_fields=["baraja"])
+    
 
     if partida.turno_actual == partida_usuario.color:
         mano_actual = get_mano_actual(partida_id)

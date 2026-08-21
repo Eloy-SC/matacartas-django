@@ -42,6 +42,16 @@ def session_login(request):
             {"detail": "Credenciales inválidas"},
             status=status.HTTP_400_BAD_REQUEST,
         )
+    if not user.email_verificado:
+        return Response(
+            {
+                "detail": (
+                    "Debes verificar tu correo electrónico "
+                    "antes de iniciar sesión."
+                )
+            },
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
     login(request, user)
     return Response(
