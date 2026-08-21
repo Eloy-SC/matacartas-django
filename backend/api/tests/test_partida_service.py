@@ -158,18 +158,21 @@ class PartidaServiceTests(TestCase):
 			cartas_especiales=True,
 			tickets=True,
 			tiempo_max_turno=120,
+			disposicion_jugadores=[PartidaUsuario.ColorJugador.AZUL, PartidaUsuario.ColorJugador.ROJO]
 		)
 		PartidaUsuario.objects.create(
 			partida=self.partida_lista,
 			usuario=self.creator,
 			creador=True,
 			listo=True,
+			color=PartidaUsuario.ColorJugador.AZUL,
 		)
 		PartidaUsuario.objects.create(
 			partida=self.partida_lista,
 			usuario=self.started_player,
 			creador=False,
 			listo=True,
+			color=PartidaUsuario.ColorJugador.ROJO,
 		)
 
 	def test_listar_partidas_publicas_requires_authenticated_user(self):
@@ -327,12 +330,12 @@ class PartidaServiceTests(TestCase):
 		partida_usuario = partida_service.get_partida_jugador(self.creator, self.partida_publica.id)
 		self.assertTrue(partida_usuario.creador)
 
-	def test_abandonar_partida_raises_when_not_member(self):
+	def test_abandonar_partida_sala_espera_raises_when_not_member(self):
 		with self.assertRaises(ValueError):
-			partida_service.abandonar_partida(self.outsider, self.partida_publica.id)
+			partida_service.abandonar_partida_sala_espera(self.outsider, self.partida_publica.id)
 
-	def test_abandonar_partida_reassigns_creator_when_current_leaves(self):
-		partida_service.abandonar_partida(self.creator, self.partida_publica.id)
+	def test_abandonar_partida_sala_espera_reassigns_creator_when_current_leaves(self):
+		partida_service.abandonar_partida_sala_espera(self.creator, self.partida_publica.id)
 
 		self.assertFalse(
 			PartidaUsuario.objects.filter(
@@ -348,7 +351,7 @@ class PartidaServiceTests(TestCase):
 			).exists()
 		)
 
-	def test_abandonar_partida_deletes_partida_when_last_player_leaves(self):
+	def test_abandonar_partida_sala_espera_deletes_partida_when_last_player_leaves(self):
 		partida_solo = Partida.objects.create(
 			nombre="PartidaServiceSolo",
 			num_jugadores=2,
@@ -366,8 +369,38 @@ class PartidaServiceTests(TestCase):
 			listo=False,
 		)
 
-		partida_service.abandonar_partida(self.outsider, partida_solo.id)
+		partida_service.abandonar_partida_sala_espera(self.outsider, partida_solo.id)
 		self.assertFalse(Partida.objects.filter(id=partida_solo.id).exists())
+
+	def test_abandonar_partida_returns_cards_to_deck_and_clears_player(self):
+		partida = self.partida_iniciada
+		partida.baraja = ["CARTA_RESTANTE"]
+		partida.disposicion_jugadores = [
+			PartidaUsuario.ColorJugador.ROJO,
+			PartidaUsuario.ColorJugador.AZUL,
+		]
+		partida.turno_actual = PartidaUsuario.ColorJugador.ROJO
+		partida.save(update_fields=["baraja", "disposicion_jugadores", "turno_actual"])
+		partida_usuario = PartidaUsuario.objects.get(
+			partida=partida,
+			usuario=self.started_player,
+		)
+		partida_usuario.color = PartidaUsuario.ColorJugador.AZUL
+		partida_usuario.cartas = ["CARTA_1", "CARTA_2"]
+		partida_usuario.carta_comodin = None
+		partida_usuario.save(update_fields=["color", "cartas", "carta_comodin"])
+
+		partida_service.abandonar_partida(self.started_player, partida.id)
+
+		partida_usuario.refresh_from_db()
+		partida.refresh_from_db()
+		self.assertTrue(partida_usuario.abandono)
+		self.assertEqual(partida_usuario.cartas, [])
+		self.assertIsNone(partida_usuario.carta_comodin)
+		self.assertCountEqual(
+			partida.baraja,
+			["CARTA_RESTANTE", "CARTA_1", "CARTA_2"],
+		)
 
 	def test_unirse_a_partida_publica_requires_authenticated_user(self):
 		with self.assertRaises(PermissionError):

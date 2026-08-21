@@ -6,6 +6,7 @@ from api.models.partida import Partida
 from api.models.partida_usuario import PartidaUsuario
 from api.models.ronda import Ronda
 from api.services import ronda_service
+from api.models.resumen_mano import ResumenMano
 
 
 class RondaServiceTests(TestCase):
@@ -77,6 +78,15 @@ class RondaServiceTests(TestCase):
             cartas=["CARTA_I", "CARTA_J", "CARTA_K", "CARTA_L"],
         )
         self.mano = Mano.objects.create(partida=self.partida, num=1)
+        self.resumen_mano = ResumenMano.objects.create(
+            mano=self.mano,
+            tickets_usados={"0":[], "1":[], "2":[], "3":[]},
+            victorias={},
+            muertes={},
+            retiradas={"1":[], "2":[], "3":[]},
+            efectos_inmediatos_ronda={"1":[], "2":[], "3":[]},
+            efectos_extra_fin_mano=[]
+        )
         self.ronda = Ronda.objects.create(mano=self.mano, num=1, cartas={}, cambios=2)
 
         self.pu_por_color = {

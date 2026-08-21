@@ -352,6 +352,7 @@ def aux_producir_efecto_muerte(partida_id, matador, matado, corruptor=False):
         jugador_corruptor.save()
 
     mano_actual = get_mano_actual(partida_id)
+    ronda_actual = get_rondas_de_mano(mano_actual)[-1]
     if jugador_saqueador and jugador_saqueador != jugador_matado:
         recopilar_efecto_inmediato_ronda(mano_actual.id, ronda_actual.num, jugador_saqueador.color, "SAQUEADOR")
         jugador_saqueador.save()
@@ -359,7 +360,6 @@ def aux_producir_efecto_muerte(partida_id, matador, matado, corruptor=False):
     jugador_matado.save()
 
     # Recopilar la muerte
-    ronda_actual = get_rondas_de_mano(mano_actual)[-1]
     recopilar_muerte(mano_actual.id, ronda_actual.num, matador, matado)
 
 def aux_resolver_ganador_mano(partida_id):

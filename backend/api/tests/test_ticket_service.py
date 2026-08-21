@@ -9,6 +9,8 @@ from api.services import ticket_service
 from api.models.catalogo_cartas import CATALOGO
 from api.models.mano import Mano
 from api.models.ronda import Ronda
+from api.services.resumen_mano_service import create_resumen_mano
+from api.models.resumen_mano import ResumenMano
 
 
 class TicketServiceTests(TestCase):
@@ -94,12 +96,30 @@ class TicketServiceTests(TestCase):
         self.partida.turno_actual = PartidaUsuario.ColorJugador.ROJO
         self.partida.save(update_fields=["turno_actual"])
         self.mano = Mano.objects.create(partida=self.partida, num=1)
+        self.resumen_mano = ResumenMano.objects.create(
+            mano=self.mano,
+            tickets_usados={"0":[], "1":[], "2":[], "3":[]},
+            victorias={},
+            muertes={},
+            retiradas={"1":[], "2":[], "3":[]},
+            efectos_inmediatos_ronda={"1":[], "2":[], "3":[]},
+            efectos_extra_fin_mano=[]
+        )
         self.ronda = Ronda.objects.create(mano=self.mano, num=0, cartas={}, cambios=0)
 
     def set_up_ronda_lances(self):
         self.partida.turno_actual = PartidaUsuario.ColorJugador.ROJO
         self.partida.save(update_fields=["turno_actual"])
         self.mano = Mano.objects.create(partida=self.partida, num=1)
+        self.resumen_mano = ResumenMano.objects.create(
+            mano=self.mano,
+            tickets_usados={"0":[], "1":[], "2":[], "3":[]},
+            victorias={},
+            muertes={},
+            retiradas={"1":[], "2":[], "3":[]},
+            efectos_inmediatos_ronda={"1":[], "2":[], "3":[]},
+            efectos_extra_fin_mano=[]
+        )
         self.ronda = Ronda.objects.create(mano=self.mano, num=1, cartas={}, cambios=2)
 
     def test_usar_ticket_rechaza_usuario_fuera_de_la_partida(self):
