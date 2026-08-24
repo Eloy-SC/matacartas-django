@@ -425,24 +425,14 @@ export default function ListaPartidas() {
 												</span>
 											</td>
 											<td>
-												{partida?.estado === "sala_espera" ? (
-													<button
-														type="button"
-														className="partidas-primary-button"
-														onClick={() => handleUnirse(partida.id, undefined, false)}
-														disabled={jugadoresActuales >= jugadoresMaximos || joiningPartidaId === partida.id}
-													>
-														{joiningPartidaId === partida.id ? "Uniéndose..." : "Unirse"}
-													</button>
-												) : (
-													<button
-														type="button"
-														className="partidas-primary-button"
-														/*onClick={() => navigate(`/partidas/sala-de-espera/${partida.id}`)}*/
-													>
-														Ver
-													</button>
-												)}
+												<button
+													type="button"
+													className="partidas-primary-button"
+													onClick={() => handleUnirse(partida.id, undefined, false)}
+													disabled={jugadoresActuales >= jugadoresMaximos || joiningPartidaId === partida.id || partida?.estado !== "sala_espera"}
+												>
+													{joiningPartidaId === partida.id ? "Uniéndose..." : "Unirse"}
+												</button>
 											</td>
 										</tr>
 									);
