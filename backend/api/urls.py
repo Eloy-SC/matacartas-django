@@ -1,5 +1,10 @@
 from django.urls import path
 
+from .views.config_global_view import (
+    obtener_rango_minimo_crear_torneo,
+    cambiar_rango_minimo_crear_torneo,
+)
+
 from .views.email_view import (
     confirmar_recuperacion_password, 
     solicitar_recuperacion_password,
@@ -124,6 +129,10 @@ urlpatterns = [
         eliminar_rango_admin,
         name="eliminar-rango-admin",
     ),
+
+    # CONFIGURACION GLOBAL
+    path("config-global/rango-minimo/torneos/", obtener_rango_minimo_crear_torneo, name="obtener-rango-minimo-torneos"),
+    path("config-global/rango-minimo/torneos/admin/", cambiar_rango_minimo_crear_torneo, name="cambiar-rango-minimo-torneos"),
 
     # PARTIDAS
     path("partidas/publicas/", listar_partidas_publicas, name="listar-partidas-publicas"),

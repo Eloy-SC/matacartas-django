@@ -10,6 +10,7 @@ import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminUserForm from "./pages/admin/AdminUserForm.jsx";
 import AdminRangos from "./pages/admin/AdminRangos.jsx";
 import AdminRangoForm from "./pages/admin/AdminRangoForm.jsx";
+import AdminTorneos from "./pages/admin/AdminTorneos.jsx";
 import ListaPartidas from "./pages/partidas/ListaPartidas.jsx";
 import CrearPartida from "./pages/partidas/CrearPartida.jsx";
 import SalaEsperaPartida from "./pages/partidas/SalaEsperaPartida.jsx";
@@ -195,6 +196,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/admin/rangos" element={ <RequireAdmin> <AdminRangos /> </RequireAdmin>}/>
         <Route path="/admin/rangos/crear" element={ <RequireAdmin> <AdminRangoForm /> </RequireAdmin>}/>
         <Route path="/admin/rangos/:rangoId" element={ <RequireAdmin> <AdminRangoForm /> </RequireAdmin>}/>
+        <Route path="/admin/torneos" element={ <RequireAdmin> <AdminTorneos /> </RequireAdmin>}/>
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
