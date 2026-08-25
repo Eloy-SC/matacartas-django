@@ -371,4 +371,165 @@ class Migration(migrations.Migration):
                 ("efectos_extra_fin_mano", models.JSONField(default=list)),
             ],
         ),
+        migrations.CreateModel(
+            name="Torneo",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nombre", models.CharField(max_length=40, unique=True, null=False, blank=False)),
+                ("fecha_creacion", models.DateTimeField(auto_now_add=True)),
+                ("fecha_inicio", models.DateTimeField(null=True, blank=True)),
+                ("fecha_fin", models.DateTimeField(null=True, blank=True)),
+                (
+                    "rango_minimo",
+                    models.ForeignKey(
+                        blank=True,
+                        default=None,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="api.rango",
+                    ),
+                ),
+                (
+                    "rango_maximo",
+                    models.ForeignKey(
+                        blank=True,
+                        default=None,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="api.rango",
+                    ),
+                ),
+                ("num_jug_fin", models.IntegerField(null=False, default=3)),
+                ("num_jug_sem", models.IntegerField(null=False, default=3)),
+                ("num_jug_cua", models.IntegerField(null=True, default=3)),
+                ("num_jug_oct", models.IntegerField(null=True, default=3)),
+                (
+                    "partidas_longitud",
+                    models.CharField(
+                        max_length=20,
+                        choices=[
+                            ("express", "Express"),
+                            ("corta", "Corta"),
+                            ("normal", "Normal"),
+                            ("larga", "Larga"),
+                        ],
+                        default="normal",
+                    ),
+                ),
+                ("partidas_cartas_especiales", models.BooleanField(default=True)),
+                ("partidas_tickets", models.BooleanField(default=True)),
+                ("partidas_tiempo_max_turno", models.IntegerField(null=False, default=90)),
+                ("desempate_mayor_punt", models.BooleanField(null=False, default=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="PartidaTorneo",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "partida",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="api.partida",
+                    ),
+                ),
+                (
+                    "torneo",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="api.torneo",
+                    ),
+                ),
+                (
+                    "fase",
+                    models.CharField(
+                        max_length=20,
+                        choices=[
+                            ("octavos", "Octavos"),
+                            ("cuartos", "Cuartos"),
+                            ("semifinal", "Semifinal"),
+                            ("final", "Final"),
+                        ],
+                        default="cuartos",
+                    ),
+                ),
+                ("lado", models.IntegerField(null=False, default=0)),
+                ("pareja", models.IntegerField(null=False, default=0)),
+                ("posiciones_finales", models.JSONField(default=dict)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="TorneoUsuario",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "torneo",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="api.torneo",
+                    ),
+                ),
+                (
+                    "usuario",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="api.usuario",
+                    ),
+                ),
+                ("creador", models.BooleanField(null=False, default=False)),
+                ("identificador", models.IntegerField(unique=True, null=False, blank=False)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Medalla",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nombre", models.CharField(max_length=40, unique=True, null=False, blank=False)),
+                ("imagen", models.TextField(blank=True, null=True, default=None, max_length=1000)),
+                (
+                    "categoria",
+                    models.CharField(
+                        max_length=20,
+                        choices=[
+                            ("oro", "Oro"),
+                            ("plata", "Plata"),
+                            ("bronce", "Bronce"),
+                        ],
+                        default="bronce",
+                    ),
+                ),
+            ],
+        ),
     ]

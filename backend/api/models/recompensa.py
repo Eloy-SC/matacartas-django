@@ -7,7 +7,12 @@ class Recompensa(models.Model):
     imagen = models.TextField(blank=True, null=True, default=None, max_length=1000)
 
     class Meta:
-        abstract = False # Esta clase no se creará como tabla en la base de datos
+        abstract = True
 
 class Medalla(Recompensa):
-    pass
+    class CategoriaMedalla(models.TextChoices):
+        ORO = "oro", "Oro"
+        PLATA = "plata", "Plata"
+        BRONCE = "bronce", "Bronce"
+
+    categoria = models.CharField(max_length=20, choices=CategoriaMedalla.choices, default=CategoriaMedalla.BRONCE)
