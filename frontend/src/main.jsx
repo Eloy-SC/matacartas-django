@@ -17,6 +17,8 @@ import AdminMedallaForm from "./pages/admin/AdminMedallaForm.jsx";
 import ListaPartidas from "./pages/partidas/ListaPartidas.jsx";
 import CrearPartida from "./pages/partidas/CrearPartida.jsx";
 import SalaEsperaPartida from "./pages/partidas/SalaEsperaPartida.jsx";
+import ListaTorneos from "./pages/torneos/ListaTorneos.jsx";
+import CrearTorneo from "./pages/torneos/CrearTorneo.jsx";
 import RecuperarPassword from "./pages/RecuperarPassword.jsx";
 import RestablecerPassword from "./pages/RestablecerPassword.jsx";
 import VerificarEmail from "./pages/VerificarEmail.jsx";
@@ -186,6 +188,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/perfil" element={ <RequireAuth> <Perfil /> </RequireAuth>}/>
         <Route path="/partidas" element={ <RequireAuth> <ListaPartidas /> </RequireAuth>}/>
         <Route path="/crear-partida" element={ <RequireAuth> <CrearPartida /> </RequireAuth>}/>
+        <Route path="/torneos" element={ <RequireAuth> <ListaTorneos /> </RequireAuth>}/>
+        <Route path="/crear-torneo" element={ <RequireAuth> <CrearTorneo /> </RequireAuth>}/>
 
         {/* Necesario iniciar sesión y participar en la partida */}
         <Route path="/partidas/sala-de-espera/:partidaId" element={ <RequireParticipating> <SalaEsperaPartida /> </RequireParticipating>}/>

@@ -270,6 +270,15 @@ export default function Inicio() {
 						CREA UNA PARTIDA
 					</button>
 				</div>
+				<div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 16 }}>
+					<button type="button" className="main-primary-button" onClick={() => navigate("/torneos")}>
+						BUSCA TORNEO
+					</button>
+					<p style={{ margin: "12px 0", fontWeight: "bold" }}>     o      </p>
+					<button type="button" className="main-primary-button" onClick={() => navigate("/crear-torneo")}>
+						CREA UN TORNEO
+					</button>
+				</div>
 				<button type="button" className="main-primary-button" onClick={handleLogout} disabled={loading}>
 					{loading ? "Cerrando sesión..." : "Cerrar sesión"}
 				</button>

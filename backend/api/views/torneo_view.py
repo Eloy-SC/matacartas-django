@@ -1,0 +1,118 @@
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from ..serializers.torneo_serializer import TorneoSerializer
+from ..services import torneo_service
+from ..utils.exceptions import RegistrationError
+
+
+def _parse_bool_param(value):
+    if value is None:
+        return None
+    normalized = str(value).strip().lower()
+    if normalized in {"true", "1", "yes", "si", "y"}:
+        return True
+    if normalized in {"false", "0", "no", "n"}:
+        return False
+    return None
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def listar_torneos_publicos(request):
+    page_param = request.query_params.get("page", "1")
+    try:
+        page = max(1, int(page_param))
+    except (TypeError, ValueError):
+        page = 1
+    page_size = 10
+
+    search = (request.query_params.get("search") or "").strip()
+    if not search:
+        search = None
+
+    nombre = (request.query_params.get("nombre") or "").strip()
+    if not nombre:
+        nombre = None
+
+    rango_minimo_id = request.query_params.get("rango_minimo_id")
+    if rango_minimo_id is not None:
+        try:
+            rango_minimo_id = int(rango_minimo_id)
+            if rango_minimo_id <= 0:
+                rango_minimo_id = None
+        except (TypeError, ValueError):
+            rango_minimo_id = None
+
+    rango_maximo_id = request.query_params.get("rango_maximo_id")
+    if rango_maximo_id is not None:
+        try:
+            rango_maximo_id = int(rango_maximo_id)
+            if rango_maximo_id <= 0:
+                rango_maximo_id = None
+        except (TypeError, ValueError):
+            rango_maximo_id = None
+
+    empezado = _parse_bool_param(request.query_params.get("empezado"))
+
+    ordering_param = (request.query_params.get("ordering") or "id").strip()
+    order_dir = "asc"
+    order_by = ordering_param
+    if ordering_param.startswith("-"):
+        order_dir = "desc"
+        order_by = ordering_param[1:] or "id"
+
+    try:
+        paged = torneo_service.listar_torneos_publicos(
+            request.user,
+            page=page,
+            page_size=page_size,
+            search=search,
+            nombre=nombre,
+            rango_minimo_id=rango_minimo_id,
+            rango_maximo_id=rango_maximo_id,
+            empezado=empezado,
+            order_by=order_by,
+            order_dir=order_dir,
+        )
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+
+    return Response(
+        {
+            "items": paged["items"],
+            "page": paged["page"],
+            "page_size": paged["page_size"],
+            "total": paged["total"],
+            "total_pages": paged["total_pages"],
+        },
+        status=200,
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def crear_torneo(request):
+    serializer = TorneoSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=400)
+
+    try:
+        torneo = torneo_service.crear_torneo(request.user, **serializer.validated_data)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except RegistrationError as e:
+        return Response(e.errors, status=400)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=400)
+
+    return Response(
+        {
+            "id": torneo.id,
+            "nombre": torneo.nombre,
+            "detail": "Torneo creado",
+        },
+        status=status.HTTP_201_CREATED,
+    )

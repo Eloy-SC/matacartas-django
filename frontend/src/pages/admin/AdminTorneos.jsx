@@ -74,7 +74,7 @@ export default function AdminTorneos() {
 		? "Cargando rangos..."
 		: rangosError
 			? "Error cargando rangos"
-			: "Selecciona un rango";
+			: "Ninguno";
 
     async function handleSubmit(event) {
         event.preventDefault();

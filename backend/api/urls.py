@@ -77,6 +77,7 @@ from .views.medalla_view import (
     get_medalla,
     listar_medallas,
 )
+from .views.torneo_view import crear_torneo, listar_torneos_publicos
 from .views.health_view import health_check
 
 urlpatterns = [
@@ -171,6 +172,10 @@ urlpatterns = [
     path("partidas/<int:partida_id>/expulsar-jugador/<int:jugador_id>/", expulsar_jugador, name="expulsar-jugador"),
     path("partidas/<int:partida_id>/iniciar/", iniciar_partida, name="iniciar-partida"),
     path("partidas/<int:partida_id>/iniciar/manual/", iniciar_partida_manual, name="iniciar-partida-manual"),
+
+    # TORNEOS
+    path("torneos/publicos/", listar_torneos_publicos, name="listar-torneos-publicos"),
+    path("torneos/crear/", crear_torneo, name="crear-torneo"),
 
     # JUEGO
     path("partida/<int:partida_id>/mano/repartir/", repartir_cartas, name="repartir-cartas"),
