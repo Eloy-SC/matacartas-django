@@ -70,6 +70,13 @@ from .views.rango_view import (
     get_rango_de_usuario,
     listar_rangos,
 )
+from .views.medalla_view import (
+    crear_medalla_admin,
+    editar_medalla_admin,
+    eliminar_medalla_admin,
+    get_medalla,
+    listar_medallas,
+)
 from .views.health_view import health_check
 
 urlpatterns = [
@@ -128,6 +135,21 @@ urlpatterns = [
         "rangos/admin/<int:rango_id>/eliminar/",
         eliminar_rango_admin,
         name="eliminar-rango-admin",
+    ),
+
+    # MEDALLAS
+    path("medallas/listar/", listar_medallas, name="listar-medallas"),
+    path("medallas/admin/crear/", crear_medalla_admin, name="crear-medalla-admin"),
+    path("medallas/<int:medalla_id>/", get_medalla, name="get-medalla"),
+    path(
+        "medallas/admin/<int:medalla_id>/editar/",
+        editar_medalla_admin,
+        name="editar-medalla-admin",
+    ),
+    path(
+        "medallas/admin/<int:medalla_id>/eliminar/",
+        eliminar_medalla_admin,
+        name="eliminar-medalla-admin",
     ),
 
     # CONFIGURACION GLOBAL

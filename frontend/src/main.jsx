@@ -11,6 +11,9 @@ import AdminUserForm from "./pages/admin/AdminUserForm.jsx";
 import AdminRangos from "./pages/admin/AdminRangos.jsx";
 import AdminRangoForm from "./pages/admin/AdminRangoForm.jsx";
 import AdminTorneos from "./pages/admin/AdminTorneos.jsx";
+import AdminRecompensas from "./pages/admin/AdminRecompensas.jsx";
+import AdminMedallas from "./pages/admin/AdminMedallas.jsx";
+import AdminMedallaForm from "./pages/admin/AdminMedallaForm.jsx";
 import ListaPartidas from "./pages/partidas/ListaPartidas.jsx";
 import CrearPartida from "./pages/partidas/CrearPartida.jsx";
 import SalaEsperaPartida from "./pages/partidas/SalaEsperaPartida.jsx";
@@ -197,6 +200,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/admin/rangos/crear" element={ <RequireAdmin> <AdminRangoForm /> </RequireAdmin>}/>
         <Route path="/admin/rangos/:rangoId" element={ <RequireAdmin> <AdminRangoForm /> </RequireAdmin>}/>
         <Route path="/admin/torneos" element={ <RequireAdmin> <AdminTorneos /> </RequireAdmin>}/>
+        <Route path="/admin/recompensas" element={ <RequireAdmin> <AdminRecompensas /> </RequireAdmin>}/>
+        <Route path="/admin/recompensas/medallas" element={ <RequireAdmin> <AdminMedallas /> </RequireAdmin>}/>
+        <Route path="/admin/recompensas/medallas/crear" element={ <RequireAdmin> <AdminMedallaForm /> </RequireAdmin>}/>
+        <Route path="/admin/recompensas/medallas/:medallaId" element={ <RequireAdmin> <AdminMedallaForm /> </RequireAdmin>}/>
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
