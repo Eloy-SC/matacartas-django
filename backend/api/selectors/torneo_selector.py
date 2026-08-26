@@ -1,5 +1,7 @@
 from django.db.models import Q
 
+from ..models.torneo_usuario import TorneoUsuario
+
 from ..models.torneo import Torneo
 
 
@@ -95,3 +97,22 @@ def get_torneo_by_id(torneo_id):
 
 def get_torneo_by_nombre(nombre):
     return Torneo.objects.filter(nombre=nombre).first()
+
+def get_participantes_torneo_by_torneo_id_count(torneo_id):
+    return TorneoUsuario.objects.filter(torneo=torneo_id).count()
+
+def get_participantes_torneo_by_torneo_id(torneo_id):
+    torneo_usuarios = TorneoUsuario.objects.filter(torneo=torneo_id).select_related('usuario')
+    if not torneo_usuarios:
+        return []
+
+    participantes = []
+    for pt in torneo_usuarios:
+        participantes.append({
+            "id": pt.usuario.id,
+            "nombre": pt.usuario.nombre,
+            "imagen": pt.usuario.imagen if pt.usuario.imagen else None,
+            "creador": pt.creador,
+        })
+
+    return participantes

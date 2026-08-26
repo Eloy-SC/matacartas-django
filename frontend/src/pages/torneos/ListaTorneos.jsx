@@ -4,8 +4,8 @@ import cabecera from "../../assets/cabecera.png";
 import "../../styles/partidas.css";
 
 const ESTADO_LABELS = {
-	en_juego: "En juego",
-	sala_espera: "Sala de espera",
+	en_juego: "En curso",
+	sala_espera: "Sin empezar",
 	finalizado: "Finalizado",
 	desconocido: "Desconocido",
 };
@@ -307,6 +307,7 @@ export default function ListaTorneos() {
 								<th>Reglas</th>
 								<th>Creado</th>
 								<th>Estado</th>
+								<th>Acciones</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -331,6 +332,15 @@ export default function ListaTorneos() {
 												<span className={getEstadoClass(torneo?.estado)}>
 													{getEstadoLabel(torneo?.estado)}
 												</span>
+											</td>
+											<td>
+												<button
+													type="button"
+													className="partidas-primary-button"
+													onClick={() => navigate(`/torneos/${torneo?.id ?? ""}`)}
+												>
+													Ver
+												</button>
 											</td>
 										</tr>
 									);

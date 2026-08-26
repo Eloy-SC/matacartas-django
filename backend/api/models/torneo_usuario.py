@@ -6,5 +6,4 @@ class TorneoUsuario(models.Model):
     usuario = models.ForeignKey("Usuario", on_delete=models.CASCADE)
 
     creador = models.BooleanField(null=False, default=False)
-    identificador = models.IntegerField(unique=True, null=False, blank=False) # Identificador del jugador dentro del torneo
     

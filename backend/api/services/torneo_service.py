@@ -1,12 +1,19 @@
+from django.utils import timezone
+
 from django.db import IntegrityError
+
+from ..models.torneo_usuario import TorneoUsuario
 
 from ..models.configuracion_global import ConfiguracionGlobal
 from ..models.torneo import Torneo
 from ..selectors.rango_selector import get_rango_by_id
 from ..selectors.torneo_selector import (
+    get_participantes_torneo_by_torneo_id_count,
+    get_torneo_by_id,
     get_torneo_by_nombre,
     get_torneos_publicos_count,
     get_torneos_publicos_paginated,
+    get_participantes_torneo_by_torneo_id,
 )
 from ..utils.exceptions import RegistrationError
 
@@ -154,6 +161,13 @@ def crear_torneo(
     if rango_maximo and actor.puntuacion > rango_maximo.puntos_maximos:
         raise PermissionError("Tu puntuación supera el rango máximo del torneo")
 
+    if num_jug_oct == 2 and num_jug_cua == 4:
+        raise ValueError("Las partidas de octavos no pueden tener 2 jugadores si las de cuartos tienen 4 jugadores")
+    if num_jug_cua == 2 and num_jug_sem == 4:
+        raise ValueError("Las partidas de cuartos no pueden tener 2 jugadores si las de semifinales tienen 4 jugadores")
+    if num_jug_sem == 2 and num_jug_fin == 4:
+        raise ValueError("Las partidas de semifinales no pueden tener 2 jugadores si la final tiene 4 jugadores")
+
     torneo = Torneo(
         nombre=nombre,
         rango_minimo_id=rango_minimo_id,
@@ -169,8 +183,15 @@ def crear_torneo(
         desempate_mayor_punt=desempate_mayor_punt,
     )
 
+    torneo_usuario = TorneoUsuario(
+        torneo=torneo,
+        usuario=actor,
+        creador=True
+    )
+
     try:
         torneo.save()
+        torneo_usuario.save()
     except IntegrityError as e:
         msg = str(e)
         if "nombre" in msg:
@@ -178,3 +199,73 @@ def crear_torneo(
         raise RegistrationError({"detail": ["No se pudo crear el torneo"]})
 
     return torneo
+
+def get_torneo(actor, torneo_id):
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para ver el torneo")
+
+    try:
+        torneo = Torneo.objects.get(pk=torneo_id)
+    except Torneo.DoesNotExist:
+        raise ValueError("El torneo no existe")
+
+    return torneo
+
+def get_participantes_torneo(actor, torneo_id):
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para ver los participantes del torneo")
+
+    participantes = get_participantes_torneo_by_torneo_id(torneo_id)
+    if participantes is None:
+        raise ValueError("El torneo no existe")
+    
+    return participantes
+
+def unirse_a_torneo(actor, torneo_id):
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para unirse al torneo")
+
+    torneo = get_torneo(actor, torneo_id)
+    if torneo is None:
+        raise ValueError("El torneo no existe")
+
+    rango_minimo = torneo.rango_minimo
+    rango_maximo = torneo.rango_maximo
+
+    if rango_minimo and actor.puntuacion < rango_minimo.puntos_minimos:
+        raise PermissionError("Tu puntuación no alcanza el rango mínimo del torneo")
+    if rango_maximo and actor.puntuacion > rango_maximo.puntos_maximos:
+        raise PermissionError("Tu puntuación supera el rango máximo del torneo")
+
+    torneo_usuario = TorneoUsuario(
+        torneo=torneo,
+        usuario=actor,
+        creador=False
+    )
+
+    try:
+        torneo_usuario.save()
+    except IntegrityError:
+        raise RegistrationError({"detail": ["No se pudo unir al torneo"]})
+
+    jugadores_necesarios = aux_jugadores_necesarios(torneo_id)
+    num_participantes = get_participantes_torneo_by_torneo_id_count(torneo_id)
+    if num_participantes == jugadores_necesarios:
+        iniciar_torneo(torneo_id)
+
+def iniciar_torneo(torneo_id):
+    pass
+
+def aux_jugadores_necesarios(torneo_id):
+    torneo = get_torneo_by_id(torneo_id)
+    if not torneo:
+        raise ValueError("El torneo no existe")
+
+    if torneo.num_jug_oct is not None:
+        num_jugadores = torneo.num_jug_oct * 8
+    elif torneo.num_jug_cua is not None:
+        num_jugadores = torneo.num_jug_cua * 4
+    else:
+        num_jugadores = torneo.num_jug_sem * 2
+    return num_jugadores
+    

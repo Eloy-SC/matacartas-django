@@ -77,7 +77,13 @@ from .views.medalla_view import (
     get_medalla,
     listar_medallas,
 )
-from .views.torneo_view import crear_torneo, listar_torneos_publicos
+from .views.torneo_view import (
+    crear_torneo, 
+    get_torneo, 
+    listar_torneos_publicos, 
+    get_participantes_torneo,
+    unirse_a_torneo,
+    )
 from .views.health_view import health_check
 
 urlpatterns = [
@@ -176,6 +182,9 @@ urlpatterns = [
     # TORNEOS
     path("torneos/publicos/", listar_torneos_publicos, name="listar-torneos-publicos"),
     path("torneos/crear/", crear_torneo, name="crear-torneo"),
+    path("torneos/<int:torneo_id>/", get_torneo, name="get-torneo"),
+    path("torneos/<int:torneo_id>/participantes/", get_participantes_torneo, name="get-participantes-torneo"),
+    path("torneos/<int:torneo_id>/unirse/", unirse_a_torneo, name="unirse-a-torneo"),
 
     # JUEGO
     path("partida/<int:partida_id>/mano/repartir/", repartir_cartas, name="repartir-cartas"),

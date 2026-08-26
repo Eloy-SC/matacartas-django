@@ -116,3 +116,69 @@ def crear_torneo(request):
         },
         status=status.HTTP_201_CREATED,
     )
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_torneo(request, torneo_id):
+    try:
+        torneo = torneo_service.get_torneo(request.user, torneo_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+
+    data = {
+        "id": torneo.id,
+        "nombre": torneo.nombre,
+        "fecha_creacion": torneo.fecha_creacion,
+        "fecha_inicio": torneo.fecha_inicio,
+        "fecha_fin": torneo.fecha_fin,
+        "rango_minimo_id": torneo.rango_minimo.id if torneo.rango_minimo else None,
+        "rango_maximo_id": torneo.rango_maximo.id if torneo.rango_maximo else None,
+        "num_jug_fin": torneo.num_jug_fin,
+        "num_jug_sem": torneo.num_jug_sem,
+        "num_jug_cua": torneo.num_jug_cua,
+        "num_jug_oct": torneo.num_jug_oct,
+        "partidas_longitud": torneo.partidas_longitud,
+        "partidas_cartas_especiales": torneo.partidas_cartas_especiales,
+        "partidas_tickets": torneo.partidas_tickets,
+        "partidas_tiempo_max_turno": torneo.partidas_tiempo_max_turno,
+        "desempate_mayor_punt": torneo.desempate_mayor_punt,
+    }
+
+    return Response(data, status=200)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_participantes_torneo(request, torneo_id):
+    try:
+        participantes = torneo_service.get_participantes_torneo(request.user, torneo_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+
+    data = [
+        {
+            "id": participante["id"],
+            "nombre": participante["nombre"],
+            "imagen": participante["imagen"],
+            "creador": participante["creador"]
+        }
+        for participante in participantes
+    ]
+
+    return Response(data, status=200)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def unirse_a_torneo(request, torneo_id):
+    try:
+        torneo_service.unirse_a_torneo(request.user, torneo_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+
+    return Response({"detail": "Usuario unido al torneo"}, status=200)

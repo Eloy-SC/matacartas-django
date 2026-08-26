@@ -501,7 +501,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("creador", models.BooleanField(null=False, default=False)),
-                ("identificador", models.IntegerField(unique=True, null=False, blank=False)),
             ],
         ),
         migrations.CreateModel(
