@@ -383,7 +383,7 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("nombre", models.CharField(max_length=40, unique=True, null=False, blank=False)),
+                ("nombre", models.CharField(max_length=19, unique=True, null=False, blank=False)),
                 ("fecha_creacion", models.DateTimeField(auto_now_add=True)),
                 ("fecha_inicio", models.DateTimeField(null=True, blank=True)),
                 ("fecha_fin", models.DateTimeField(null=True, blank=True)),

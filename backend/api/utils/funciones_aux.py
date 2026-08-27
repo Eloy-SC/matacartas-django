@@ -1,6 +1,15 @@
+from django.utils import timezone
+
 import random
 
 from django.db import transaction
+
+from backend.api.models.torneo_usuario import TorneoUsuario
+
+from ..selectors.torneo_selector import get_participantes_torneo_by_torneo_id, get_partidas_torneo_by_fase, get_torneo_by_id
+
+from ..models.partida_torneo import PartidaTorneo
+from ..models.partida_usuario import PartidaUsuario
 
 from ..models.partida import Partida
 
@@ -248,3 +257,264 @@ def repartir_cartas(actor, partida_id):
         jugador.save()
 
     partida.save()
+
+def aux_crear_partidas_torneo(torneo, num_partidas, fase):
+
+    partidas = []
+    for i in range(num_partidas):
+            partida = Partida(
+                    nombre=f"{torneo.nombre} - {fase} {i + 1}",
+                    num_jugadores=torneo.num_jug_oct,
+                    fecha_creacion=timezone.now(),
+                    fecha_inicio=timezone.now(),
+                    longitud=torneo.partidas_longitud,
+                    cartas_especiales=torneo.partidas_cartas_especiales,
+                    tickets=torneo.partidas_tickets,
+                    tiempo_max_turno=torneo.partidas_tiempo_max_turno,
+            )
+            partidas.append(partida)
+            partida.save()
+
+    return partidas
+
+def aux_crear_relaciones_partidas_torneo(torneo, partidas):
+
+    if len(partidas) == 8:
+        fase = PartidaTorneo.FasePartida.OCTAVOS
+    elif len(partidas) == 4:
+        fase = PartidaTorneo.FasePartida.CUARTOS
+    elif len(partidas) == 2:
+        fase = PartidaTorneo.FasePartida.SEMIFINAL
+    elif len(partidas) == 1:
+        fase = PartidaTorneo.FasePartida.FINAL
+    else:
+        raise ValueError("Número de partidas no válido para un bracket")
+
+    partidas_por_lado = len(partidas) // 2
+
+    for i, partida in enumerate(partidas):
+
+        lado = i // partidas_por_lado
+        pareja = (i % partidas_por_lado) // 2
+
+        partida.save()
+
+        PartidaTorneo.objects.create(
+            torneo=torneo,
+            partida=partida,
+            fase=fase,
+            lado=lado,
+            pareja=pareja,
+            posiciones_finales={}
+        )
+
+def aux_asignar_jugadores_a_partidas(participantes, num_partidas, num_jugadores_por_partida, partidas):
+
+    comprobacion = len(participantes) == num_partidas * num_jugadores_por_partida
+    if not comprobacion:
+        raise ValueError("El número de participantes no coincide con el número de partidas y jugadores por partida")
+
+    participantes_copia = participantes.copy()
+    random.shuffle(participantes_copia)
+
+    colores = [
+        PartidaUsuario.ColorJugador.ROJO,
+        PartidaUsuario.ColorJugador.AZUL,
+        PartidaUsuario.ColorJugador.VERDE,
+        PartidaUsuario.ColorJugador.AMARILLO,
+        PartidaUsuario.ColorJugador.MORADO,
+        PartidaUsuario.ColorJugador.NARANJA,
+    ]
+
+    for i in range(num_partidas):
+
+        jugadores = participantes[
+            i * num_jugadores_por_partida:
+            (i + 1) * num_jugadores_por_partida
+        ]
+
+        colores_partida = colores[:num_jugadores_por_partida]
+        random.shuffle(colores_partida)
+
+        for jugador, color in zip(jugadores, colores_partida):
+            PartidaUsuario.objects.create(
+                partida=partidas[i],
+                usuario=jugador,
+                color=color,
+            )
+
+def aux_obtener_clasificados(
+    posiciones_partida_1,
+    posiciones_partida_2,
+    num_clasificados
+):
+    posiciones_globales = {}
+
+    posiciones_globales.update(posiciones_partida_1)
+    posiciones_globales.update(posiciones_partida_2)
+
+    posiciones_ordenadas = sorted(
+        posiciones_globales.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    return [
+        usuario_id
+        for usuario_id, puntuacion in posiciones_ordenadas[:num_clasificados]
+    ]
+
+def aux_asignar_clasificados_a_partidas(
+    partidas,
+    clasificados
+):
+    colores = list(PartidaUsuario.ColorJugador.values)
+
+    for partida, jugadores in zip(partidas, clasificados):
+
+        colores_partida = colores[:len(jugadores)]
+        random.shuffle(colores_partida)
+
+        for usuario_id, color in zip(jugadores, colores_partida):
+            PartidaUsuario.objects.create(
+                partida=partida,
+                usuario_id=usuario_id,
+                color=color
+            )
+
+def aux_eliminar_jugadores_no_clasificados(clasificados):
+    clasificados_flat = [usuario_id for sublist in clasificados for usuario_id in sublist]
+
+    participantes_no_clasificados = TorneoUsuario.objects.exclude(usuario_id__in=clasificados_flat)
+
+    for participante in participantes_no_clasificados:
+        participante.eliminado = True
+        participante.save(update_fields=["eliminado"])
+
+def aux_iniciar_fase_octavos(torneo_id):
+
+    torneo = get_torneo_by_id(torneo_id)
+    participantes = get_participantes_torneo_by_torneo_id(torneo_id)
+
+    # Crear las partidas de octavos de final
+    partidas = aux_crear_partidas_torneo(torneo, 8, "Octavos de final")
+
+    # Crear relaciones entre el torneo y las partidas
+    aux_crear_relaciones_partidas_torneo(torneo, partidas)
+
+    # Asignar jugadores a las partidas de octavos de final
+    aux_asignar_jugadores_a_partidas(participantes, 8, torneo.num_jug_oct, partidas)
+    
+def aux_iniciar_fase_cuartos(torneo_id, inicio=False):
+
+    torneo = get_torneo_by_id(torneo_id)
+    participantes = get_participantes_torneo_by_torneo_id(torneo_id)
+
+    # Crear las partidas de cuartos de final
+    partidas = aux_crear_partidas_torneo(torneo, 4, "Cuartos de final")
+
+    # Crear relaciones entre el torneo y las partidas
+    aux_crear_relaciones_partidas_torneo(torneo, partidas)
+
+    # Asignar jugadores a las partidas de cuartos de final
+    if inicio:
+        aux_asignar_jugadores_a_partidas(participantes, 4, torneo.num_jug_cua, partidas)
+    else:
+        partidas_torneo_fase_anterior = get_partidas_torneo_by_fase(torneo_id, PartidaTorneo.FasePartida.OCTAVOS)
+
+        clasificados = []
+
+        for i in range(0, len(partidas_torneo_fase_anterior), 2):
+            clasificados.append(
+                aux_obtener_clasificados(
+                    partidas_torneo_fase_anterior[i].posiciones_finales,
+                    partidas_torneo_fase_anterior[i + 1].posiciones_finales,
+                    torneo.num_jug_cua
+                )
+            )
+
+        aux_eliminar_jugadores_no_clasificados(clasificados)
+
+        aux_asignar_clasificados_a_partidas(
+            partidas,
+            clasificados
+        )
+
+def aux_iniciar_fase_semifinales(torneo_id, inicio=False):
+
+    torneo = get_torneo_by_id(torneo_id)
+    participantes = get_participantes_torneo_by_torneo_id(torneo_id)
+
+    # Crear las partidas de semifinales
+    partidas = aux_crear_partidas_torneo(torneo, 2, "Semifinales")
+
+    # Crear relaciones entre el torneo y las partidas
+    aux_crear_relaciones_partidas_torneo(torneo, partidas)
+
+    # Asignar jugadores a las partidas de semifinales
+    if inicio:
+        aux_asignar_jugadores_a_partidas(participantes, 2, torneo.num_jug_sem, partidas)
+    else:
+        partidas_torneo_fase_anterior = get_partidas_torneo_by_fase(torneo_id, PartidaTorneo.FasePartida.CUARTOS)
+        
+        clasificados = []
+
+        for i in range(0, len(partidas_torneo_fase_anterior), 2):
+            clasificados.append(
+                aux_obtener_clasificados(
+                    partidas_torneo_fase_anterior[i].posiciones_finales,
+                    partidas_torneo_fase_anterior[i + 1].posiciones_finales,
+                    torneo.num_jug_sem
+                )
+            )
+
+        aux_eliminar_jugadores_no_clasificados(clasificados)
+
+        aux_asignar_clasificados_a_partidas(
+            partidas,
+            clasificados
+        )
+
+def aux_iniciar_fase_final(torneo_id):
+
+    torneo = get_torneo_by_id(torneo_id)
+
+    partida = Partida(
+            nombre=f"{torneo.nombre} - Final",
+            num_jugadores=torneo.num_jug_oct,
+            fecha_creacion=timezone.now(),
+            fecha_inicio=timezone.now(),
+            longitud=torneo.partidas_longitud,
+            cartas_especiales=torneo.partidas_cartas_especiales,
+            tickets=torneo.partidas_tickets,
+            tiempo_max_turno=torneo.partidas_tiempo_max_turno,
+        )
+
+    partida.save()
+
+    partida_torneo = PartidaTorneo(
+        partida = partida,
+        torneo = torneo,
+        fase = PartidaTorneo.FasePartida.FINAL,
+        lado = 0,
+        pareja = 0,
+        posiciones_finales = {}
+    )
+
+    partida_torneo.save()
+
+    partidas_torneo_fase_anterior = get_partidas_torneo_by_fase(torneo_id, PartidaTorneo.FasePartida.SEMIFINAL)
+            
+    clasificados = []
+
+    for i in range(0, len(partidas_torneo_fase_anterior), 2):
+        clasificados.append(
+            aux_obtener_clasificados(
+                partidas_torneo_fase_anterior[i].posiciones_finales,
+                partidas_torneo_fase_anterior[i + 1].posiciones_finales,
+                torneo.num_jug_sem
+            )
+        )
+
+    aux_eliminar_jugadores_no_clasificados(clasificados)
+

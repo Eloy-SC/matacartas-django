@@ -112,6 +112,7 @@ def get_participantes_torneo_by_torneo_id(torneo_id):
     for pt in torneo_usuarios:
         participantes.append({
             "id": pt.usuario.id,
+            "username": pt.usuario.username,
             "nombre": pt.usuario.nombre,
             "imagen": pt.usuario.imagen if pt.usuario.imagen else None,
             "creador": pt.creador,
@@ -123,3 +124,6 @@ def get_participantes_torneo_by_torneo_id(torneo_id):
 def get_partida_torneo_by_partida_id(partida_id):
     partida_torneo = PartidaTorneo.objects.filter(partida__id=partida_id).first()
     return partida_torneo
+
+def get_partidas_torneo_by_fase(torneo_id, fase):
+    return PartidaTorneo.objects.filter(torneo__id=torneo_id, fase=fase).order_by('lado', 'pareja').all()

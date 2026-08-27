@@ -1,5 +1,7 @@
 from django.utils import timezone
 
+from ..utils.funciones_aux import aux_asignar_jugadores_a_partidas, aux_crear_partidas_torneo, aux_crear_relaciones_partidas_torneo, aux_iniciar_fase_cuartos, aux_iniciar_fase_octavos, aux_iniciar_fase_semifinales
+
 from django.db import IntegrityError
 
 from ..models.torneo_usuario import TorneoUsuario
@@ -255,7 +257,22 @@ def unirse_a_torneo(actor, torneo_id):
         iniciar_torneo(torneo_id)
 
 def iniciar_torneo(torneo_id):
-    pass
+    torneo = get_torneo_by_id(torneo_id)
+    if not torneo:
+        raise ValueError("El torneo no existe")
+
+    torneo.fecha_inicio = timezone.now()
+    torneo.save(update_fields=["fecha_inicio"])
+
+    # Iniciar fase correspondiente
+    if torneo.num_jug_oct is not None:
+        aux_iniciar_fase_octavos(torneo_id)
+    elif torneo.num_jug_cua is not None:
+        aux_iniciar_fase_cuartos(torneo_id, inicio=True)
+    else:
+        aux_iniciar_fase_semifinales(torneo_id, inicio=True)
+
+
 
 def aux_jugadores_necesarios(torneo_id):
     torneo = get_torneo_by_id(torneo_id)
