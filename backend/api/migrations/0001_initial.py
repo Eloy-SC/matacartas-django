@@ -501,6 +501,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("creador", models.BooleanField(null=False, default=False)),
+                ("eliminado", models.BooleanField(null=False, default=False)),
             ],
         ),
         migrations.CreateModel(

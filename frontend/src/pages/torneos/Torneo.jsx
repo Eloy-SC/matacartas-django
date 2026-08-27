@@ -31,6 +31,7 @@ export default function Torneo() {
     const { torneoId } = useParams();
     const [torneo, setTorneo] = useState(null);
     const [participantes, setParticipantes] = useState([]);
+    const [userId, setUserId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -77,6 +78,38 @@ export default function Torneo() {
         };
     }, [torneoId]);
 
+    useEffect(() => {
+		let cancelled = false;
+
+		const loadCurrentUser = async () => {
+			try {
+				const res = await fetch("/api/auth/me/", {
+					method: "GET",
+					credentials: "include",
+				});
+				const data = await res.json().catch(() => ({}));
+
+				if (!res.ok) {
+					throw new Error(data?.detail || "No se pudo cargar el usuario actual");
+				}
+
+				if (!cancelled) {
+					setUserId(data?.id ?? null);
+				}
+			} catch {
+				if (!cancelled) {
+					setUserId(null);
+				}
+			}
+		};
+
+		loadCurrentUser();
+
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
     async function handleUnirseAlTorneo() {
         const csrfToken = await obtenerCsrfToken();
 
@@ -97,6 +130,8 @@ export default function Torneo() {
                 const unirseData = await unirseRes.json().catch(() => ({}));
                 throw new Error(unirseData?.detail || "No se pudo unir al torneo");
             }
+            alert("Te has unido al torneo. ¡Buena suerte!");
+            window.location.reload();
         } catch (e) {
 			alert(e instanceof Error ? e.message : "Error al procesar la unión");
 		} finally {
@@ -124,7 +159,7 @@ export default function Torneo() {
                             <div><span>Creado</span><strong>{formatDate(torneo?.fecha_creacion)}</strong></div>
                             <div><span>Inicio</span><strong>{formatDate(torneo?.fecha_inicio)}</strong></div>
                             <div><span>Longitud de partida</span><strong>{LONGITUD_LABELS[torneo?.partidas_longitud] ?? "-"}</strong></div>
-                            <div><span>Jugadores por fase</span><strong>Final: {torneo?.num_jug_fin ?? "-"} · Semifinal: {torneo?.num_jug_sem ?? "-"}</strong></div>
+                            <div><span>Jugadores por partida</span><strong>Final: {torneo?.num_jug_fin ?? "-"} · Semifinal: {torneo?.num_jug_sem ?? "-"}</strong></div>
                             <div><span>Fases anteriores</span><strong>Cuartos: {torneo?.num_jug_cua ?? "No"} · Octavos: {torneo?.num_jug_oct ?? "No"}</strong></div>
                             <div><span>Cartas especiales</span><strong>{formatBoolean(torneo?.partidas_cartas_especiales)}</strong></div>
                             <div><span>Tickets</span><strong>{formatBoolean(torneo?.partidas_tickets)}</strong></div>
@@ -133,34 +168,44 @@ export default function Torneo() {
                         </div>
                     </div>
 
-                    <div style={{ marginBottom: 10 }}>
-                        <button 
-                            className="main-primary-button"
-                            onClick={handleUnirseAlTorneo}
-                        >
-                            Unirse al torneo
-                        </button>
-                    </div>
+                    {!torneo?.fecha_inicio && (
+                        <div>
+                            <div style={{ marginBottom: 10 }}>
+                                <button 
+                                    className="main-primary-button"
+                                    onClick={handleUnirseAlTorneo}
+                                    disabled={participantes.some(p => p.id === userId) || loading}
+                                >
+                                    Unirse al torneo
+                                </button>
+                            </div>
 
-                    <div className="form-card torneo-participants-card">
-                        <h2>Participantes ({participantes.length})</h2>
-                        <div className="torneo-participants-grid">
-                            {participantes.length === 0 ? <p className="torneo-message">Todavía no hay participantes.</p> : participantes.map((participante) => (
-                                <article className="sala-espera-player-card" key={participante.id}>
-                                    <img className="sala-espera-player-card__avatar" src={participante.imagen || defaultProfilePic} alt={`Foto de perfil de ${participante.nombre ?? "jugador"}`} onError={(event) => { event.currentTarget.src = defaultProfilePic; }} />
-                                    <div className="sala-espera-player-card__content">
-                                        <strong className="sala-espera-player-card__name">
-                                            {participante.creador ? " 👑" : ""}
-                                            {participante.nombre || "Participante"}
-                                        </strong>
-                                        <span className="sala-espera-player-card__rango">
-                                            <UserRango userId={participante.id} />
-                                        </span>
-                                    </div>
-                                </article>
-                            ))}
+                            <div className="form-card torneo-participants-card">
+                                <h2>Participantes ({participantes.length})</h2>
+                                <div className="torneo-participants-grid">
+                                    {participantes.length === 0 ? <p className="torneo-message">Todavía no hay participantes.</p> : participantes.map((participante) => (
+                                        <article className="sala-espera-player-card" key={participante.id}>
+                                            <img className="sala-espera-player-card__avatar" src={participante.imagen || defaultProfilePic} alt={`Foto de perfil de ${participante.nombre ?? "jugador"}`} onError={(event) => { event.currentTarget.src = defaultProfilePic; }} />
+                                            <div className="sala-espera-player-card__content">
+                                                {participante.eliminado && (
+                                                    <strong className="sala-espera-player-card__name" style={{ color: "red" }}>
+                                                        ELIMINADO
+                                                    </strong>
+                                                )}
+                                                <strong className="sala-espera-player-card__name">
+                                                    {participante.creador ? " 👑" : ""}
+                                                    {participante.nombre || "Participante"}
+                                                </strong>
+                                                <span className="sala-espera-player-card__rango">
+                                                    <UserRango userId={participante.id} />
+                                                </span>
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </>
             )}
         </div>

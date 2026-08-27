@@ -113,6 +113,7 @@ def get_participantes_torneo_by_torneo_id(torneo_id):
             "nombre": pt.usuario.nombre,
             "imagen": pt.usuario.imagen if pt.usuario.imagen else None,
             "creador": pt.creador,
+            "eliminado": pt.eliminado,
         })
 
     return participantes

@@ -6,4 +6,4 @@ class TorneoUsuario(models.Model):
     usuario = models.ForeignKey("Usuario", on_delete=models.CASCADE)
 
     creador = models.BooleanField(null=False, default=False)
-    
+    eliminado = models.BooleanField(null=False, default=False)

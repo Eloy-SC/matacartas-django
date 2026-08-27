@@ -163,7 +163,8 @@ def get_participantes_torneo(request, torneo_id):
             "id": participante["id"],
             "nombre": participante["nombre"],
             "imagen": participante["imagen"],
-            "creador": participante["creador"]
+            "creador": participante["creador"],
+            "eliminado": participante["eliminado"]
         }
         for participante in participantes
     ]
