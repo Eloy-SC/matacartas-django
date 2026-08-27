@@ -4,7 +4,8 @@ import random
 
 from django.db import transaction
 
-from backend.api.models.torneo_usuario import TorneoUsuario
+from ..models.torneo_usuario import TorneoUsuario
+from ..models.usuario import Usuario
 
 from ..selectors.torneo_selector import get_participantes_torneo_by_torneo_id, get_partidas_torneo_by_fase, get_torneo_by_id
 
@@ -343,11 +344,7 @@ def aux_asignar_jugadores_a_partidas(participantes, num_partidas, num_jugadores_
                 color=color,
             )
 
-def aux_obtener_clasificados(
-    posiciones_partida_1,
-    posiciones_partida_2,
-    num_clasificados
-):
+def aux_obtener_clasificados(posiciones_partida_1, posiciones_partida_2, num_clasificados, desempate_mayor_punt):
     posiciones_globales = {}
 
     posiciones_globales.update(posiciones_partida_1)
@@ -359,15 +356,52 @@ def aux_obtener_clasificados(
         reverse=True
     )
 
-    return [
-        usuario_id
-        for usuario_id, puntuacion in posiciones_ordenadas[:num_clasificados]
-    ]
+    clasificados = []
+    i = 0
 
-def aux_asignar_clasificados_a_partidas(
-    partidas,
-    clasificados
-):
+    while i < len(posiciones_ordenadas) and len(clasificados) < num_clasificados:
+
+        puntuacion_actual = posiciones_ordenadas[i][1]
+
+        empatados = []
+
+        while (
+            i < len(posiciones_ordenadas)
+            and posiciones_ordenadas[i][1] == puntuacion_actual
+        ):
+            empatados.append(posiciones_ordenadas[i][0])
+            i += 1
+
+        plazas_restantes = num_clasificados - len(clasificados)
+
+        # Todos los empatados caben: clasifican todos
+        if len(empatados) <= plazas_restantes:
+            clasificados.extend(empatados)
+
+        # No todos los empatados caben: hay que desempatar
+        else:
+            if desempate_mayor_punt:
+                usuarios = Usuario.objects.filter(id__in=empatados)
+
+                usuarios_ordenados = sorted(
+                    usuarios,
+                    key=lambda usuario: usuario.puntuacion,
+                    reverse=True
+                )
+
+                clasificados.extend(
+                    usuario.id
+                    for usuario in usuarios_ordenados[:plazas_restantes]
+                )
+
+            else:
+                clasificados.extend(
+                    random.sample(empatados, plazas_restantes)
+                )
+
+    return clasificados
+
+def aux_asignar_clasificados_a_partidas(partidas, clasificados):
     colores = list(PartidaUsuario.ColorJugador.values)
 
     for partida, jugadores in zip(partidas, clasificados):
@@ -429,7 +463,8 @@ def aux_iniciar_fase_cuartos(torneo_id, inicio=False):
                 aux_obtener_clasificados(
                     partidas_torneo_fase_anterior[i].posiciones_finales,
                     partidas_torneo_fase_anterior[i + 1].posiciones_finales,
-                    torneo.num_jug_cua
+                    torneo.num_jug_cua,
+                    torneo.desempate_mayor_punt
                 )
             )
 
@@ -464,7 +499,8 @@ def aux_iniciar_fase_semifinales(torneo_id, inicio=False):
                 aux_obtener_clasificados(
                     partidas_torneo_fase_anterior[i].posiciones_finales,
                     partidas_torneo_fase_anterior[i + 1].posiciones_finales,
-                    torneo.num_jug_sem
+                    torneo.num_jug_sem,
+                    torneo.desempate_mayor_punt
                 )
             )
 
@@ -512,9 +548,12 @@ def aux_iniciar_fase_final(torneo_id):
             aux_obtener_clasificados(
                 partidas_torneo_fase_anterior[i].posiciones_finales,
                 partidas_torneo_fase_anterior[i + 1].posiciones_finales,
-                torneo.num_jug_sem
+                torneo.num_jug_sem,
+                torneo.desempate_mayor_punt
             )
         )
 
     aux_eliminar_jugadores_no_clasificados(clasificados)
+
+    aux_asignar_clasificados_a_partidas([partida], clasificados)
 
