@@ -183,3 +183,20 @@ def unirse_a_torneo(request, torneo_id):
         return Response({"detail": str(e)}, status=404)
 
     return Response({"detail": "Usuario unido al torneo"}, status=200)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_partida_pertenece_a_torneo(request, partida_id):
+    try:
+        partida_torneo = torneo_service.get_partida_pertenece_a_torneo(request.user, partida_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+    
+    if partida_torneo is not None:
+        pertenece_a_torneo = True
+    else:
+        pertenece_a_torneo = False
+
+    return Response({"pertenece_a_torneo": pertenece_a_torneo}, status=200)

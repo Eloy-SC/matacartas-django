@@ -14,6 +14,7 @@ from ..selectors.torneo_selector import (
     get_torneos_publicos_count,
     get_torneos_publicos_paginated,
     get_participantes_torneo_by_torneo_id,
+    get_partida_torneo_by_partida_id,
 )
 from ..utils.exceptions import RegistrationError
 
@@ -268,4 +269,14 @@ def aux_jugadores_necesarios(torneo_id):
     else:
         num_jugadores = torneo.num_jug_sem * 2
     return num_jugadores
+
+def get_partida_pertenece_a_torneo(actor, partida_id):
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para ver la partida")
+
+    partida_torneo = get_partida_torneo_by_partida_id(partida_id)
+    if partida_torneo is None:
+        return None
+    else:
+        return partida_torneo
     

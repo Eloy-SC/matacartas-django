@@ -121,44 +121,76 @@ function RedirectIfAuthed({ children }) {
   return children;
 }
 
-function RequireParticipating({ children }) {
+async function obtenerEstadoPartida(partidaId, comprobarTorneo = false) {
+  const participaRes = await fetch(`/api/partidas/${partidaId}/participa/`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!participaRes.ok) return null;
+
+  const participaData = await participaRes.json().catch(() => ({}));
+  if (!participaData?.participa) {
+    return { participa: false, haEmpezado: false, perteneceATorneo: false };
+  }
+
+  const comprobaciones = [
+    fetch(`/api/partidas/${partidaId}/ha-empezado/`, {
+      method: "GET",
+      credentials: "include",
+    }),
+  ];
+
+  if (comprobarTorneo) {
+    comprobaciones.push(
+      fetch(`/api/partidas/${partidaId}/pertenece-torneo/`, {
+        method: "GET",
+        credentials: "include",
+      })
+    );
+  }
+
+  const respuestas = await Promise.all(comprobaciones);
+  if (respuestas.some((res) => !res.ok)) return null;
+
+  const inicioData = await respuestas[0].json().catch(() => ({}));
+  const torneoData = comprobarTorneo
+    ? await respuestas[1].json().catch(() => ({}))
+    : {};
+
+  return {
+    participa: true,
+    haEmpezado: Boolean(inicioData?.ha_empezado),
+    perteneceATorneo: Boolean(torneoData?.pertenece_a_torneo),
+  };
+}
+
+function RequireParticipatingNotStartNotTorneo({ children }) {
   const location = useLocation();
   const { partidaId } = useParams();
-  const [status, setStatus] = React.useState("checking"); // checking | participating | not-participating
+  const [status, setStatus] = React.useState("checking");
 
   React.useEffect(() => {
     let cancelled = false;
 
     if (!partidaId) {
-      setStatus("not-participating");
+      setStatus("denied");
       return () => {
         cancelled = true;
       };
     }
 
-    fetch(`/api/partidas/${partidaId}/participa/`, {
-      method: "GET",
-      credentials: "include",
-    })
-      .then(async (res) => {
+    obtenerEstadoPartida(partidaId, true)
+      .then((estado) => {
         if (cancelled) return;
 
-        if (res.status === 401) {
-          setStatus("not-participating");
-          return;
-        }
-
-        if (!res.ok) {
-          setStatus("not-participating");
-          return;
-        }
-
-        const data = await res.json().catch(() => ({}));
-        setStatus(Boolean(data?.participa) ? "participating" : "not-participating");
+        const puedeEntrar = estado?.participa
+          && !estado.haEmpezado
+          && !estado.perteneceATorneo;
+        setStatus(puedeEntrar ? "allowed" : "denied");
       })
       .catch(() => {
-        if (cancelled) return;
-        setStatus("not-participating");
+        if (!cancelled) setStatus("denied");
       });
 
     return () => {
@@ -167,7 +199,46 @@ function RequireParticipating({ children }) {
   }, [partidaId]);
 
   if (status === "checking") return null;
-  if (status === "not-participating") {
+  if (status === "denied") {
+    return <Navigate to="/partidas" replace state={{ from: location }} />;
+  }
+
+  return children;
+}
+
+function RequireParticipatingStarted({ children }) {
+  const location = useLocation();
+  const { partidaId } = useParams();
+  const [status, setStatus] = React.useState("checking");
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    if (!partidaId) {
+      setStatus("denied");
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    obtenerEstadoPartida(partidaId)
+      .then((estado) => {
+        if (cancelled) return;
+
+        const puedeEntrar = estado?.participa && estado.haEmpezado;
+        setStatus(puedeEntrar ? "allowed" : "denied");
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("denied");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [partidaId]);
+
+  if (status === "checking") return null;
+  if (status === "denied") {
     return <Navigate to="/partidas" replace state={{ from: location }} />;
   }
 
@@ -194,8 +265,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/torneos/:torneoId" element={ <RequireAuth> <Torneo /> </RequireAuth>}/>
 
         {/* Necesario iniciar sesión y participar en la partida */}
-        <Route path="/partidas/sala-de-espera/:partidaId" element={ <RequireParticipating> <SalaEsperaPartida /> </RequireParticipating>}/>
-        <Route path="/partidas/mesa/:partidaId" element={ <RequireParticipating> <Juego /> </RequireParticipating>}/>
+        <Route path="/partidas/sala-de-espera/:partidaId" element={ <RequireParticipatingNotStartNotTorneo> <SalaEsperaPartida /> </RequireParticipatingNotStartNotTorneo>}/>
+        <Route path="/partidas/mesa/:partidaId" element={ <RequireParticipatingStarted> <Juego /> </RequireParticipatingStarted>}/>
 
         {/* Necesario ser administrador */}
         <Route path="/admin" element={ <RequireAdmin> <Admin /> </RequireAdmin>}/>

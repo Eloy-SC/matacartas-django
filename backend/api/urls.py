@@ -42,6 +42,7 @@ from .views.partida_view import (
     finalizar_partida,
     get_jugador_participa_en_partida,
     get_jugador_participa_en_partida_privada,
+    get_partida_ha_empezado,
     get_jugadores_partida,
     get_partida_como_jugador,
     iniciar_partida,
@@ -83,6 +84,7 @@ from .views.torneo_view import (
     listar_torneos_publicos, 
     get_participantes_torneo,
     unirse_a_torneo,
+    get_partida_pertenece_a_torneo,
     )
 from .views.health_view import health_check
 
@@ -171,6 +173,8 @@ urlpatterns = [
     path("partidas/<int:partida_id>/jugadores/", get_jugadores_partida, name="get-jugadores-partida"),
     path("partidas/<int:partida_id>/participa/", get_jugador_participa_en_partida, name="get-jugador-participa-en-partida"),
     path("partidas/<str:clave>/participa/", get_jugador_participa_en_partida_privada, name="get-jugador-participa-en-partida-privada"),
+    path("partidas/<int:partida_id>/pertenece-torneo/", get_partida_pertenece_a_torneo, name="get-partida-pertenece-a-torneo"),
+    path("partidas/<int:partida_id>/ha-empezado/", get_partida_ha_empezado, name="get-partida-ha-empezado"),
     path("partidas/<int:partida_id>/sala-espera/abandonar/", abandonar_partida_sala_espera, name="abandonar-partida-sala-espera"),
     path("partidas/<int:partida_id>/unirse/", unirse_a_partida_publica, name="unirse-a-partida-publica"),
     path("partidas/<str:clave>/unirse/", unirse_a_partida_privada, name="unirse-a-partida-privada"),

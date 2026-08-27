@@ -1,5 +1,7 @@
 from django.db.models import Q
 
+from ..models.partida_torneo import PartidaTorneo
+
 from ..models.torneo_usuario import TorneoUsuario
 
 from ..models.torneo import Torneo
@@ -117,3 +119,7 @@ def get_participantes_torneo_by_torneo_id(torneo_id):
         })
 
     return participantes
+
+def get_partida_torneo_by_partida_id(partida_id):
+    partida_torneo = PartidaTorneo.objects.filter(partida__id=partida_id).first()
+    return partida_torneo
