@@ -7,7 +7,7 @@ from django.db import transaction
 from ..models.torneo_usuario import TorneoUsuario
 from ..models.usuario import Usuario
 
-from ..selectors.torneo_selector import get_participantes_torneo_by_torneo_id, get_partidas_torneo_by_fase, get_torneo_by_id
+from ..selectors.torneo_selector import get_participantes_torneo_by_torneo_id, get_partida_torneo_by_partida_id, get_partidas_torneo_by_fase, get_torneo_by_id
 
 from ..models.partida_torneo import PartidaTorneo
 from ..models.partida_usuario import PartidaUsuario
@@ -16,7 +16,7 @@ from ..models.partida import Partida
 
 from ..selectors.mano_selector import get_jugadores_en_mesa
 
-from ..selectors.partida_selector import get_partida_by_id, get_partida_usuario_by_partida_and_color, get_partida_usuario_by_partida_and_usuario
+from ..selectors.partida_selector import get_jugadores_actuales_de_partida, get_partida_by_id, get_partida_usuario_by_partida_and_color, get_partida_usuario_by_partida_and_usuario
 
 from ..models.catalogo_cartas import CATALOGO
 
@@ -556,4 +556,31 @@ def aux_iniciar_fase_final(torneo_id):
     aux_eliminar_jugadores_no_clasificados(clasificados)
 
     aux_asignar_clasificados_a_partidas([partida], clasificados)
+
+def aux_almacenar_posiciones_finales_partida_torneo(partida_id):
+
+    partida_torneo = get_partida_torneo_by_partida_id(partida_id)
+
+    posiciones = {}
+    pus_participantes = get_jugadores_actuales_de_partida(partida_id)
+    for participante in pus_participantes:
+        posiciones[participante["id"]] = participante["puntos"]
+
+    partida_torneo.posiciones_finales = posiciones
+    partida_torneo.save(update_fields=["posiciones_finales"])
+
+    pts_fase = get_partidas_torneo_by_fase(partida_torneo.torneo.id, partida_torneo.fase)
+    for pt in pts_fase:
+        if pt.partida.fecha_fin is None:
+            return
+
+    if partida_torneo.fase == PartidaTorneo.FasePartida.OCTAVOS:
+        aux_iniciar_fase_cuartos(partida_torneo.torneo.id)
+    elif partida_torneo.fase == PartidaTorneo.FasePartida.CUARTOS:
+        aux_iniciar_fase_semifinales(partida_torneo.torneo.id)
+    elif partida_torneo.fase == PartidaTorneo.FasePartida.SEMIFINAL:
+        aux_iniciar_fase_final(partida_torneo.torneo.id)
+    
+    
+
 

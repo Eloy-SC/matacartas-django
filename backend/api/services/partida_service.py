@@ -2,6 +2,8 @@ import random
 from sqlite3 import IntegrityError
 from django.utils import timezone
 
+from ..selectors.torneo_selector import get_partida_torneo_by_partida_id
+
 from ..selectors.ronda_selector import get_rondas_de_mano
 
 from ..services.resumen_mano_service import create_resumen_mano
@@ -19,7 +21,7 @@ from ..models.partida import Partida
 from ..models.mano import Mano
 from ..models.ronda import Ronda
 from ..selectors.partida_selector import *
-from ..utils.funciones_aux import aux_fin_partida_mod_puntos, aux_fin_partida_posiciones, aux_generar_baraja_inicial, aux_siguiente_turno, obtener_primer_jugador_activo
+from ..utils.funciones_aux import aux_almacenar_posiciones_finales_partida_torneo, aux_fin_partida_mod_puntos, aux_fin_partida_posiciones, aux_generar_baraja_inicial, aux_siguiente_turno, obtener_primer_jugador_activo
 
 
 def listar_partidas_publicas(
@@ -705,6 +707,11 @@ def finalizar_partida(actor, partida_id):
     if "jug_as_extranjero" in datos_puntos_finales:
         res["jug_as_extranjero"] = datos_puntos_finales["jug_as_extranjero"]
         res["puntuacion_extra_jug_as_extranjero"] = datos_puntos_finales["puntuacion_extra_jug_as_extranjero"]
+
+    # Comprobar si partida pertenece a torneo y actuar en consecuencia
+    partida_torneo = get_partida_torneo_by_partida_id(partida_id)
+    if partida_torneo:
+        aux_almacenar_posiciones_finales_partida_torneo(partida_id)
 
     return res
 

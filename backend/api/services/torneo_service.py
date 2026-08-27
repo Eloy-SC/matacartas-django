@@ -272,8 +272,6 @@ def iniciar_torneo(torneo_id):
     else:
         aux_iniciar_fase_semifinales(torneo_id, inicio=True)
 
-
-
 def aux_jugadores_necesarios(torneo_id):
     torneo = get_torneo_by_id(torneo_id)
     if not torneo:

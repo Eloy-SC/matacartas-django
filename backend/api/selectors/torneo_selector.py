@@ -127,3 +127,9 @@ def get_partida_torneo_by_partida_id(partida_id):
 
 def get_partidas_torneo_by_fase(torneo_id, fase):
     return PartidaTorneo.objects.filter(torneo__id=torneo_id, fase=fase).order_by('lado', 'pareja').all()
+
+def get_torneo_by_partida(partida_id):
+    partida_torneo = get_partida_torneo_by_partida_id(partida_id)
+    if partida_torneo:
+        return partida_torneo.torneo
+    return None
