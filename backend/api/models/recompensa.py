@@ -1,5 +1,7 @@
 from django.db import models
 
+from usuario import Usuario
+
 
 class Recompensa(models.Model):
 
@@ -16,3 +18,15 @@ class Medalla(Recompensa):
         BRONCE = "bronce", "Bronce"
 
     categoria = models.CharField(max_length=20, choices=CategoriaMedalla.choices, default=CategoriaMedalla.BRONCE)
+
+class RecompensaUsuario(models.Model):
+    usuario = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE
+    )
+    medalla = models.ForeignKey(
+        Medalla,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )

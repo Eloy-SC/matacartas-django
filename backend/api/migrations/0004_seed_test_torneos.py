@@ -18,7 +18,7 @@ TEST_TORNEOS = [
         "rango_maximo": "MAESTRO SUPREMO CELESTIAL",
     },
     {
-        "nombre": "Torneo Corto de Prueba",
+        "nombre": "Torneo Corto Prueba",
         "fecha_inicio": timezone.now(),
         "num_jug_fin": 2,
         "num_jug_sem": 2,
@@ -37,7 +37,7 @@ TEST_TORNEOS = [
 TEST_PARTIDAS_TORNEO = [
     {
         "partida": "Partida 1",
-        "torneo": "Torneo Corto de Prueba",
+        "torneo": "Torneo Corto Prueba",
         "fase": "semifinal",
         "lado": 0,
         "pareja": 0,
@@ -45,7 +45,7 @@ TEST_PARTIDAS_TORNEO = [
     },
     {
         "partida": "Partida 2",
-        "torneo": "Torneo Corto de Prueba",
+        "torneo": "Torneo Corto Prueba",
         "fase": "semifinal",
         "lado": 0,
         "pareja": 0,
@@ -53,7 +53,7 @@ TEST_PARTIDAS_TORNEO = [
     },
     {
         "partida": "Partida 3",
-        "torneo": "Torneo Corto de Prueba",
+        "torneo": "Torneo Corto Prueba",
         "fase": "final",
         "lado": 0,
         "pareja": 0,

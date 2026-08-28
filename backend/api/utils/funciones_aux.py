@@ -4,6 +4,10 @@ import random
 
 from django.db import transaction
 
+from ..models.mano import Mano
+from ..models.ronda import Ronda
+from ..services.resumen_mano_service import create_resumen_mano
+
 from ..models.torneo_usuario import TorneoUsuario
 from ..models.usuario import Usuario
 
@@ -16,7 +20,7 @@ from ..models.partida import Partida
 
 from ..selectors.mano_selector import get_jugadores_en_mesa
 
-from ..selectors.partida_selector import get_jugadores_actuales_de_partida, get_partida_by_id, get_partida_usuario_by_partida_and_color, get_partida_usuario_by_partida_and_usuario
+from ..selectors.partida_selector import get_colores_disponibles, get_jugadores_actuales_de_partida, get_partida_by_id, get_partida_usuario_by_partida_and_color, get_partida_usuario_by_partida_and_usuario
 
 from ..models.catalogo_cartas import CATALOGO
 
@@ -259,13 +263,24 @@ def repartir_cartas(actor, partida_id):
 
     partida.save()
 
-def aux_crear_partidas_torneo(torneo, num_partidas, fase):
+def aux_generar_disposicion_jugadores(partida_id):
+    """
+    Genera la disposición inicial de los jugadores en la partida.
+    """
+
+    colores_no_usados = get_colores_disponibles(partida_id)
+    disposicion = [color for color in PartidaUsuario.ColorJugador.values if color not in colores_no_usados]
+    random.shuffle(disposicion)
+
+    return disposicion
+
+def aux_crear_partidas_torneo(torneo, num_partidas, fase, num_jug_fase):
 
     partidas = []
     for i in range(num_partidas):
             partida = Partida(
                     nombre=f"{torneo.nombre} - {fase} {i + 1}",
-                    num_jugadores=torneo.num_jug_oct,
+                    num_jugadores=num_jug_fase,
                     fecha_creacion=timezone.now(),
                     fecha_inicio=timezone.now(),
                     longitud=torneo.partidas_longitud,
@@ -273,8 +288,23 @@ def aux_crear_partidas_torneo(torneo, num_partidas, fase):
                     tickets=torneo.partidas_tickets,
                     tiempo_max_turno=torneo.partidas_tiempo_max_turno,
             )
-            partidas.append(partida)
+            partida.baraja = aux_generar_baraja_inicial(partida.cartas_especiales, partida.num_jugadores)
+            # Mano
+            mano = Mano(
+                partida=partida,
+                num=1
+            )
+            # Ronda
+            ronda = Ronda(
+                mano=mano,
+                num=0
+            )
             partida.save()
+            mano.save()
+            create_resumen_mano(partida.id)
+            ronda.save()
+            partidas.append(partida)
+
 
     return partidas
 
@@ -315,8 +345,8 @@ def aux_asignar_jugadores_a_partidas(participantes, num_partidas, num_jugadores_
     if not comprobacion:
         raise ValueError("El número de participantes no coincide con el número de partidas y jugadores por partida")
 
-    participantes_copia = participantes.copy()
-    random.shuffle(participantes_copia)
+    participantes = participantes.copy()
+    random.shuffle(participantes)
 
     colores = [
         PartidaUsuario.ColorJugador.ROJO,
@@ -340,9 +370,18 @@ def aux_asignar_jugadores_a_partidas(participantes, num_partidas, num_jugadores_
         for jugador, color in zip(jugadores, colores_partida):
             PartidaUsuario.objects.create(
                 partida=partidas[i],
-                usuario=jugador,
+                usuario_id=jugador["id"],
                 color=color,
             )
+
+    # Repartir cartas en cada partida
+    for partida in partidas:
+        partida.disposicion_jugadores = aux_generar_disposicion_jugadores(partida.id)
+        partida.save(update_fields=["disposicion_jugadores"])
+        # Asignar repartidor cualquiera de entre los jugadores de la partida
+        repartidor = random.choice(partida.disposicion_jugadores)
+        actor_cualquiera = get_partida_usuario_by_partida_and_color(partida.id, repartidor)
+        repartir_cartas(actor_cualquiera, partida.id)
 
 def aux_obtener_clasificados(posiciones_partida_1, posiciones_partida_2, num_clasificados, desempate_mayor_punt):
     posiciones_globales = {}
@@ -431,7 +470,7 @@ def aux_iniciar_fase_octavos(torneo_id):
     participantes = get_participantes_torneo_by_torneo_id(torneo_id)
 
     # Crear las partidas de octavos de final
-    partidas = aux_crear_partidas_torneo(torneo, 8, "Octavos de final")
+    partidas = aux_crear_partidas_torneo(torneo, 8, "Octavos de final", torneo.num_jug_oct)
 
     # Crear relaciones entre el torneo y las partidas
     aux_crear_relaciones_partidas_torneo(torneo, partidas)
@@ -445,7 +484,7 @@ def aux_iniciar_fase_cuartos(torneo_id, inicio=False):
     participantes = get_participantes_torneo_by_torneo_id(torneo_id)
 
     # Crear las partidas de cuartos de final
-    partidas = aux_crear_partidas_torneo(torneo, 4, "Cuartos de final")
+    partidas = aux_crear_partidas_torneo(torneo, 4, "Cuartos de final", torneo.num_jug_cua)
 
     # Crear relaciones entre el torneo y las partidas
     aux_crear_relaciones_partidas_torneo(torneo, partidas)
@@ -481,7 +520,7 @@ def aux_iniciar_fase_semifinales(torneo_id, inicio=False):
     participantes = get_participantes_torneo_by_torneo_id(torneo_id)
 
     # Crear las partidas de semifinales
-    partidas = aux_crear_partidas_torneo(torneo, 2, "Semifinales")
+    partidas = aux_crear_partidas_torneo(torneo, 2, "Semifinales", torneo.num_jug_sem)
 
     # Crear relaciones entre el torneo y las partidas
     aux_crear_relaciones_partidas_torneo(torneo, partidas)
@@ -517,7 +556,7 @@ def aux_iniciar_fase_final(torneo_id):
 
     partida = Partida(
             nombre=f"{torneo.nombre} - Final",
-            num_jugadores=torneo.num_jug_oct,
+            num_jugadores=torneo.num_jug_fin,
             fecha_creacion=timezone.now(),
             fecha_inicio=timezone.now(),
             longitud=torneo.partidas_longitud,
@@ -557,6 +596,11 @@ def aux_iniciar_fase_final(torneo_id):
 
     aux_asignar_clasificados_a_partidas([partida], clasificados)
 
+def aux_finalizar_torneo(torneo_id):
+    torneo = get_torneo_by_id(torneo_id)
+    torneo.fecha_fin = timezone.now()
+    
+
 def aux_almacenar_posiciones_finales_partida_torneo(partida_id):
 
     partida_torneo = get_partida_torneo_by_partida_id(partida_id)
@@ -580,7 +624,5 @@ def aux_almacenar_posiciones_finales_partida_torneo(partida_id):
         aux_iniciar_fase_semifinales(partida_torneo.torneo.id)
     elif partida_torneo.fase == PartidaTorneo.FasePartida.SEMIFINAL:
         aux_iniciar_fase_final(partida_torneo.torneo.id)
-    
-    
-
-
+    else:
+        aux_finalizar_torneo(partida_torneo.torneo.id)

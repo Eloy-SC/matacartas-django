@@ -21,7 +21,7 @@ from ..models.partida import Partida
 from ..models.mano import Mano
 from ..models.ronda import Ronda
 from ..selectors.partida_selector import *
-from ..utils.funciones_aux import aux_almacenar_posiciones_finales_partida_torneo, aux_fin_partida_mod_puntos, aux_fin_partida_posiciones, aux_generar_baraja_inicial, aux_siguiente_turno, obtener_primer_jugador_activo
+from ..utils.funciones_aux import aux_almacenar_posiciones_finales_partida_torneo, aux_fin_partida_mod_puntos, aux_fin_partida_posiciones, aux_generar_baraja_inicial, aux_generar_disposicion_jugadores, aux_siguiente_turno, obtener_primer_jugador_activo
 
 
 def listar_partidas_publicas(
@@ -566,17 +566,6 @@ def iniciar_partida(actor, partida_id, manual=False):
     ronda.save()
 
     repartir_cartas(actor, partida_id)  # Reparte las cartas a los jugadores al iniciar la partida
-
-def aux_generar_disposicion_jugadores(partida_id):
-    """
-    Genera la disposición inicial de los jugadores en la partida.
-    """
-
-    colores_no_usados = get_colores_disponibles(partida_id)
-    disposicion = [color for color in PartidaUsuario.ColorJugador.values if color not in colores_no_usados]
-    random.shuffle(disposicion)
-
-    return disposicion
 
 
 def _serializar_posiciones_para_resumen(posiciones):

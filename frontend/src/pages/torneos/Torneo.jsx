@@ -34,6 +34,8 @@ export default function Torneo() {
     const [userId, setUserId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [partidaActual, setPartidaActual] = useState(null);
+    const [loadingPartidaActual, setLoadingPartidaActual] = useState(false);
 
     useEffect(() => {
         let cancelled = false;
@@ -110,6 +112,48 @@ export default function Torneo() {
 		};
 	}, []);
 
+    useEffect(() => {
+        let cancelled = false;
+
+        const loadPartidaActual = async () => {
+            // Solo cargar si el torneo ha iniciado y el usuario es participante
+            if (!torneo?.fecha_inicio || !userId || !participantes.some(p => p.id === userId)) {
+                return;
+            }
+
+            setLoadingPartidaActual(true);
+
+            try {
+                const res = await fetch(`/api/torneos/${torneoId}/partida_actual/`, {
+                    method: "GET",
+                    credentials: "include",
+                });
+                const data = await res.json().catch(() => ({}));
+
+                if (!res.ok) {
+                    // Si la llamada falla, no mostrar error (por ej, si el usuario no tiene partida asignada)
+                    if (!cancelled) setPartidaActual(null);
+                    return;
+                }
+
+                if (!cancelled) {
+                    setPartidaActual(data);
+                }
+            } catch {
+                if (!cancelled) {
+                    setPartidaActual(null);
+                }
+            } finally {
+                if (!cancelled) setLoadingPartidaActual(false);
+            }
+        };
+
+        loadPartidaActual();
+        return () => {
+            cancelled = true;
+        };
+    }, [torneoId, torneo?.fecha_inicio, userId, participantes]);
+
     async function handleUnirseAlTorneo() {
         const csrfToken = await obtenerCsrfToken();
 
@@ -168,44 +212,88 @@ export default function Torneo() {
                         </div>
                     </div>
 
-                    {!torneo?.fecha_inicio && (
-                        <div>
-                            <div style={{ marginBottom: 10 }}>
-                                <button 
-                                    className="main-primary-button"
-                                    onClick={handleUnirseAlTorneo}
-                                    disabled={participantes.some(p => p.id === userId) || loading}
-                                >
-                                    Unirse al torneo
-                                </button>
-                            </div>
 
-                            <div className="form-card torneo-participants-card">
-                                <h2>Participantes ({participantes.length})</h2>
-                                <div className="torneo-participants-grid">
-                                    {participantes.length === 0 ? <p className="torneo-message">Todavía no hay participantes.</p> : participantes.map((participante) => (
-                                        <article className="sala-espera-player-card" key={participante.id}>
-                                            <img className="sala-espera-player-card__avatar" src={participante.imagen || defaultProfilePic} alt={`Foto de perfil de ${participante.nombre ?? "jugador"}`} onError={(event) => { event.currentTarget.src = defaultProfilePic; }} />
-                                            <div className="sala-espera-player-card__content">
-                                                {participante.eliminado && (
-                                                    <strong className="sala-espera-player-card__name" style={{ color: "red" }}>
-                                                        ELIMINADO
-                                                    </strong>
-                                                )}
-                                                <strong className="sala-espera-player-card__name">
-                                                    {participante.creador ? " 👑" : ""}
-                                                    {participante.nombre || "Participante"}
-                                                </strong>
-                                                <span className="sala-espera-player-card__rango">
-                                                    <UserRango userId={participante.id} />
-                                                </span>
-                                            </div>
-                                        </article>
-                                    ))}
-                                </div>
-                            </div>
+
+                    {!torneo?.fecha_inicio && (
+                        <div style={{ marginBottom: 10 }}>
+                            <button 
+                                className="main-primary-button"
+                                onClick={handleUnirseAlTorneo}
+                                disabled={participantes.some(p => p.id === userId) || loading}
+                            >
+                                Unirse al torneo
+                            </button>
                         </div>
                     )}
+
+                    {torneo?.fecha_inicio && participantes.some(p => p.id === userId) && (
+                        <div className="form-card" style={{ marginBottom: 20, borderColor: "#4CAF50" }}>
+                            <h2 style={{ color: "#4CAF50" }}>Partida Actual</h2>
+                            {loadingPartidaActual ? (
+                                <p className="torneo-message">Cargando partida...</p>
+                            ) : partidaActual ? (
+                                <>
+                                    <div className="torneo-details-grid">
+                                        <div><span>Nombre</span><strong>{partidaActual.nombre ?? "-"}</strong></div>
+                                        <div><span>Inicio</span><strong>{formatDate(partidaActual.fecha_inicio)}</strong></div>
+                                        <div><span>Fin</span><strong>{formatDate(partidaActual.fecha_fin)}</strong></div>
+                                    </div>
+                                    <div style={{ marginTop: 20 }}>
+                                        <h3 style={{ marginBottom: 15 }}>Jugadores en la partida</h3>
+                                        <div className="torneo-participants-grid">
+                                            {Object.entries(partidaActual.jugadores || {}).map(([color, jugador]) => (
+                                                <article className="sala-espera-player-card" key={color}>
+                                                    <img className="sala-espera-player-card__avatar" src={jugador.imagen || defaultProfilePic} alt={`Foto de perfil de ${jugador.nombre ?? "jugador"}`} onError={(event) => { event.currentTarget.src = defaultProfilePic; }} />
+                                                    <div className="sala-espera-player-card__content">
+                                                        <strong className="sala-espera-player-card__name">
+                                                            {jugador.nombre || "Jugador"}
+                                                        </strong>
+                                                        <span className="sala-espera-player-card__rango" style={{ fontSize: "0.9em", color: "#666" }}>
+                                                            Color: {jugador.color}
+                                                        </span>
+                                                    </div>
+                                                </article>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <button
+                                    onClick={() => navigate(`/partidas/mesa/${partidaActual.partida_id}/`)}
+                                    className="main-primary-button"
+                                    style={{ marginTop: 20 }}
+                                    >
+                                        Acceder
+                                    </button>
+                                </>
+                            ) : (
+                                <p className="torneo-message">No hay una partida asignada en este momento.</p>
+                            )}
+                        </div>
+                    )}
+
+                        <div className="form-card torneo-participants-card">
+                            <h2>Participantes ({participantes.length})</h2>
+                            <div className="torneo-participants-grid">
+                                {participantes.length === 0 ? <p className="torneo-message">Todavía no hay participantes.</p> : participantes.map((participante) => (
+                                    <article className="sala-espera-player-card" key={participante.id}>
+                                        <img className="sala-espera-player-card__avatar" src={participante.imagen || defaultProfilePic} alt={`Foto de perfil de ${participante.nombre ?? "jugador"}`} onError={(event) => { event.currentTarget.src = defaultProfilePic; }} />
+                                        <div className="sala-espera-player-card__content">
+                                            {participante.eliminado && (
+                                                <strong className="sala-espera-player-card__name" style={{ color: "red" }}>
+                                                    ELIMINADO
+                                                </strong>
+                                            )}
+                                            <strong className="sala-espera-player-card__name">
+                                                {participante.creador ? " 👑" : ""}
+                                                {participante.nombre || "Participante"}
+                                            </strong>
+                                            <span className="sala-espera-player-card__rango">
+                                                <UserRango userId={participante.id} />
+                                            </span>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
+                        </div>
                 </>
             )}
         </div>

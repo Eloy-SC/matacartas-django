@@ -1,5 +1,7 @@
 from django.utils import timezone
 
+from ..selectors.partida_selector import get_jugadores_actuales_de_partida
+
 from ..utils.funciones_aux import aux_asignar_jugadores_a_partidas, aux_crear_partidas_torneo, aux_crear_relaciones_partidas_torneo, aux_iniciar_fase_cuartos, aux_iniciar_fase_octavos, aux_iniciar_fase_semifinales
 
 from django.db import IntegrityError
@@ -11,8 +13,10 @@ from ..models.torneo import Torneo
 from ..selectors.rango_selector import get_rango_by_id
 from ..selectors.torneo_selector import (
     get_participantes_torneo_by_torneo_id_count,
+    get_partida_actual_de_torneo_by_torneo_and_usuario_id,
     get_torneo_by_id,
     get_torneo_by_nombre,
+    get_torneo_usuario_by_torneo_and_usuario_id,
     get_torneos_publicos_count,
     get_torneos_publicos_paginated,
     get_participantes_torneo_by_torneo_id,
@@ -294,4 +298,41 @@ def get_partida_pertenece_a_torneo(actor, partida_id):
         return None
     else:
         return partida_torneo
+
+def get_partida_actual_de_torneo(actor, torneo_id):
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para ver la partida actual del torneo")
+
+    torneo = get_torneo_by_id(torneo_id)
+    if not torneo:
+        raise ValueError("El torneo no existe")
+
+    torneo_usuario = get_torneo_usuario_by_torneo_and_usuario_id(torneo_id, actor.id)
+    if not torneo_usuario:
+        raise PermissionError("No estás inscrito en este torneo")
+
+    partida = get_partida_actual_de_torneo_by_torneo_and_usuario_id(torneo_id, actor.id)
+    if not partida:
+        return None
+
+    jugadores = get_jugadores_actuales_de_partida(partida.id)
+
+    datos = {
+        "partida_id": partida.id,
+        "torneo_id": torneo.id,
+        "nombre": partida.nombre,
+        "fecha_inicio": partida.fecha_inicio,
+        "fecha_fin": partida.fecha_fin,
+        "jugadores": {
+            jugador["color"]: {
+                "id": jugador["id"],
+                "nombre": jugador["nombre"],
+                "imagen": jugador["imagen"],
+                "color": jugador["color"],
+            }
+            for jugador in jugadores
+        }
+    }
+
+    return datos
     

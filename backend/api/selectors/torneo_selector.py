@@ -1,5 +1,7 @@
 from django.db.models import Q
 
+from ..models.partida_usuario import PartidaUsuario
+
 from ..models.partida_torneo import PartidaTorneo
 
 from ..models.torneo_usuario import TorneoUsuario
@@ -133,3 +135,28 @@ def get_torneo_by_partida(partida_id):
     if partida_torneo:
         return partida_torneo.torneo
     return None
+
+def get_fase_actual_torneo(torneo_id):
+    fases = [PartidaTorneo.FasePartida.OCTAVOS, 
+             PartidaTorneo.FasePartida.CUARTOS, 
+             PartidaTorneo.FasePartida.SEMIFINAL, 
+             PartidaTorneo.FasePartida.FINAL]
+    for fase in fases:
+        if PartidaTorneo.objects.filter(torneo__id=torneo_id, fase=fase).exists():
+            return fase
+    return None
+
+def get_torneo_usuario_by_torneo_and_usuario_id(torneo_id, usuario_id):
+    return TorneoUsuario.objects.filter(torneo__id=torneo_id, usuario__id=usuario_id).first()
+
+def get_partida_actual_de_torneo_by_torneo_and_usuario_id(torneo_id, usuario_id):
+
+    partidas_torneo = PartidaTorneo.objects.filter(torneo__id=torneo_id)
+    for pt in partidas_torneo:
+        if pt.fase == get_fase_actual_torneo(torneo_id):
+            partida_id = pt.partida.id
+            partida_usuario = PartidaUsuario.objects.filter(partida__id=partida_id, usuario__id=usuario_id).first()
+            if partida_usuario:
+                return pt.partida
+    
+    
