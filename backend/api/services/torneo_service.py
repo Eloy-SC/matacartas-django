@@ -249,6 +249,21 @@ def get_torneo(actor, torneo_id):
 
     return torneo
 
+def get_medallas_torneo(actor, torneo_id):
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para ver las medallas del torneo")
+
+    try:
+        torneo = Torneo.objects.get(pk=torneo_id)
+    except Torneo.DoesNotExist:
+        raise ValueError("El torneo no existe")
+
+    medallas_torneo = MedallaTorneo.objects.filter(torneo=torneo).order_by("puesto")
+
+    medallas = [mt.medalla for mt in medallas_torneo]
+
+    return medallas
+
 def get_participantes_torneo(actor, torneo_id):
     if not actor.is_authenticated:
         raise PermissionError("No tienes permiso para ver los participantes del torneo")
@@ -290,6 +305,38 @@ def unirse_a_torneo(actor, torneo_id):
     num_participantes = get_participantes_torneo_by_torneo_id_count(torneo_id)
     if num_participantes == jugadores_necesarios:
         iniciar_torneo(torneo_id)
+
+def abandonar_torneo(actor, torneo_id):
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para abandonar el torneo")
+
+    torneo = get_torneo(actor, torneo_id)
+    if torneo is None:
+        raise ValueError("El torneo no existe")
+
+    try:
+        torneo_usuario = TorneoUsuario.objects.get(torneo=torneo, usuario=actor)
+    except TorneoUsuario.DoesNotExist:
+        raise ValueError("No estás inscrito en este torneo")
+
+    if torneo.fecha_inicio is not None:
+        raise PermissionError("No puedes abandonar un torneo que ya ha comenzado")
+
+    participantes = get_participantes_torneo_by_torneo_id(torneo_id)
+    # Reasignar creador si era el creador
+    if torneo_usuario.creador:
+        for p in participantes:
+            if p["id"] != actor.id:
+                nuevo_creador = TorneoUsuario.objects.get(torneo=torneo, usuario_id=p["id"])
+                nuevo_creador.creador = True
+                nuevo_creador.save(update_fields=["creador"])
+                break
+
+    torneo_usuario.delete()
+
+    # Borrar torneo si era el unico participante
+    if get_participantes_torneo_by_torneo_id_count(torneo_id) == 0:
+        torneo.delete()
 
 def iniciar_torneo(torneo_id):
     torneo = get_torneo_by_id(torneo_id)

@@ -190,7 +190,36 @@ export default function Torneo() {
 		} finally {
 			setJoiningPartidaId(null);
 		}
-}
+    }
+
+    async function handleAbandonarTorneo() {
+        const csrfToken = await obtenerCsrfToken();
+
+        try {
+            const unirseRes = await fetch(
+                `/api/torneos/${torneoId}/abandonar/`,
+                {
+                    method: "DELETE",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken,
+                    },
+                }
+            );
+
+            if (!unirseRes.ok) {
+                const unirseData = await unirseRes.json().catch(() => ({}));
+                throw new Error(unirseData?.detail || "No se pudo abandonar el torneo");
+            }
+            alert("Has abandonado del torneo.");
+            navigate("/torneos");
+        } catch (e) {
+			alert(e instanceof Error ? e.message : "Error al procesar la unión");
+		} finally {
+			setJoiningPartidaId(null);
+		}
+    }
 
     return (
         <div className="app torneo-page">
@@ -218,30 +247,44 @@ export default function Torneo() {
                             <div><span>Tickets</span><strong>{formatBoolean(torneo?.partidas_tickets)}</strong></div>
                             <div><span>Tiempo máximo de turno</span><strong>{torneo?.partidas_tiempo_max_turno ?? "-"} s</strong></div>
                             <div><span>Desempate por puntuación</span><strong>{formatBoolean(torneo?.desempate_mayor_punt)}</strong></div>
+                            <div><span>Medalla del primer puesto</span><strong>{torneo?.medalla_primer_puesto_nombre ?? "-"}</strong></div>
+                            <div><span>Medalla del segundo puesto</span><strong>{torneo?.medalla_segundo_puesto_nombre ?? "-"}</strong></div>
+                            <div><span>Medalla del tercer puesto</span><strong>{torneo?.medalla_tercer_puesto_nombre ?? "-"}</strong></div>
                         </div>
                     </div>
 
 
 
-                    {!torneo?.fecha_inicio && (
+
+                    {!torneo?.fecha_inicio && !participantes.some(p => p.id === userId) ? (
                         <div style={{ marginBottom: 10 }}>
                             <button 
                                 className="main-primary-button"
                                 onClick={handleUnirseAlTorneo}
-                                disabled={participantes.some(p => p.id === userId) || loading}
+                                disabled={loading}
                             >
                                 Unirse al torneo
                             </button>
                         </div>
-                    )}
+                    ) : !torneo?.fecha_inicio && participantes.some(p => p.id === userId) ? (
+                        <div style={{ marginBottom: 10 }}>
+                            <button 
+                                className="main-primary-button"
+                                onClick={handleAbandonarTorneo}
+                                disabled={loading}
+                            >
+                                Abandonar torneo
+                            </button>
+                        </div>
+                    ) : null}
 
                     {torneo?.fecha_inicio && participantes.some(p => p.id === userId) && (
                         <div className="form-card" style={{ marginBottom: 20 }}>
-                            <h2 style={{ color: "#000" }}>{partidaActual.nombre ?? "-"}</h2>
                             {loadingPartidaActual ? (
                                 <p className="torneo-message">Cargando partida...</p>
                             ) : partidaActual ? (
                                 <>
+                                    <h2 style={{ color: "#000" }}>{partidaActual.nombre ?? "-"}</h2>
                                     <div className="torneo-details-grid">
                                         <div><span>Inicio</span><strong>{formatDate(partidaActual.fecha_inicio)}</strong></div>
                                         <div><span>Fin</span><strong>{formatDate(partidaActual.fecha_fin)}</strong></div>
@@ -261,7 +304,7 @@ export default function Torneo() {
                                                         <strong className="sala-espera-player-card__name">
                                                             {jugador.nombre || "Jugador"}
                                                         </strong>
-                                                        <span className="sala-espera-player-card__rango" style={{ fontSize: "0.9em", color: "#666" }}>
+                                                        <span className="sala-espera-player-card__rango">
                                                             <UserRango userId={jugador.id} />
                                                         </span>
                                                         {partidaActual.fecha_fin && (

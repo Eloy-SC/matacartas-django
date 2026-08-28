@@ -122,6 +122,7 @@ def crear_torneo(request):
 def get_torneo(request, torneo_id):
     try:
         torneo = torneo_service.get_torneo(request.user, torneo_id)
+        medallas = torneo_service.get_medallas_torneo(request.user, torneo_id)
     except PermissionError as e:
         return Response({"detail": str(e)}, status=403)
     except ValueError as e:
@@ -144,6 +145,9 @@ def get_torneo(request, torneo_id):
         "partidas_tickets": torneo.partidas_tickets,
         "partidas_tiempo_max_turno": torneo.partidas_tiempo_max_turno,
         "desempate_mayor_punt": torneo.desempate_mayor_punt,
+        "medalla_primer_puesto_nombre": medallas[0].nombre,
+        "medalla_segundo_puesto_nombre": medallas[1].nombre,
+        "medalla_tercer_puesto_nombre": medallas[2].nombre if len(medallas) > 2 else None
     }
 
     return Response(data, status=200)
@@ -183,6 +187,18 @@ def unirse_a_torneo(request, torneo_id):
         return Response({"detail": str(e)}, status=404)
 
     return Response({"detail": "Usuario unido al torneo"}, status=200)
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def abandonar_torneo(request, torneo_id):
+    try:
+        torneo_service.abandonar_torneo(request.user, torneo_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+
+    return Response({"detail": "Usuario ha abandonado el torneo"}, status=200)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

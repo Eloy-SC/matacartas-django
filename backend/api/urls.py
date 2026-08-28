@@ -85,6 +85,7 @@ from .views.torneo_view import (
     listar_torneos_publicos, 
     get_participantes_torneo,
     unirse_a_torneo,
+    abandonar_torneo,
     get_partida_pertenece_a_torneo,
     )
 from .views.health_view import health_check
@@ -190,6 +191,7 @@ urlpatterns = [
     path("torneos/<int:torneo_id>/", get_torneo, name="get-torneo"),
     path("torneos/<int:torneo_id>/participantes/", get_participantes_torneo, name="get-participantes-torneo"),
     path("torneos/<int:torneo_id>/unirse/", unirse_a_torneo, name="unirse-a-torneo"),
+    path("torneos/<int:torneo_id>/abandonar/", abandonar_torneo, name="abandonar-torneo"),
     path("torneos/<int:torneo_id>/partida_actual/", get_partida_actual_de_torneo, name="get-partida-actual-de-torneo"),
 
     # JUEGO
