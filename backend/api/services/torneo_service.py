@@ -1,5 +1,7 @@
 from django.utils import timezone
 
+from ..models.medalla_torneo import MedallaTorneo
+
 from ..selectors.partida_selector import get_jugadores_actuales_de_partida
 
 from ..utils.funciones_aux import aux_asignar_jugadores_a_partidas, aux_crear_partidas_torneo, aux_crear_relaciones_partidas_torneo, aux_iniciar_fase_cuartos, aux_iniciar_fase_octavos, aux_iniciar_fase_semifinales
@@ -145,6 +147,9 @@ def crear_torneo(
     partidas_tickets=True,
     partidas_tiempo_max_turno=90,
     desempate_mayor_punt=True,
+    medalla_primer_puesto_id,
+    medalla_segundo_puesto_id,
+    medalla_tercer_puesto_id=None,
 ):
     if not actor.is_authenticated:
         raise PermissionError("No tienes permiso para crear un torneo")
@@ -175,6 +180,9 @@ def crear_torneo(
     if num_jug_sem == 2 and num_jug_fin == 4:
         raise ValueError("Las partidas de semifinales no pueden tener 2 jugadores si la final tiene 4 jugadores")
 
+    if medalla_primer_puesto_id is None or medalla_segundo_puesto_id is None:
+        raise ValueError("Se deben elegir las medallas para el primer y el segundo puesto")
+
     torneo = Torneo(
         nombre=nombre,
         rango_minimo_id=rango_minimo_id,
@@ -190,6 +198,25 @@ def crear_torneo(
         desempate_mayor_punt=desempate_mayor_punt,
     )
 
+    medalla_primer_puesto = MedallaTorneo(
+        medalla_id=medalla_primer_puesto_id,
+        torneo=torneo,
+        puesto=1
+    )
+
+    medalla_segundo_puesto = MedallaTorneo(
+        medalla_id=medalla_segundo_puesto_id,
+        torneo=torneo,
+        puesto=2
+    )
+
+    if medalla_tercer_puesto_id is not None:
+        medalla_tercer_puesto = MedallaTorneo(
+            medalla_id=medalla_tercer_puesto_id,
+            torneo=torneo,
+            puesto=3
+        )
+
     torneo_usuario = TorneoUsuario(
         torneo=torneo,
         usuario=actor,
@@ -199,6 +226,10 @@ def crear_torneo(
     try:
         torneo.save()
         torneo_usuario.save()
+        medalla_primer_puesto.save()
+        medalla_segundo_puesto.save()
+        if medalla_tercer_puesto_id is not None:
+            medalla_tercer_puesto.save()
     except IntegrityError as e:
         msg = str(e)
         if "nombre" in msg:

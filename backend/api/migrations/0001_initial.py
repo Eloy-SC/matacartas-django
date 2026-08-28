@@ -582,6 +582,10 @@ class Migration(migrations.Migration):
                         to="api.torneo",
                     ),
                 ),
+                (
+                    "puesto",
+                    models.IntegerField(null=False, blank=False),
+                ),
             ],
         ),
         migrations.CreateModel(

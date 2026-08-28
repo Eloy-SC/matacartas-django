@@ -15,6 +15,15 @@ const LONGITUD_LABELS = {
     larga: "Larga (60 manos)",
 };
 
+const COLORJUGADOR = {
+    rojo: "red",
+    naranja: "orange",
+    amarillo: "goldenrod",
+    verde: "green",
+    azul: "blue",
+    morado: "purple",
+}
+
 function formatBoolean(value) {
     if (typeof value !== "boolean") return "-";
     return value ? "Sí" : "No";
@@ -227,14 +236,13 @@ export default function Torneo() {
                     )}
 
                     {torneo?.fecha_inicio && participantes.some(p => p.id === userId) && (
-                        <div className="form-card" style={{ marginBottom: 20, borderColor: "#4CAF50" }}>
-                            <h2 style={{ color: "#4CAF50" }}>Partida Actual</h2>
+                        <div className="form-card" style={{ marginBottom: 20 }}>
+                            <h2 style={{ color: "#000" }}>{partidaActual.nombre ?? "-"}</h2>
                             {loadingPartidaActual ? (
                                 <p className="torneo-message">Cargando partida...</p>
                             ) : partidaActual ? (
                                 <>
                                     <div className="torneo-details-grid">
-                                        <div><span>Nombre</span><strong>{partidaActual.nombre ?? "-"}</strong></div>
                                         <div><span>Inicio</span><strong>{formatDate(partidaActual.fecha_inicio)}</strong></div>
                                         <div><span>Fin</span><strong>{formatDate(partidaActual.fecha_fin)}</strong></div>
                                     </div>
@@ -243,25 +251,36 @@ export default function Torneo() {
                                         <div className="torneo-participants-grid">
                                             {Object.entries(partidaActual.jugadores || {}).map(([color, jugador]) => (
                                                 <article className="sala-espera-player-card" key={color}>
-                                                    <img className="sala-espera-player-card__avatar" src={jugador.imagen || defaultProfilePic} alt={`Foto de perfil de ${jugador.nombre ?? "jugador"}`} onError={(event) => { event.currentTarget.src = defaultProfilePic; }} />
+                                                    <img 
+                                                    className="sala-espera-player-card__avatar" 
+                                                    src={jugador.imagen || defaultProfilePic} 
+                                                    style={{ borderColor: COLORJUGADOR[jugador?.color] || "black" }}
+                                                    alt={`Foto de perfil de ${jugador.nombre ?? "jugador"}`} 
+                                                    onError={(event) => { event.currentTarget.src = defaultProfilePic; }} />
                                                     <div className="sala-espera-player-card__content">
                                                         <strong className="sala-espera-player-card__name">
                                                             {jugador.nombre || "Jugador"}
                                                         </strong>
                                                         <span className="sala-espera-player-card__rango" style={{ fontSize: "0.9em", color: "#666" }}>
-                                                            Color: {jugador.color}
+                                                            <UserRango userId={jugador.id} />
                                                         </span>
+                                                        {partidaActual.fecha_fin && (
+                                                            <span className="sala-espera-player-card__score" style={{ fontSize: "0.9em", color: "#666" }}>
+                                                                Puntos: {jugador.puntos ?? 0}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </article>
                                             ))}
                                         </div>
                                     </div>
                                     <button
-                                    onClick={() => navigate(`/partidas/mesa/${partidaActual.partida_id}/`)}
-                                    className="main-primary-button"
-                                    style={{ marginTop: 20 }}
+                                        onClick={() => navigate(`/partidas/mesa/${partidaActual.partida_id}/`)}
+                                        className="main-primary-button"
+                                        style={{ marginTop: 20 }}
+                                        disabled={loadingPartidaActual || partidaActual.fecha_fin !== null}
                                     >
-                                        Acceder
+                                        Jugar
                                     </button>
                                 </>
                             ) : (

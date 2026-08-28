@@ -599,7 +599,7 @@ def aux_iniciar_fase_final(torneo_id):
 def aux_finalizar_torneo(torneo_id):
     torneo = get_torneo_by_id(torneo_id)
     torneo.fecha_fin = timezone.now()
-    
+    pass
 
 def aux_almacenar_posiciones_finales_partida_torneo(partida_id):
 

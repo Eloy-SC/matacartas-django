@@ -19,11 +19,15 @@ export default function CrearTorneo() {
 	const [rangos, setRangos] = useState([]);
 	const [rangosLoading, setRangosLoading] = useState(true);
 	const [rangosError, setRangosError] = useState("");
+	const [medallas, setMedallas] = useState([]);
+	const [medallasLoading, setMedallasLoading] = useState(true);
+	const [medallasError, setMedallasError] = useState("");
 	const [incluirCuartos, setIncluirCuartos] = useState(true);
 	const [incluirOctavos, setIncluirOctavos] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [successMessage, setSuccessMessage] = useState("");
+	const [numJugFin, setNumJugFin] = useState(3);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -58,11 +62,50 @@ export default function CrearTorneo() {
 		};
 	}, []);
 
+	useEffect(() => {
+		let cancelled = false;
+		setMedallasLoading(true);
+		setMedallasError("");
+
+		fetch("/api/medallas/listar/", {
+			method: "GET",
+			credentials: "include",
+		})
+			.then(async (res) => {
+				const data = await res.json().catch(() => []);
+				if (cancelled) return;
+				if (!res.ok) {
+					const detail = data?.detail || "No se pudieron cargar las medallas";
+					throw new Error(detail);
+				}
+				setMedallas(Array.isArray(data) ? data : []);
+			})
+			.catch((e) => {
+				if (cancelled) return;
+				setMedallasError(e instanceof Error ? e.message : "Error cargando medallas");
+				setMedallas([]);
+			})
+			.finally(() => {
+				if (cancelled) return;
+				setMedallasLoading(false);
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
 	const rangoPlaceholder = rangosLoading
 		? "Cargando rangos..."
 		: rangosError
 			? "Error cargando rangos"
 			: "Selecciona un rango";
+
+	const medallaPlaceholder = medallasLoading
+		? "Cargando medallas..."
+		: medallasError
+			? "Error cargando medallas"
+			: "Selecciona una medalla";
 
 	async function handleSubmit(event) {
 		event.preventDefault();
@@ -89,6 +132,10 @@ export default function CrearTorneo() {
 		const num_jug_cua = incluirCuartos && numJugCuaValue ? Number(numJugCuaValue) : null;
 		const num_jug_oct = incluirOctavos && numJugOctValue ? Number(numJugOctValue) : null;
 		const partidas_tiempo_max_turno = tiempoValue ? Number(tiempoValue) : 90;
+
+		const medalla_primer_puesto = formData.get("medallaPrimerPuesto");
+		const medalla_segundo_puesto = formData.get("medallaSegundoPuesto");
+		const medalla_tercer_puesto = formData.get("medallaTercerPuesto");
 
 		if ([num_jug_fin, num_jug_sem, partidas_tiempo_max_turno].some((value) => Number.isNaN(value))) {
 			setError("Revisa los valores numéricos del formulario");
@@ -118,6 +165,9 @@ export default function CrearTorneo() {
 			partidas_tickets: Boolean(formData.get("tickets")),
 			partidas_tiempo_max_turno,
 			desempate_mayor_punt: Boolean(formData.get("desempateMayorPunt")),
+			medalla_primer_puesto_id: medalla_primer_puesto ? Number(medalla_primer_puesto) : null,
+			medalla_segundo_puesto_id: medalla_segundo_puesto ? Number(medalla_segundo_puesto) : null,
+			medalla_tercer_puesto_id: num_jug_fin >= 3 && medalla_tercer_puesto ? Number(medalla_tercer_puesto) : null,
 		};
 
 		setLoading(true);
@@ -189,7 +239,7 @@ export default function CrearTorneo() {
 					<div style={{ marginTop: 12 }}>
 						<label htmlFor="numJugFin">Jugadores por partida en final</label>
 						<br />
-						<select id="numJugFin" name="numJugFin" defaultValue={3}>
+						<select id="numJugFin" name="numJugFin" defaultValue={3} onChange={(e) => setNumJugFin(Number(e.target.value))}>
 							{JUGADORES_OPTIONS.map((value) => (
 								<option key={value} value={value}>
 									{value}
@@ -292,8 +342,53 @@ export default function CrearTorneo() {
 						<label htmlFor="desempateMayorPunt">Desempate por mayor puntuacion</label>
 					</div>
 
-					<div style={{ marginTop: 16, gap: 8 }}>
-						<button type="submit" className="partidas-primary-button" disabled={loading || rangosLoading}>
+				<div style={{ marginTop: 20, borderTop: "1px solid #ccc", paddingTop: 16 }}>
+					<h3 style={{ marginTop: 0 }}>Medallas del torneo</h3>
+
+					<div style={{ marginTop: 12 }}>
+						<label htmlFor="medallaPrimerPuesto">Medalla primer puesto</label>
+						<br />
+						<select id="medallaPrimerPuesto" name="medallaPrimerPuesto" disabled={medallasLoading || Boolean(medallasError)}>
+							<option value="">{medallaPlaceholder}</option>
+							{medallas.map((medalla) => (
+								<option key={medalla.id} value={medalla.id}>
+									{medalla.nombre}
+								</option>
+							))}
+						</select>
+					</div>
+
+					<div style={{ marginTop: 12 }}>
+						<label htmlFor="medallaSegundoPuesto">Medalla segundo puesto</label>
+						<br />
+						<select id="medallaSegundoPuesto" name="medallaSegundoPuesto" disabled={medallasLoading || Boolean(medallasError)}>
+							<option value="">{medallaPlaceholder}</option>
+							{medallas.map((medalla) => (
+								<option key={medalla.id} value={medalla.id}>
+									{medalla.nombre}
+								</option>
+							))}
+						</select>
+					</div>
+
+					{numJugFin >= 3 && (
+						<div style={{ marginTop: 12 }}>
+							<label htmlFor="medallaTercerPuesto">Medalla tercer puesto</label>
+							<br />
+							<select id="medallaTercerPuesto" name="medallaTercerPuesto" disabled={medallasLoading || Boolean(medallasError)}>
+								<option value="">{medallaPlaceholder}</option>
+								{medallas.map((medalla) => (
+									<option key={medalla.id} value={medalla.id}>
+										{medalla.nombre}
+									</option>
+								))}
+							</select>
+						</div>
+					)}
+				</div>
+
+				<div style={{ marginTop: 16, gap: 8 }}>
+					<button type="submit" className="partidas-primary-button" disabled={loading || rangosLoading || medallasLoading}>
 							{loading ? "Creando..." : "Crear"}
 						</button>
 					</div>

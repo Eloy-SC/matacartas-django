@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from ..models.torneo import Torneo
-from ..selectors import rango_selector
+from ..selectors import rango_selector, medalla_selector
 
 
 def _nombre_field() -> serializers.CharField:
@@ -45,6 +45,18 @@ def _rango_id_field(field_label: str):
     )
 
 
+def _medalla_id_field(field_label: str):
+    return serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        min_value=1,
+        error_messages={
+            "invalid": f"La {field_label} no es válida",
+            "min_value": f"La {field_label} no es válida",
+        },
+    )
+
+
 class TorneoSerializer(serializers.Serializer):
     nombre = _nombre_field()
     rango_minimo_id = _rango_id_field("rango mínimo")
@@ -75,6 +87,9 @@ class TorneoSerializer(serializers.Serializer):
         },
     )
     desempate_mayor_punt = serializers.BooleanField(required=True)
+    medalla_primer_puesto_id = _medalla_id_field("medalla de primer puesto")
+    medalla_segundo_puesto_id = _medalla_id_field("medalla de segundo puesto")
+    medalla_tercer_puesto_id = _medalla_id_field("medalla de tercer puesto")
 
     def validate_nombre(self, value: str) -> str:
         qs = Torneo.objects.filter(nombre=value)
@@ -97,6 +112,20 @@ class TorneoSerializer(serializers.Serializer):
             return None
         if rango_selector.get_rango_by_id(value) is None:
             raise serializers.ValidationError("El rango máximo no existe")
+        return value
+
+    def validate_medalla_primer_puesto_id(self, value):
+        if value is None:
+            return None
+        if medalla_selector.get_medalla_by_id(value) is None:
+            raise serializers.ValidationError("La medalla de primer puesto no existe")
+        return value
+
+    def validate_medalla_segundo_puesto_id(self, value):
+        if value is None:
+            return None
+        if medalla_selector.get_medalla_by_id(value) is None:
+            raise serializers.ValidationError("La medalla de segundo puesto no existe")
         return value
 
     def validate(self, attrs):
