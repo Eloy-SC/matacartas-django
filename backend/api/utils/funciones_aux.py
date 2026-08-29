@@ -4,16 +4,17 @@ import random
 
 from django.db import transaction
 
+from ..models.recompensa import RecompensaUsuario
+
+from ..selectors.medalla_selector import get_medallas_by_torneo_id
+
 from ..selectors.user_selector import get_users_by_username, get_usuarios_username_in_lista
 
 from ..models.mano import Mano
 from ..models.ronda import Ronda
 from ..services.resumen_mano_service import create_resumen_mano
 
-from ..models.torneo_usuario import TorneoUsuario
-from ..models.usuario import Usuario
-
-from ..selectors.torneo_selector import get_participantes_torneo_by_torneo_id, get_partida_torneo_by_partida_id, get_partidas_torneo_by_fase, get_torneo_by_id, get_torneo_usuario_by_usernames
+from ..selectors.torneo_selector import get_participantes_torneo_by_torneo_id, get_partida_final_de_torneo, get_partida_torneo_by_partida_id, get_partidas_torneo_by_fase, get_torneo_by_id, get_torneo_usuario_by_torneo_id_exclude_usernames, get_torneo_usuario_by_usernames
 
 from ..models.partida_torneo import PartidaTorneo
 from ..models.partida_usuario import PartidaUsuario
@@ -468,9 +469,9 @@ def aux_asignar_clasificados_a_partidas(partidas, clasificados):
         repartir_cartas(actor_cualquiera.usuario, partida.id)
 
 
-def aux_eliminar_jugadores_no_clasificados(clasificados):
+def aux_eliminar_jugadores_no_clasificados(clasificados, torneo_id):
 
-    participantes_no_clasificados = get_torneo_usuario_by_usernames(clasificados)
+    participantes_no_clasificados = get_torneo_usuario_by_torneo_id_exclude_usernames(torneo_id, clasificados)
 
     for participante in participantes_no_clasificados:
         participante.eliminado = True
@@ -519,7 +520,7 @@ def aux_iniciar_fase_cuartos(torneo_id, inicio=False):
                 )
             )
 
-        aux_eliminar_jugadores_no_clasificados(clasificados)
+        aux_eliminar_jugadores_no_clasificados(clasificados, torneo_id)
 
         aux_asignar_clasificados_a_partidas(
             partidas,
@@ -555,7 +556,7 @@ def aux_iniciar_fase_semifinales(torneo_id, inicio=False):
                 )
             )
 
-        aux_eliminar_jugadores_no_clasificados(clasificados)
+        aux_eliminar_jugadores_no_clasificados(clasificados, torneo_id)
 
         aux_asignar_clasificados_a_partidas(
             partidas,
@@ -618,14 +619,51 @@ def aux_iniciar_fase_final(torneo_id):
             )
         )
 
-    aux_eliminar_jugadores_no_clasificados(clasificados)
+    aux_eliminar_jugadores_no_clasificados(clasificados, torneo_id)
 
     aux_asignar_clasificados_a_partidas([partida], clasificados)
 
 def aux_finalizar_torneo(torneo_id):
+
     torneo = get_torneo_by_id(torneo_id)
+
+    pt_final = get_partida_final_de_torneo(torneo_id)
+
+    posiciones_ordenadas = sorted(
+        pt_final.posiciones_finales.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
+    posiciones_lista = [pos[0] for pos in posiciones_ordenadas]
+    medallas = get_medallas_by_torneo_id(torneo_id)
+
+    username_puesto_1 = posiciones_lista[0]
+    usuario_puesto_1 = get_users_by_username(username_puesto_1).first()
+    rec_usuario_puesto_1 = RecompensaUsuario(
+        usuario=usuario_puesto_1,
+        medalla=medallas[0],
+    )
+    rec_usuario_puesto_1.save()
+
+    username_puesto_2 = posiciones_lista[1]
+    usuario_puesto_2 = get_users_by_username(username_puesto_2).first()
+    rec_usuario_puesto_2 = RecompensaUsuario(
+        usuario=usuario_puesto_2,
+        medalla=medallas[1],
+    )
+    rec_usuario_puesto_2.save()
+    
+    if len(medallas) > 2:
+        username_puesto_3 = posiciones_lista[2]
+        usuario_puesto_3 = get_users_by_username(username_puesto_3).first()
+        rec_usuario_puesto_3 = RecompensaUsuario(
+            usuario=usuario_puesto_3,
+            medalla=medallas[2],
+        )
+        rec_usuario_puesto_3.save()
+
     torneo.fecha_fin = timezone.now()
-    pass
+    torneo.save(update_fields=["fecha_fin"])
 
 def aux_almacenar_posiciones_finales_partida_torneo(partida_id):
 

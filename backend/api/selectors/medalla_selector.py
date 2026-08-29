@@ -1,3 +1,5 @@
+from ..models.medalla_torneo import MedallaTorneo
+
 from ..models.recompensa import Medalla
 
 
@@ -7,3 +9,8 @@ def get_medalla_by_id(medalla_id):
 
 def get_medalla_by_nombre(nombre):
     return Medalla.objects.filter(nombre=nombre).first()
+
+def get_medallas_by_torneo_id(torneo_id):
+    medallas_torneo = MedallaTorneo.objects.filter(torneo__id=torneo_id).order_by("puesto")
+    medallas = [medalla_torneo.medalla for medalla_torneo in medallas_torneo]
+    return medallas

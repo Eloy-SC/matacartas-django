@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.contrib.auth import get_user_model
 
 from ..models.partida_usuario import PartidaUsuario
 
@@ -137,13 +138,17 @@ def get_torneo_by_partida(partida_id):
     return None
 
 def get_fase_actual_torneo(torneo_id):
-    fases = [PartidaTorneo.FasePartida.OCTAVOS, 
-             PartidaTorneo.FasePartida.CUARTOS, 
-             PartidaTorneo.FasePartida.SEMIFINAL, 
-             PartidaTorneo.FasePartida.FINAL]
-    for fase in fases:
-        if PartidaTorneo.objects.filter(torneo__id=torneo_id, fase=fase).exists():
-            return fase
+    torneo = get_torneo_by_id(torneo_id)
+    fases = [PartidaTorneo.FasePartida.SEMIFINAL, PartidaTorneo.FasePartida.FINAL]
+    if torneo.num_jug_cua is not None and torneo.num_jug_cua > 0:
+        fases.insert(0, PartidaTorneo.FasePartida.CUARTOS)
+    if torneo.num_jug_oct is not None and torneo.num_jug_oct > 0:
+        fases.insert(0, PartidaTorneo.FasePartida.OCTAVOS)
+    for i in range(0, len(fases)):
+        if PartidaTorneo.objects.filter(torneo__id=torneo_id, fase=fases[i]).exists():
+            continue
+        else:
+            return fases[i-1] if i > 0 else fases[0]
     return None
 
 def get_torneo_usuario_by_torneo_and_usuario_id(torneo_id, usuario_id):
@@ -160,5 +165,13 @@ def get_partida_actual_de_torneo_by_torneo_and_usuario_id(torneo_id, usuario_id)
                 return pt.partida
 
 def get_torneo_usuario_by_usernames(lista_usernames):
-    return TorneoUsuario.objects.filter(usuario__username__in=lista_usernames)
-    
+    UserModel = get_user_model()
+    objs = UserModel.objects.filter(username__in=lista_usernames)
+    lista_ids = [user.id for user in objs]
+    return TorneoUsuario.objects.filter(usuario__id__in=lista_ids)
+
+def get_partida_final_de_torneo(torneo_id):
+    return PartidaTorneo.objects.filter(torneo__id=torneo_id, fase=PartidaTorneo.FasePartida.FINAL).first()
+
+def get_torneo_usuario_by_torneo_id_exclude_usernames(torneo_id, lista_usernames):
+    return TorneoUsuario.objects.filter(torneo=torneo_id).exclude(usuario__username__in=lista_usernames)
