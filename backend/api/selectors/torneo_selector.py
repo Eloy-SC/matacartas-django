@@ -158,5 +158,7 @@ def get_partida_actual_de_torneo_by_torneo_and_usuario_id(torneo_id, usuario_id)
             partida_usuario = PartidaUsuario.objects.filter(partida__id=partida_id, usuario__id=usuario_id).first()
             if partida_usuario:
                 return pt.partida
-    
+
+def get_torneo_usuario_by_usernames(lista_usernames):
+    return TorneoUsuario.objects.filter(usuario__username__in=lista_usernames)
     

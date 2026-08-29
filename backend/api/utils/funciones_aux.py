@@ -4,6 +4,8 @@ import random
 
 from django.db import transaction
 
+from ..selectors.user_selector import get_users_by_username, get_usuarios_username_in_lista
+
 from ..models.mano import Mano
 from ..models.ronda import Ronda
 from ..services.resumen_mano_service import create_resumen_mano
@@ -11,7 +13,7 @@ from ..services.resumen_mano_service import create_resumen_mano
 from ..models.torneo_usuario import TorneoUsuario
 from ..models.usuario import Usuario
 
-from ..selectors.torneo_selector import get_participantes_torneo_by_torneo_id, get_partida_torneo_by_partida_id, get_partidas_torneo_by_fase, get_torneo_by_id
+from ..selectors.torneo_selector import get_participantes_torneo_by_torneo_id, get_partida_torneo_by_partida_id, get_partidas_torneo_by_fase, get_torneo_by_id, get_torneo_usuario_by_usernames
 
 from ..models.partida_torneo import PartidaTorneo
 from ..models.partida_usuario import PartidaUsuario
@@ -297,7 +299,8 @@ def aux_crear_partidas_torneo(torneo, num_partidas, fase, num_jug_fase):
             # Ronda
             ronda = Ronda(
                 mano=mano,
-                num=0
+                num=0,
+                cambios=0
             )
             partida.save()
             mano.save()
@@ -379,9 +382,9 @@ def aux_asignar_jugadores_a_partidas(participantes, num_partidas, num_jugadores_
         partida.disposicion_jugadores = aux_generar_disposicion_jugadores(partida.id)
         partida.save(update_fields=["disposicion_jugadores"])
         # Asignar repartidor cualquiera de entre los jugadores de la partida
-        repartidor = random.choice(partida.disposicion_jugadores)
+        repartidor = partida.disposicion_jugadores[-1]
         actor_cualquiera = get_partida_usuario_by_partida_and_color(partida.id, repartidor)
-        repartir_cartas(actor_cualquiera, partida.id)
+        repartir_cartas(actor_cualquiera.usuario, partida.id)
 
 def aux_obtener_clasificados(posiciones_partida_1, posiciones_partida_2, num_clasificados, desempate_mayor_punt):
     posiciones_globales = {}
@@ -420,7 +423,7 @@ def aux_obtener_clasificados(posiciones_partida_1, posiciones_partida_2, num_cla
         # No todos los empatados caben: hay que desempatar
         else:
             if desempate_mayor_punt:
-                usuarios = Usuario.objects.filter(id__in=empatados)
+                usuarios = get_usuarios_username_in_lista(empatados)
 
                 usuarios_ordenados = sorted(
                     usuarios,
@@ -429,7 +432,7 @@ def aux_obtener_clasificados(posiciones_partida_1, posiciones_partida_2, num_cla
                 )
 
                 clasificados.extend(
-                    usuario.id
+                    usuario.username
                     for usuario in usuarios_ordenados[:plazas_restantes]
                 )
 
@@ -448,17 +451,26 @@ def aux_asignar_clasificados_a_partidas(partidas, clasificados):
         colores_partida = colores[:len(jugadores)]
         random.shuffle(colores_partida)
 
-        for usuario_id, color in zip(jugadores, colores_partida):
+        for username, color in zip(jugadores, colores_partida):
             PartidaUsuario.objects.create(
                 partida=partida,
-                usuario_id=usuario_id,
+                usuario=get_users_by_username(username).first(),
                 color=color
             )
 
-def aux_eliminar_jugadores_no_clasificados(clasificados):
-    clasificados_flat = [usuario_id for sublist in clasificados for usuario_id in sublist]
+    # Repartir cartas en cada partida
+    for partida in partidas:
+        partida.disposicion_jugadores = aux_generar_disposicion_jugadores(partida.id)
+        partida.save(update_fields=["disposicion_jugadores"])
+        # Asignar repartidor cualquiera de entre los jugadores de la partida
+        repartidor = partida.disposicion_jugadores[-1]
+        actor_cualquiera = get_partida_usuario_by_partida_and_color(partida.id, repartidor)
+        repartir_cartas(actor_cualquiera.usuario, partida.id)
 
-    participantes_no_clasificados = TorneoUsuario.objects.exclude(usuario_id__in=clasificados_flat)
+
+def aux_eliminar_jugadores_no_clasificados(clasificados):
+
+    participantes_no_clasificados = get_torneo_usuario_by_usernames(clasificados)
 
     for participante in participantes_no_clasificados:
         participante.eliminado = True
@@ -564,8 +576,22 @@ def aux_iniciar_fase_final(torneo_id):
             tickets=torneo.partidas_tickets,
             tiempo_max_turno=torneo.partidas_tiempo_max_turno,
         )
-
+    partida.baraja = aux_generar_baraja_inicial(partida.cartas_especiales, partida.num_jugadores)
     partida.save()
+    # Mano
+    mano = Mano(
+        partida=partida,
+        num=1
+    )
+    mano.save()
+    create_resumen_mano(partida.id)
+    # Ronda
+    ronda = Ronda(
+        mano=mano,
+        num=0,
+        cambios=0
+    )
+    ronda.save()
 
     partida_torneo = PartidaTorneo(
         partida = partida,
@@ -608,7 +634,7 @@ def aux_almacenar_posiciones_finales_partida_torneo(partida_id):
     posiciones = {}
     pus_participantes = get_jugadores_actuales_de_partida(partida_id)
     for participante in pus_participantes:
-        posiciones[participante["id"]] = participante["puntos"]
+        posiciones[participante["username"]] = participante["puntos"]
 
     partida_torneo.posiciones_finales = posiciones
     partida_torneo.save(update_fields=["posiciones_finales"])

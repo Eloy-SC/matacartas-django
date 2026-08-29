@@ -99,3 +99,7 @@ def get_posicion_top_usuario(user_id):
         if user["id"] == user_id:
             return index
     return None
+
+def get_usuarios_username_in_lista(lista):
+    UserModel = get_user_model()
+    return UserModel.objects.filter(username__in=lista)
