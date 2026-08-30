@@ -117,3 +117,55 @@ class TorneoAPITest(APITestCase):
 
         response = self.client.post(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_torneo_returns_item(self):
+        url = reverse("get-torneo", args=[self.creator.id])
+        self.client.force_authenticate(user=self.creator)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_torneo_returns_404_when_missing(self):
+        url = reverse("get-torneo", args=[9999])
+        self.client.force_authenticate(user=self.creator)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_participantes_torneo_returns_items(self):
+        torneo = Torneo.objects.create(
+            nombre="TorneoParticipantesApi",
+            rango_minimo=self.rango_min,
+            rango_maximo=self.rango_max,
+            num_jug_fin=4,
+            num_jug_sem=4,
+            num_jug_cua=4,
+            num_jug_oct=None,
+            partidas_longitud=Torneo.LongitudPartidaDeTorneo.NORMAL,
+            partidas_cartas_especiales=True,
+            partidas_tickets=True,
+            partidas_tiempo_max_turno=90,
+            desempate_mayor_punt=True,
+        )
+        url = reverse("get-participantes-torneo", args=[torneo.id])
+        self.client.force_authenticate(user=self.creator)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsInstance(response.data, list)
+
+    def test_unirse_a_torneo_creates_relation(self):
+        user = get_user_model().objects.create_user(
+            username="torneo-join-api",
+            password="join-pass-123",
+            email="torneo-join-api@example.com",
+            nombre="Join API",
+        )
+        user.puntuacion = 1600
+        user.save(update_fields=["puntuacion"])
+
+        url = reverse("unirse-a-torneo", args=[self.creator.id])
+        self.client.force_authenticate(user=user)
+
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

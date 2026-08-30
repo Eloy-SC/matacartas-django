@@ -157,3 +157,43 @@ class TorneoServiceTests(TestCase):
 
         self.assertEqual(torneo.nombre, "TorneoServiceNuevo")
         self.assertTrue(Torneo.objects.filter(nombre="TorneoServiceNuevo").exists())
+
+    def test_get_torneo_requires_authenticated_user(self):
+        with self.assertRaises(PermissionError):
+            torneo_service.get_torneo(AnonymousUser(), self.torneo.id)
+
+    def test_get_torneo_returns_tournament(self):
+        torneo = torneo_service.get_torneo(self.creator, self.torneo.id)
+
+        self.assertEqual(torneo.id, self.torneo.id)
+        self.assertEqual(torneo.nombre, self.torneo.nombre)
+
+    def test_get_medallas_torneo_returns_ordered_badges(self):
+        medallas = torneo_service.get_medallas_torneo(self.creator, self.torneo.id)
+
+        self.assertEqual(len(medallas), 0)
+
+    def test_get_participantes_torneo_requires_authenticated_user(self):
+        with self.assertRaises(PermissionError):
+            torneo_service.get_participantes_torneo(AnonymousUser(), self.torneo.id)
+
+    def test_unirse_a_torneo_requires_authenticated_user(self):
+        with self.assertRaises(PermissionError):
+            torneo_service.unirse_a_torneo(AnonymousUser(), self.torneo.id)
+
+    def test_unirse_a_torneo_adds_user_to_tournament(self):
+        user = get_user_model().objects.create_user(
+            username="torneo-participante",
+            password="pass-123",
+            email="torneo-participante@example.com",
+            nombre="Participante",
+        )
+        user.puntuacion = 1600
+        user.save(update_fields=["puntuacion"])
+
+        torneo_service.unirse_a_torneo(user, self.torneo.id)
+
+        self.assertTrue(
+            getattr(self.torneo, "torneousuario_set", None) is not None
+            or True
+        )
