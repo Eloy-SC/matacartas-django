@@ -313,6 +313,12 @@ def unseed_rangos(apps, schema_editor):
     nombres = [rango["nombre"] for rango in RANGO_SEED]
     Rango.objects.filter(nombre__in=nombres).delete()
 
+def seed_config_global(apps, schema_editor):
+    ConfiguracionGlobal = apps.get_model("api", "ConfiguracionGlobal")
+
+    # Crear la configuración global con el rango mínimo
+    ConfiguracionGlobal.objects.create(rango_minimo_crear_torneo=None)
+
 
 class Migration(migrations.Migration):
     dependencies = [
@@ -322,4 +328,5 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(seed_test_users, reverse_code=unseed_test_users),
         migrations.RunPython(seed_rangos, reverse_code=unseed_rangos),
+        migrations.RunPython(seed_config_global, reverse_code=migrations.RunPython.noop),
     ]

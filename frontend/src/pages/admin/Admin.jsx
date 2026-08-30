@@ -18,6 +18,12 @@ export default function Admin() {
 				<button type="button" className="admin-primary-button" onClick={() => navigate("/admin/rangos")}>
 					RANGOS
 				</button>
+				<button type="button" className="admin-primary-button" onClick={() => navigate("/admin/torneos")}>
+					TORNEOS
+				</button>
+				<button type="button" className="admin-primary-button" onClick={() => navigate("/admin/recompensas")}>
+					RECOMPENSAS
+				</button>
 			</div>
 		</div>
 	);

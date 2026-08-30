@@ -2,6 +2,8 @@ import random
 from sqlite3 import IntegrityError
 from django.utils import timezone
 
+from ..selectors.torneo_selector import get_partida_torneo_by_partida_id
+
 from ..selectors.ronda_selector import get_rondas_de_mano
 
 from ..services.resumen_mano_service import create_resumen_mano
@@ -19,7 +21,7 @@ from ..models.partida import Partida
 from ..models.mano import Mano
 from ..models.ronda import Ronda
 from ..selectors.partida_selector import *
-from ..utils.funciones_aux import aux_fin_partida_mod_puntos, aux_fin_partida_posiciones, aux_generar_baraja_inicial, aux_siguiente_turno, obtener_primer_jugador_activo
+from ..utils.funciones_aux import aux_almacenar_posiciones_finales_partida_torneo, aux_fin_partida_mod_puntos, aux_fin_partida_posiciones, aux_generar_baraja_inicial, aux_generar_disposicion_jugadores, aux_siguiente_turno, obtener_primer_jugador_activo
 
 
 def listar_partidas_publicas(
@@ -565,17 +567,6 @@ def iniciar_partida(actor, partida_id, manual=False):
 
     repartir_cartas(actor, partida_id)  # Reparte las cartas a los jugadores al iniciar la partida
 
-def aux_generar_disposicion_jugadores(partida_id):
-    """
-    Genera la disposición inicial de los jugadores en la partida.
-    """
-
-    colores_no_usados = get_colores_disponibles(partida_id)
-    disposicion = [color for color in PartidaUsuario.ColorJugador.values if color not in colores_no_usados]
-    random.shuffle(disposicion)
-
-    return disposicion
-
 
 def _serializar_posiciones_para_resumen(posiciones):
     """
@@ -705,6 +696,11 @@ def finalizar_partida(actor, partida_id):
     if "jug_as_extranjero" in datos_puntos_finales:
         res["jug_as_extranjero"] = datos_puntos_finales["jug_as_extranjero"]
         res["puntuacion_extra_jug_as_extranjero"] = datos_puntos_finales["puntuacion_extra_jug_as_extranjero"]
+
+    # Comprobar si partida pertenece a torneo y actuar en consecuencia
+    partida_torneo = get_partida_torneo_by_partida_id(partida_id)
+    if partida_torneo:
+        aux_almacenar_posiciones_finales_partida_torneo(partida_id)
 
     return res
 

@@ -1,0 +1,68 @@
+.torneo-page {
+  gap: 18px;
+  padding-bottom: 24px;
+}
+
+.torneo-details-card,
+.torneo-participants-card {
+  width: min(1100px, 100%);
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.torneo-details-card h1,
+.torneo-participants-card h2 {
+  margin: 0 0 18px;
+  color: #000000;
+  text-align: center;
+}
+
+.torneo-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.torneo-details-grid > div {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.torneo-details-grid span,
+.torneo-participant-role,
+.torneo-participant-id {
+  color: #3c3c3c;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.torneo-details-grid strong {
+  color: #000000;
+}
+
+.torneo-participants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.torneo-participants-grid .sala-espera-player-card {
+  width: 100%;
+}
+
+.torneo-message {
+  margin: 0;
+  color: #000000;
+  font-weight: bold;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .torneo-details-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,5 +1,10 @@
 from django.urls import path
 
+from .views.config_global_view import (
+    obtener_rango_minimo_crear_torneo,
+    cambiar_rango_minimo_crear_torneo,
+)
+
 from .views.email_view import (
     confirmar_recuperacion_password, 
     solicitar_recuperacion_password,
@@ -37,6 +42,7 @@ from .views.partida_view import (
     finalizar_partida,
     get_jugador_participa_en_partida,
     get_jugador_participa_en_partida_privada,
+    get_partida_ha_empezado,
     get_jugadores_partida,
     get_partida_como_jugador,
     iniciar_partida,
@@ -65,6 +71,23 @@ from .views.rango_view import (
     get_rango_de_usuario,
     listar_rangos,
 )
+from .views.medalla_view import (
+    crear_medalla_admin,
+    editar_medalla_admin,
+    eliminar_medalla_admin,
+    get_medalla,
+    listar_medallas,
+)
+from .views.torneo_view import (
+    crear_torneo,
+    get_partida_actual_de_torneo, 
+    get_torneo, 
+    listar_torneos_publicos, 
+    get_participantes_torneo,
+    unirse_a_torneo,
+    abandonar_torneo,
+    get_partida_pertenece_a_torneo,
+    )
 from .views.health_view import health_check
 
 urlpatterns = [
@@ -125,6 +148,25 @@ urlpatterns = [
         name="eliminar-rango-admin",
     ),
 
+    # MEDALLAS
+    path("medallas/listar/", listar_medallas, name="listar-medallas"),
+    path("medallas/admin/crear/", crear_medalla_admin, name="crear-medalla-admin"),
+    path("medallas/<int:medalla_id>/", get_medalla, name="get-medalla"),
+    path(
+        "medallas/admin/<int:medalla_id>/editar/",
+        editar_medalla_admin,
+        name="editar-medalla-admin",
+    ),
+    path(
+        "medallas/admin/<int:medalla_id>/eliminar/",
+        eliminar_medalla_admin,
+        name="eliminar-medalla-admin",
+    ),
+
+    # CONFIGURACION GLOBAL
+    path("config-global/rango-minimo/torneos/", obtener_rango_minimo_crear_torneo, name="obtener-rango-minimo-torneos"),
+    path("config-global/rango-minimo/torneos/admin/", cambiar_rango_minimo_crear_torneo, name="cambiar-rango-minimo-torneos"),
+
     # PARTIDAS
     path("partidas/publicas/", listar_partidas_publicas, name="listar-partidas-publicas"),
     path("partidas/crear/", crear_partida, name="crear-partida"),
@@ -133,6 +175,8 @@ urlpatterns = [
     path("partidas/<int:partida_id>/jugadores/", get_jugadores_partida, name="get-jugadores-partida"),
     path("partidas/<int:partida_id>/participa/", get_jugador_participa_en_partida, name="get-jugador-participa-en-partida"),
     path("partidas/<str:clave>/participa/", get_jugador_participa_en_partida_privada, name="get-jugador-participa-en-partida-privada"),
+    path("partidas/<int:partida_id>/pertenece-torneo/", get_partida_pertenece_a_torneo, name="get-partida-pertenece-a-torneo"),
+    path("partidas/<int:partida_id>/ha-empezado/", get_partida_ha_empezado, name="get-partida-ha-empezado"),
     path("partidas/<int:partida_id>/sala-espera/abandonar/", abandonar_partida_sala_espera, name="abandonar-partida-sala-espera"),
     path("partidas/<int:partida_id>/unirse/", unirse_a_partida_publica, name="unirse-a-partida-publica"),
     path("partidas/<str:clave>/unirse/", unirse_a_partida_privada, name="unirse-a-partida-privada"),
@@ -140,6 +184,15 @@ urlpatterns = [
     path("partidas/<int:partida_id>/expulsar-jugador/<int:jugador_id>/", expulsar_jugador, name="expulsar-jugador"),
     path("partidas/<int:partida_id>/iniciar/", iniciar_partida, name="iniciar-partida"),
     path("partidas/<int:partida_id>/iniciar/manual/", iniciar_partida_manual, name="iniciar-partida-manual"),
+
+    # TORNEOS
+    path("torneos/publicos/", listar_torneos_publicos, name="listar-torneos-publicos"),
+    path("torneos/crear/", crear_torneo, name="crear-torneo"),
+    path("torneos/<int:torneo_id>/", get_torneo, name="get-torneo"),
+    path("torneos/<int:torneo_id>/participantes/", get_participantes_torneo, name="get-participantes-torneo"),
+    path("torneos/<int:torneo_id>/unirse/", unirse_a_torneo, name="unirse-a-torneo"),
+    path("torneos/<int:torneo_id>/abandonar/", abandonar_torneo, name="abandonar-torneo"),
+    path("torneos/<int:torneo_id>/partida_actual/", get_partida_actual_de_torneo, name="get-partida-actual-de-torneo"),
 
     # JUEGO
     path("partida/<int:partida_id>/mano/repartir/", repartir_cartas, name="repartir-cartas"),
