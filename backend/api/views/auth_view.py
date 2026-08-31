@@ -1,6 +1,8 @@
 from django.contrib.auth import authenticate, login, logout
 from django.middleware.csrf import get_token
 
+from ..selectors.user_selector import get_users_by_email
+
 from ..selectors.rango_selector import get_rango_by_puntos
 from ..utils.exceptions import RegistrationError
 from rest_framework import status
@@ -38,10 +40,14 @@ def session_login(request):
 
     user = authenticate(request, username=username, password=password)
     if user is None:
-        return Response(
-            {"detail": "Credenciales inválidas"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        usuario = get_users_by_email(username).first()
+        if usuario is not None and usuario.check_password(password):
+            user = usuario
+        else:
+            return Response(
+                {"detail": "Nombre de usuario o contraseña incorrectos"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
     if not user.email_verificado:
         return Response(
             {

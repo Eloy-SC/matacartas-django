@@ -148,7 +148,7 @@ export default function Login() {
 
         <form onSubmit={handleSubmit}>
         <div style={{ marginTop: 12 }}>
-          <label htmlFor="username">{mode === "login" ? "Usuario" : "Nombre de usuario *"}</label>
+          <label htmlFor="username">{mode === "login" ? "Usuario (o correo electrónico)" : "Nombre de usuario *"}</label>
           <br />
           <input
             id="username"
