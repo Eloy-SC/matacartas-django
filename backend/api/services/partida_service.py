@@ -293,6 +293,16 @@ def get_jugadores_partida(actor, partida_id):
     jugadores = get_jugadores_actuales_de_partida(partida_id)
     if jugadores is None:
         raise ValueError("La partida no existe")
+
+    partida = get_partida_by_id(partida_id).first()
+    if partida is None:
+        raise ValueError("La partida no existe")
+    if partida.fecha_inicio is not None: # Si la partida ha comenzado NO se deben mostrar datos secretos de los jugadores
+        for jugador in jugadores:
+            jugador["ticket"] = None
+            jugador["cartas"] = []
+            jugador["carta_comodin"] = None
+            jugador["eff_acum_monedero"] = 0
     
     return jugadores
 
