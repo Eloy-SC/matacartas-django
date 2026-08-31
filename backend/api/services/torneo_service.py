@@ -155,6 +155,10 @@ def crear_torneo(
     if not actor.is_authenticated:
         raise PermissionError("No tienes permiso para crear un torneo")
 
+    torneo_usuario_existente = get_torneo_usuario_by_usuario(actor.id)
+    if torneo_usuario_existente:
+        raise PermissionError("Ya estás inscrito en un torneo")
+
     if get_torneo_by_nombre(nombre) is not None:
         raise RegistrationError({"nombre": ["El nombre ya existe"]})
 
@@ -281,7 +285,7 @@ def unirse_a_torneo(actor, torneo_id):
 
     torneo_usuario_existente = get_torneo_usuario_by_usuario(actor.id)
     if torneo_usuario_existente:
-        raise PermissionError("Ya estás inscrito en este torneo")
+        raise PermissionError("Ya estás inscrito en un torneo")
 
     torneo = get_torneo(actor, torneo_id)
     if torneo is None:

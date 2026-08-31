@@ -1,7 +1,7 @@
 from django.db import IntegrityError
 
 from ..models.recompensa import Medalla
-from ..selectors.medalla_selector import get_medalla_by_id, get_medalla_by_nombre
+from ..selectors.medalla_selector import get_medalla_by_id, get_medalla_by_nombre, list_medallas
 from ..utils.exceptions import RegistrationError
 
 
@@ -9,18 +9,14 @@ def listar_medallas(actor):
     if not actor.is_active:
         raise PermissionError("No tienes permiso para listar medallas")
 
-    return Medalla.objects.all().values("id", "nombre", "categoria", "imagen").order_by("nombre")
+    return list_medallas()
 
 
 def get_medalla(actor, medalla_id):
     if not actor.is_active:
         raise PermissionError("No tienes permiso para obtener la medalla")
 
-    return (
-        Medalla.objects.filter(id=medalla_id)
-        .values("id", "nombre", "categoria", "imagen")
-        .first()
-    )
+    return get_medalla_by_id(medalla_id)
 
 
 def crear_medalla_admin(actor, *, nombre, categoria, imagen=None):

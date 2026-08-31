@@ -350,7 +350,7 @@ export default function CrearTorneo() {
 						<br />
 						<select id="medallaPrimerPuesto" name="medallaPrimerPuesto" disabled={medallasLoading || Boolean(medallasError)}>
 							<option value="">{medallaPlaceholder}</option>
-							{medallas.map((medalla) => (
+							{medallas.filter((medalla) => medalla.categoria === "oro").map((medalla) => (
 								<option key={medalla.id} value={medalla.id}>
 									{medalla.nombre}
 								</option>
@@ -363,7 +363,7 @@ export default function CrearTorneo() {
 						<br />
 						<select id="medallaSegundoPuesto" name="medallaSegundoPuesto" disabled={medallasLoading || Boolean(medallasError)}>
 							<option value="">{medallaPlaceholder}</option>
-							{medallas.map((medalla) => (
+							{medallas.filter((medalla) => medalla.categoria === "plata").map((medalla) => (
 								<option key={medalla.id} value={medalla.id}>
 									{medalla.nombre}
 								</option>
@@ -377,7 +377,7 @@ export default function CrearTorneo() {
 							<br />
 							<select id="medallaTercerPuesto" name="medallaTercerPuesto" disabled={medallasLoading || Boolean(medallasError)}>
 								<option value="">{medallaPlaceholder}</option>
-								{medallas.map((medalla) => (
+								{medallas.filter((medalla) => medalla.categoria === "bronce").map((medalla) => (
 									<option key={medalla.id} value={medalla.id}>
 										{medalla.nombre}
 									</option>
