@@ -19,6 +19,7 @@ from ..selectors.torneo_selector import (
     get_torneo_by_id,
     get_torneo_by_nombre,
     get_torneo_usuario_by_torneo_and_usuario_id,
+    get_torneo_usuario_by_usuario,
     get_torneos_publicos_count,
     get_torneos_publicos_paginated,
     get_participantes_torneo_by_torneo_id,
@@ -277,6 +278,10 @@ def get_participantes_torneo(actor, torneo_id):
 def unirse_a_torneo(actor, torneo_id):
     if not actor.is_authenticated:
         raise PermissionError("No tienes permiso para unirse al torneo")
+
+    torneo_usuario_existente = get_torneo_usuario_by_usuario(actor.id)
+    if torneo_usuario_existente:
+        raise PermissionError("Ya estás inscrito en este torneo")
 
     torneo = get_torneo(actor, torneo_id)
     if torneo is None:

@@ -154,6 +154,9 @@ def get_fase_actual_torneo(torneo_id):
 def get_torneo_usuario_by_torneo_and_usuario_id(torneo_id, usuario_id):
     return TorneoUsuario.objects.filter(torneo__id=torneo_id, usuario__id=usuario_id).first()
 
+def get_torneo_usuario_by_usuario(usuario_id):
+    return TorneoUsuario.objects.filter(usuario__id=usuario_id).first()
+
 def get_partida_actual_de_torneo_by_torneo_and_usuario_id(torneo_id, usuario_id):
 
     partidas_torneo = PartidaTorneo.objects.filter(torneo__id=torneo_id)

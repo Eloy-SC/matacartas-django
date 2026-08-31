@@ -209,7 +209,7 @@ export default function CrearTorneo() {
 					<div style={{ marginTop: 12 }}>
 						<label htmlFor="nombre">Nombre del torneo</label>
 						<br />
-						<input id="nombre" name="nombre" type="text" maxLength={40} placeholder="Hasta 40 caracteres" />
+						<input id="nombre" name="nombre" type="text" maxLength={39} placeholder="Hasta 39 caracteres" />
 					</div>
 					<div style={{ marginTop: 12 }}>
 						<label htmlFor="rangoMinimo">Rango minimo</label>

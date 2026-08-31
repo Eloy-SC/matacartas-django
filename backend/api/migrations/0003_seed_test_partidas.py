@@ -13,7 +13,7 @@ TEST_PARTIDAS = [
 		"rango_maximo": None,
 	},
 	{
-		"nombre": "Partida con Nombre Increíblemente Largoo",
+		"nombre": "Partida con Nombre Increíblemente Largo Para Probar el Limit",
 		"num_jugadores": 3,
 		"longitud": "larga",
 		"cartas_especiales": True,

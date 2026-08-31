@@ -196,7 +196,7 @@ export default function EdicionPartidaSE({ isOpen, partida, onClose, onSaved }) 
 						<input
 							id="editarNombre"
 							type="text"
-							maxLength={40}
+							maxLength={60}
 							value={nombre}
 							onChange={(event) => setNombre(event.target.value)}
 							disabled={loading}

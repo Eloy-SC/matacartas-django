@@ -11,7 +11,7 @@ class Partida(models.Model):
 
     # Configuracion de la partida    
 
-    nombre = models.CharField(max_length=40, unique=True, null=False, blank=False)
+    nombre = models.CharField(max_length=60, unique=True, null=False, blank=False)
     num_jugadores = models.IntegerField(null=False, default=2)
     privada = models.BooleanField(default=False)
     clave = models.CharField(max_length=20, unique=True, null=True, blank=True)  # Clave en caso de partida privada

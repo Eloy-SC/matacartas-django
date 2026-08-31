@@ -10,11 +10,11 @@ def _nombre_field() -> serializers.CharField:
 	return serializers.CharField(
 		required=True,
 		allow_blank=False,
-		max_length=40,
+		max_length=60,
 		error_messages={
 			"required": "Falta el titulo de la partida",
 			"blank": "Falta el titulo de la partida",
-			"max_length": "El titulo es demasiado largo (max. 40 caracteres)",
+			"max_length": "El titulo es demasiado largo (max. 60 caracteres)",
 		},
 	)
 
