@@ -22,7 +22,16 @@ const COLORJUGADOR = {
     verde: "green",
     azul: "blue",
     morado: "purple",
-}
+};
+
+const FASE_LABELS = {
+    octavos: "Octavos",
+    cuartos: "Cuartos",
+    semifinal: "Semifinales",
+    final: "Final",
+};
+
+const FASE_ORDER = ["octavos", "cuartos", "semifinal", "final"];
 
 function formatBoolean(value) {
     if (typeof value !== "boolean") return "-";
@@ -45,6 +54,8 @@ export default function Torneo() {
     const [error, setError] = useState("");
     const [partidaActual, setPartidaActual] = useState(null);
     const [loadingPartidaActual, setLoadingPartidaActual] = useState(false);
+    const [partidasTorneo, setPartidasTorneo] = useState({});
+    const [loadingPartidasTorneo, setLoadingPartidasTorneo] = useState(true);
 
     useEffect(() => {
         let cancelled = false;
@@ -54,12 +65,14 @@ export default function Torneo() {
             setError("");
 
             try {
-                const [torneoRes, participantesRes] = await Promise.all([
+                const [torneoRes, participantesRes, partidasRes] = await Promise.all([
                     fetch(`/api/torneos/${torneoId}/`, { method: "GET", credentials: "include" }),
                     fetch(`/api/torneos/${torneoId}/participantes/`, { method: "GET", credentials: "include" }),
+                    fetch(`/api/torneos/${torneoId}/partidas/`, { method: "GET", credentials: "include" }),
                 ]);
                 const torneoData = await torneoRes.json().catch(() => ({}));
                 const participantesData = await participantesRes.json().catch(() => ([]));
+                const partidasData = await partidasRes.json().catch(() => ({}));
 
                 if (!torneoRes.ok) {
                     throw new Error(torneoData?.detail || "No se pudo cargar el torneo");
@@ -67,19 +80,28 @@ export default function Torneo() {
                 if (!participantesRes.ok) {
                     throw new Error(participantesData?.detail || "No se pudieron cargar los participantes");
                 }
+                if (!partidasRes.ok) {
+                    throw new Error(partidasData?.detail || "No se pudieron cargar las partidas");
+                }
 
                 if (!cancelled) {
                     setTorneo(torneoData);
                     setParticipantes(Array.isArray(participantesData) ? participantesData : []);
+                    setPartidasTorneo(partidasData && typeof partidasData === "object" && !Array.isArray(partidasData) ? partidasData : {});
+                    console.log("Partidas del torneo:", partidasData);
                 }
             } catch (loadError) {
                 if (!cancelled) {
                     setError(loadError instanceof Error ? loadError.message : "Error cargando el torneo");
                     setTorneo(null);
                     setParticipantes([]);
+                    setPartidasTorneo({});
                 }
             } finally {
-                if (!cancelled) setLoading(false);
+                if (!cancelled) {
+                    setLoading(false);
+                    setLoadingPartidasTorneo(false);
+                }
             }
         };
 
@@ -88,6 +110,19 @@ export default function Torneo() {
             cancelled = true;
         };
     }, [torneoId]);
+
+    const partidasPorFase = Object.values(partidasTorneo).reduce((fases, partida) => {
+        const fase = partida?.fase || "otra";
+        if (!fases[fase]) fases[fase] = [];
+        fases[fase].push(partida);
+        return fases;
+    }, {});
+
+    const fasesOrdenadas = Object.keys(partidasPorFase).sort((faseA, faseB) => {
+        const indexA = FASE_ORDER.indexOf(faseA);
+        const indexB = FASE_ORDER.indexOf(faseB);
+        return (indexA === -1 ? FASE_ORDER.length : indexA) - (indexB === -1 ? FASE_ORDER.length : indexB);
+    });
 
     useEffect(() => {
 		let cancelled = false;
@@ -357,6 +392,50 @@ export default function Torneo() {
                                     </article>
                                 ))}
                             </div>
+                        </div>
+
+                        <div className="form-card torneo-matches-card">
+                            <h2>Partidas del torneo</h2>
+                            {loadingPartidasTorneo ? (
+                                <p className="torneo-message">Cargando partidas...</p>
+                            ) : fasesOrdenadas.length === 0 ? (
+                                <p className="torneo-message">Todavía no hay partidas.</p>
+                            ) : (
+                                <div className="torneo-phases-list">
+                                    {fasesOrdenadas.map((fase) => (
+                                        <section className="torneo-phase" key={fase}>
+                                            <h3>{FASE_LABELS[fase] ?? fase}</h3>
+                                            <div className="torneo-matches-grid">
+                                                {partidasPorFase[fase].map((partida) => {
+                                                    const jugadores = Object.values(partida.jugadores || {});
+                                                    const finalizada = Boolean(partida.fecha_fin);
+
+                                                    return (
+                                                        <article className="torneo-match-card" key={partida.partida_id}>
+                                                            <div className="torneo-match-card__header">
+                                                                <h4>{partida.nombre || "Partida"}</h4>
+                                                                <span className={`torneo-match-card__status ${finalizada ? "is-finished" : "is-playing"}`}>
+                                                                    {finalizada ? "FINALIZADA" : "EN JUEGO"}
+                                                                </span>
+                                                            </div>
+                                                            <div className="torneo-match-card__players">
+                                                                {jugadores.length === 0 ? (
+                                                                    <span>Sin jugadores asignados</span>
+                                                                ) : jugadores.map((jugador) => (
+                                                                    <div className="torneo-match-card__player" key={jugador.id}>
+                                                                        <span>{jugador.nombre || "Jugador"}</span>
+                                                                        {finalizada && <strong>{jugador.puntos ?? 0} puntos</strong>}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </article>
+                                                    );
+                                                })}
+                                            </div>
+                                        </section>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                 </>
             )}

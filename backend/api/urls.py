@@ -80,7 +80,8 @@ from .views.medalla_view import (
 )
 from .views.torneo_view import (
     crear_torneo,
-    get_partida_actual_de_torneo, 
+    get_partida_actual_de_torneo,
+    get_partidas_de_torneo, 
     get_torneo, 
     listar_torneos_publicos, 
     get_participantes_torneo,
@@ -193,6 +194,7 @@ urlpatterns = [
     path("torneos/<int:torneo_id>/unirse/", unirse_a_torneo, name="unirse-a-torneo"),
     path("torneos/<int:torneo_id>/abandonar/", abandonar_torneo, name="abandonar-torneo"),
     path("torneos/<int:torneo_id>/partida_actual/", get_partida_actual_de_torneo, name="get-partida-actual-de-torneo"),
+    path("torneos/<int:torneo_id>/partidas/", get_partidas_de_torneo, name="get-partidas-de-torneo"),
 
     # JUEGO
     path("partida/<int:partida_id>/mano/repartir/", repartir_cartas, name="repartir-cartas"),

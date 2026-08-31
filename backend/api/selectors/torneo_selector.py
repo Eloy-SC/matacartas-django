@@ -184,3 +184,11 @@ def get_partida_final_de_torneo(torneo_id):
 
 def get_torneo_usuario_by_torneo_id_exclude_usernames(torneo_id, lista_usernames):
     return TorneoUsuario.objects.filter(torneo=torneo_id).exclude(usuario__username__in=lista_usernames)
+
+def get_partidas_de_torneo_by_id(torneo_id):
+    return (
+        PartidaTorneo.objects
+        .filter(torneo__id=torneo_id)
+        .select_related('partida')
+        .order_by('fase', 'lado', 'pareja')
+    )

@@ -16,6 +16,7 @@ from ..selectors.rango_selector import get_rango_by_id
 from ..selectors.torneo_selector import (
     get_participantes_torneo_by_torneo_id_count,
     get_partida_actual_de_torneo_by_torneo_and_usuario_id,
+    get_partidas_de_torneo_by_id,
     get_torneo_by_id,
     get_torneo_by_nombre,
     get_torneo_usuario_by_torneo_and_usuario_id,
@@ -423,4 +424,39 @@ def get_partida_actual_de_torneo(actor, torneo_id):
     }
 
     return datos
-    
+
+def get_partidas_de_torneo(actor, torneo_id):
+    """
+    Obtiene TODAS las partidas de un torneo específico
+    """
+    if not actor.is_authenticated:
+        raise PermissionError("No tienes permiso para ver las partidas del torneo")
+
+    torneo = get_torneo_by_id(torneo_id)
+    if not torneo:
+        raise ValueError("El torneo no existe")
+
+    datos = {}
+
+    partidas_torneo = get_partidas_de_torneo_by_id(torneo_id)
+    for partida_torneo in partidas_torneo:
+        partida = partida_torneo.partida
+        jugadores = get_jugadores_actuales_de_partida(partida.id)
+        datos[partida.id] = {
+            "partida_id": partida.id,
+            "torneo_id": torneo.id,
+            "nombre": partida.nombre,
+            "fecha_inicio": partida.fecha_inicio,
+            "fecha_fin": partida.fecha_fin,
+            "fase": partida_torneo.fase,
+            "jugadores": {
+                jugador["color"]: {
+                    "id": jugador["id"],
+                    "nombre": jugador["nombre"],
+                    "puntos": jugador["puntos"],
+                }
+                for jugador in jugadores
+            }
+        }
+
+    return datos
