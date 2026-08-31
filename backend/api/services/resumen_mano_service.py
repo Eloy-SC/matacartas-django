@@ -45,7 +45,7 @@ def get_resumen_ult_mano(actor, partida_id):
     )
 
     resumen_ronda_1 = ResumenRondaDTO(
-        victoria=resumen_mano.victorias["1"],
+        victoria=resumen_mano.victorias["1"] if "1" in resumen_mano.victorias.keys() else None,
         muerte=resumen_mano.muertes["1"] if "1" in resumen_mano.muertes.keys() else None,
         retiradas=resumen_mano.retiradas["1"] if "1" in resumen_mano.retiradas.keys() else None,
         efectos_inmediatos=resumen_mano.efectos_inmediatos_ronda["1"] if "1" in resumen_mano.efectos_inmediatos_ronda.keys() else None,
@@ -53,7 +53,7 @@ def get_resumen_ult_mano(actor, partida_id):
     )
 
     resumen_ronda_2 = ResumenRondaDTO(
-        victoria=resumen_mano.victorias["2"],
+        victoria=resumen_mano.victorias["2"] if "2" in resumen_mano.victorias.keys() else None,
         muerte=resumen_mano.muertes["2"] if "2" in resumen_mano.muertes.keys() else None,
         retiradas=resumen_mano.retiradas["2"] if "2" in resumen_mano.retiradas.keys() else None,
         efectos_inmediatos=resumen_mano.efectos_inmediatos_ronda["2"] if "2" in resumen_mano.efectos_inmediatos_ronda.keys() else None,
@@ -61,7 +61,7 @@ def get_resumen_ult_mano(actor, partida_id):
     )
 
     resumen_ronda_3 = ResumenRondaDTO(
-        victoria=resumen_mano.victorias["3"],
+        victoria=resumen_mano.victorias["3"] if "3" in resumen_mano.victorias.keys() else None,
         muerte=resumen_mano.muertes["3"] if "3" in resumen_mano.muertes.keys() else None,
         retiradas=resumen_mano.retiradas["3"] if "3" in resumen_mano.retiradas.keys() else None,
         efectos_inmediatos=resumen_mano.efectos_inmediatos_ronda["3"] if "3" in resumen_mano.efectos_inmediatos_ronda.keys() else None,
