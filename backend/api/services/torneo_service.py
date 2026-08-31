@@ -416,6 +416,7 @@ def get_partida_actual_de_torneo(actor, torneo_id):
                 "nombre": jugador["nombre"],
                 "imagen": jugador["imagen"],
                 "color": jugador["color"],
+                "puntos": jugador["puntos"],
             }
             for jugador in jugadores
         }

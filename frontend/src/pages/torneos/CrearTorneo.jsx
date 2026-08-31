@@ -190,7 +190,11 @@ export default function CrearTorneo() {
 			}
 
 			setSuccessMessage("Torneo creado");
-			navigate("/torneos");
+			const idTorneo = data?.id;
+			if (!idTorneo) {
+				throw new Error("No se pudo obtener el ID del torneo");
+			}
+			navigate(`/torneos/${idTorneo}`);
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Error creando torneo");
 		} finally {

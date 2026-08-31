@@ -278,7 +278,7 @@ export default function Torneo() {
                         </div>
                     ) : null}
 
-                    {torneo?.fecha_inicio && participantes.some(p => p.id === userId) && (
+                    {torneo?.fecha_inicio && participantes.some(p => (p.id === userId && !p.eliminado)) && (
                         <div className="form-card" style={{ marginBottom: 20 }}>
                             {loadingPartidaActual ? (
                                 <p className="torneo-message">Cargando partida...</p>
@@ -336,7 +336,9 @@ export default function Torneo() {
                             <h2>Participantes ({participantes.length})</h2>
                             <div className="torneo-participants-grid">
                                 {participantes.length === 0 ? <p className="torneo-message">Todavía no hay participantes.</p> : participantes.map((participante) => (
-                                    <article className="sala-espera-player-card" key={participante.id}>
+                                    <article className={`sala-espera-player-card ${
+												participante.id === userId ? "sala-espera-player-card--me" : ""
+											}`} key={participante.id}>
                                         <img className="sala-espera-player-card__avatar" src={participante.imagen || defaultProfilePic} alt={`Foto de perfil de ${participante.nombre ?? "jugador"}`} onError={(event) => { event.currentTarget.src = defaultProfilePic; }} />
                                         <div className="sala-espera-player-card__content">
                                             {participante.eliminado && (
