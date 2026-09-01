@@ -500,19 +500,22 @@ def aux_asignar_puntos_extra_final_mano(partida_id):
             cartas_lanzadas_mano_hasta_ronda = get_cartas_lanzadas_en_mano_hasta_ronda(mano_actual.id, ronda_mercader_lanzado)
             cartas_mercancias = sum(1 for carta in cartas_lanzadas_mano_hasta_ronda if carta.endswith(sufijos_mercancia))
             puntos_extra += min(cartas_mercancias, 6)
-            recopilar_efecto_extra_fin_mano(mano_actual.id, color, "MERCADER")
+            if cartas_mercancias > 0:
+                recopilar_efecto_extra_fin_mano(mano_actual.id, color, "MERCADER")
 
         # REBELDE
         if any(carta.endswith("REBELDE") for carta in cartas_lanzadas_por_jugador):
             cartas_bastos = sum(1 for carta in cartas_lanzadas_mano if carta.endswith(sufijos_bastos))
             puntos_extra += min(cartas_bastos, 8)
-            recopilar_efecto_extra_fin_mano(mano_actual.id, color, "REBELDE")
+            if cartas_bastos > 0:
+                recopilar_efecto_extra_fin_mano(mano_actual.id, color, "REBELDE")
 
         # SEGADOR
         if any(carta.endswith("SEGADOR") for carta in cartas_lanzadas_por_jugador):
             cartas_valiosas_lanzadas = sum(1 for carta in cartas_lanzadas_mano if CATALOGO[carta]["tipo"] == "especial_val")
             puntos_extra += min(cartas_valiosas_lanzadas, 6) * 2
-            recopilar_efecto_extra_fin_mano(mano_actual.id, color, "SEGADOR")
+            if cartas_valiosas_lanzadas > 0:
+                recopilar_efecto_extra_fin_mano(mano_actual.id, color, "SEGADOR")
 
         # MONEDERO PECULIAR
         if any(carta.endswith("MONEDERO_PECULIAR") for carta in cartas_lanzadas_por_jugador):
