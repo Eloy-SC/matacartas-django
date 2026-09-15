@@ -3,6 +3,8 @@ from django.contrib.auth.models import AnonymousUser
 from django.test import TestCase
 
 from api.models.configuracion_global import ConfiguracionGlobal
+from api.models.partida import Partida
+from api.models.partida_torneo import PartidaTorneo
 from api.models.rango import Rango
 from api.models.torneo import Torneo
 from api.services import torneo_service
@@ -167,6 +169,30 @@ class TorneoServiceTests(TestCase):
 
         self.assertEqual(torneo.id, self.torneo.id)
         self.assertEqual(torneo.nombre, self.torneo.nombre)
+
+    def test_get_partidas_de_torneo_returns_all_matches_with_their_phase(self):
+        semifinal = Partida.objects.create(nombre="Partida semifinal servicio")
+        final = Partida.objects.create(nombre="Partida final servicio")
+        PartidaTorneo.objects.create(
+            partida=semifinal,
+            torneo=self.torneo,
+            fase=PartidaTorneo.FasePartida.SEMIFINAL,
+            lado=0,
+            pareja=0,
+        )
+        PartidaTorneo.objects.create(
+            partida=final,
+            torneo=self.torneo,
+            fase=PartidaTorneo.FasePartida.FINAL,
+            lado=0,
+            pareja=0,
+        )
+
+        partidas = torneo_service.get_partidas_de_torneo(self.creator, self.torneo.id)
+
+        self.assertEqual(set(partidas), {semifinal.id, final.id})
+        self.assertEqual(partidas[semifinal.id]["fase"], PartidaTorneo.FasePartida.SEMIFINAL)
+        self.assertEqual(partidas[final.id]["fase"], PartidaTorneo.FasePartida.FINAL)
 
     def test_get_medallas_torneo_returns_ordered_badges(self):
         medallas = torneo_service.get_medallas_torneo(self.creator, self.torneo.id)

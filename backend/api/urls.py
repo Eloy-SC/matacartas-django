@@ -1,5 +1,11 @@
 from django.urls import path
 
+from .views.estadisticas_view import (
+    get_estadisticas_globales,
+    get_estadisticas_individuales,
+    get_historial_partidas
+)
+
 from .views.config_global_view import (
     obtener_rango_minimo_crear_torneo,
     cambiar_rango_minimo_crear_torneo,
@@ -77,10 +83,20 @@ from .views.medalla_view import (
     eliminar_medalla_admin,
     get_medalla,
     listar_medallas,
+    listar_medallas_usuario,
+)
+from .views.logro_view import (
+    contar_logros_ocultos_pendientes,
+    crear_logro,
+    eliminar_logro_admin,
+    listar_logros_admin,
+    listar_logros_usuario,
+    obtener_requisitos_logro,
 )
 from .views.torneo_view import (
     crear_torneo,
-    get_partida_actual_de_torneo, 
+    get_partida_actual_de_torneo,
+    get_partidas_de_torneo, 
     get_torneo, 
     listar_torneos_publicos, 
     get_participantes_torneo,
@@ -150,6 +166,7 @@ urlpatterns = [
 
     # MEDALLAS
     path("medallas/listar/", listar_medallas, name="listar-medallas"),
+    path("medallas/usuario/listar/", listar_medallas_usuario, name="listar-medallas-usuario"),
     path("medallas/admin/crear/", crear_medalla_admin, name="crear-medalla-admin"),
     path("medallas/<int:medalla_id>/", get_medalla, name="get-medalla"),
     path(
@@ -162,6 +179,14 @@ urlpatterns = [
         eliminar_medalla_admin,
         name="eliminar-medalla-admin",
     ),
+
+    # LOGROS
+    path("logros/admin/listar/", listar_logros_admin, name="listar-logros-admin"),
+    path("logros/admin/crear/", crear_logro, name="crear-logro-admin"),
+    path("logros/admin/<int:logro_id>/eliminar/", eliminar_logro_admin, name="eliminar-logro-admin"),
+    path("logros/admin/<int:logro_id>/requisitos/", obtener_requisitos_logro, name="obtener-requisitos-logro-admin"),
+    path("logros/listar/", listar_logros_usuario, name="listar-logros"),
+    path("logros/ocultos/pendientes/", contar_logros_ocultos_pendientes, name="contar-logros-ocultos-pendientes"),
 
     # CONFIGURACION GLOBAL
     path("config-global/rango-minimo/torneos/", obtener_rango_minimo_crear_torneo, name="obtener-rango-minimo-torneos"),
@@ -193,6 +218,12 @@ urlpatterns = [
     path("torneos/<int:torneo_id>/unirse/", unirse_a_torneo, name="unirse-a-torneo"),
     path("torneos/<int:torneo_id>/abandonar/", abandonar_torneo, name="abandonar-torneo"),
     path("torneos/<int:torneo_id>/partida_actual/", get_partida_actual_de_torneo, name="get-partida-actual-de-torneo"),
+    path("torneos/<int:torneo_id>/partidas/", get_partidas_de_torneo, name="get-partidas-de-torneo"),
+
+    # ESTADISTICAS
+    path("estadisticas/globales/", get_estadisticas_globales, name="get-estadisticas-globales"),
+    path("estadisticas/individuales/", get_estadisticas_individuales, name="get-estadisticas-individuales"),
+    path("estadisticas/individuales/historial/", get_historial_partidas, name="get-historial-partidas"),
 
     # JUEGO
     path("partida/<int:partida_id>/mano/repartir/", repartir_cartas, name="repartir-cartas"),

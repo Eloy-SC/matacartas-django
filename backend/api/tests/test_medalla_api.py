@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from api.models.recompensa import Medalla
+from api.models.recompensa import Medalla, RecompensaUsuario
 
 
 class MedallaAPITest(APITestCase):
@@ -40,7 +40,48 @@ class MedallaAPITest(APITestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(len(response.data), 1)
+        self.assertGreaterEqual(len(response.data["items"]), 1)
+        self.assertEqual(response.data["page"], 1)
+        self.assertEqual(response.data["page_size"], 10)
+        self.assertEqual(response.data["total"], 1)
+
+    def test_listar_medallas_usuario_returns_only_own_medallas(self):
+        own_medalla = self.medalla
+        other_medalla = Medalla.objects.create(
+            nombre="Medalla de otro usuario",
+            categoria=Medalla.CategoriaMedalla.ORO,
+        )
+        RecompensaUsuario.objects.create(usuario=self.user, medalla=own_medalla)
+        RecompensaUsuario.objects.create(usuario=self.admin, medalla=other_medalla)
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(reverse("listar-medallas-usuario"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["total"], 1)
+        self.assertEqual(response.data["items"][0]["nombre"], own_medalla.nombre)
+
+    def test_listar_medallas_filters_orders_and_paginates(self):
+        Medalla.objects.bulk_create([
+            Medalla(nombre=f"Medalla {index:02d}", categoria=Medalla.CategoriaMedalla.ORO)
+            for index in range(11)
+        ])
+        url = reverse("listar-medallas")
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(url, {"search": "Medalla 0", "ordering": "-nombre"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["total"], 10)
+        self.assertEqual(response.data["total_pages"], 1)
+        self.assertEqual(response.data["items"][0]["nombre"], "Medalla 09")
+
+        response = self.client.get(url, {"categoria": "oro", "page": 2})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["total"], 11)
+        self.assertEqual(response.data["total_pages"], 2)
+        self.assertEqual(len(response.data["items"]), 1)
 
     def test_get_medalla_returns_404_when_missing(self):
         url = reverse("get-medalla", args=[9999])

@@ -11,7 +11,7 @@ class Partida(models.Model):
 
     # Configuracion de la partida    
 
-    nombre = models.CharField(max_length=40, unique=True, null=False, blank=False)
+    nombre = models.CharField(max_length=60, unique=True, null=False, blank=False)
     num_jugadores = models.IntegerField(null=False, default=2)
     privada = models.BooleanField(default=False)
     clave = models.CharField(max_length=20, unique=True, null=True, blank=True)  # Clave en caso de partida privada
@@ -41,6 +41,7 @@ class Partida(models.Model):
     baraja = models.JSONField(default=list)  # Representación de la baraja de cartas
     disposicion_jugadores = models.JSONField(default=list)  # Representación de la disposición de los jugadores en la partida
     turno_actual = models.CharField(max_length=8, null=True)  # Color del jugador que tiene el turno actual
+    puntuacion_asignada_final = models.JSONField(default=dict)  # Puntuación final asignada a cada jugador al finalizar la partida
 
     # Métodos
 

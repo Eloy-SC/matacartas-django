@@ -1,7 +1,15 @@
 from django.db import IntegrityError
 
 from ..models.recompensa import Medalla
-from ..selectors.medalla_selector import get_medalla_by_id, get_medalla_by_nombre
+from ..selectors.medalla_selector import (
+    get_medalla_by_id,
+    get_medalla_by_nombre,
+    get_medallas_count,
+    get_medallas_usuario_count,
+    list_medallas,
+    list_medallas_paginated,
+    list_medallas_usuario_paginated,
+)
 from ..utils.exceptions import RegistrationError
 
 
@@ -9,18 +17,70 @@ def listar_medallas(actor):
     if not actor.is_active:
         raise PermissionError("No tienes permiso para listar medallas")
 
-    return Medalla.objects.all().values("id", "nombre", "categoria", "imagen").order_by("nombre")
+    return list_medallas()
+
+
+def listar_medallas_paginated(
+    actor,
+    *,
+    page,
+    page_size,
+    search=None,
+    nombre=None,
+    categoria=None,
+    order_by="nombre",
+    order_dir="asc",
+):
+    if not actor.is_active:
+        raise PermissionError("No tienes permiso para listar medallas")
+
+    allowed_order_fields = {"id", "nombre", "categoria"}
+    order_field = order_by if order_by in allowed_order_fields else "nombre"
+    ordering = f"{'-' if order_dir == 'desc' else ''}{order_field}"
+    total = get_medallas_count(search=search, nombre=nombre, categoria=categoria)
+    offset = (page - 1) * page_size
+    items = list(list_medallas_paginated(
+        offset,
+        page_size,
+        search=search,
+        nombre=nombre,
+        categoria=categoria,
+        ordering=ordering,
+    ))
+
+    return {
+        "items": items,
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "total_pages": max(1, (total + page_size - 1) // page_size),
+    }
 
 
 def get_medalla(actor, medalla_id):
     if not actor.is_active:
         raise PermissionError("No tienes permiso para obtener la medalla")
 
-    return (
-        Medalla.objects.filter(id=medalla_id)
-        .values("id", "nombre", "categoria", "imagen")
-        .first()
-    )
+    return get_medalla_by_id(medalla_id)
+
+
+def listar_medallas_usuario_paginated(actor, *, page, page_size, order_by="nombre", order_dir="asc"):
+    if not actor.is_active:
+        raise PermissionError("No tienes permiso para listar tus medallas")
+
+    allowed_order_fields = {"id", "nombre", "categoria"}
+    order_field = order_by if order_by in allowed_order_fields else "nombre"
+    ordering = f"{'-' if order_dir == 'desc' else ''}{order_field}"
+    total = get_medallas_usuario_count(actor.id)
+    offset = (page - 1) * page_size
+    items = list(list_medallas_usuario_paginated(actor.id, offset, page_size, ordering=ordering))
+    return {
+        "items": items,
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "total_pages": max(1, (total + page_size - 1) // page_size),
+    }
 
 
 def crear_medalla_admin(actor, *, nombre, categoria, imagen=None):

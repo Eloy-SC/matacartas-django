@@ -2,6 +2,8 @@ import random
 from sqlite3 import IntegrityError
 from django.utils import timezone
 
+from backend.api.services.logro_service import asignar_logros_a_usuario
+
 from ..selectors.torneo_selector import get_partida_torneo_by_partida_id
 
 from ..selectors.ronda_selector import get_rondas_de_mano
@@ -293,6 +295,16 @@ def get_jugadores_partida(actor, partida_id):
     jugadores = get_jugadores_actuales_de_partida(partida_id)
     if jugadores is None:
         raise ValueError("La partida no existe")
+
+    partida = get_partida_by_id(partida_id).first()
+    if partida is None:
+        raise ValueError("La partida no existe")
+    if partida.fecha_inicio is not None: # Si la partida ha comenzado NO se deben mostrar datos secretos de los jugadores
+        for jugador in jugadores:
+            jugador["ticket"] = None
+            jugador["cartas"] = []
+            jugador["carta_comodin"] = None
+            jugador["eff_acum_monedero"] = 0
     
     return jugadores
 
@@ -670,6 +682,7 @@ def finalizar_partida(actor, partida_id):
 
     # Actualizar puntuación de los usuarios si la partida tiene cartas especiales y tickets
     puntuacion_ganada = _calcular_puntuacion_ganada_por_jugadores(partida, posiciones)
+    partida.puntuacion_asignada_final = puntuacion_ganada
     if partida.cartas_especiales and partida.tickets:
         for pos, jugadores_pos in posiciones.items():
             for jugador in jugadores_pos:
@@ -677,13 +690,17 @@ def finalizar_partida(actor, partida_id):
                 partida_usuario = get_partida_usuario_by_partida_and_color(partida_id, color)
                 usuario = partida_usuario.usuario
                 n = partida.num_jugadores
+                puntuacion_del_jugador = puntuacion_ganada.get(color, 0)
                 if n > pos:
-                    usuario.puntuacion += (n/pos) * 100
+                    usuario.puntuacion += puntuacion_del_jugador
                     usuario.save()
 
     # Guardar la fecha de finalización de la partida y limipiar turno actual para evitar acciones de juego
     partida.fecha_fin = timezone.now()
     partida.turno_actual = None
+    # Limpiar otros atributos
+    partida.baraja = []
+    # Guardar partida
     partida.save()
 
     # Recopilacion de datos para mostrar en front
@@ -701,6 +718,12 @@ def finalizar_partida(actor, partida_id):
     partida_torneo = get_partida_torneo_by_partida_id(partida_id)
     if partida_torneo:
         aux_almacenar_posiciones_finales_partida_torneo(partida_id)
+
+    # Asignar logros
+    for color in partida.disposicion_jugadores:
+        partida_usuario = get_partida_usuario_by_partida_and_color(partida_id, color)
+        if partida_usuario:
+            asignar_logros_a_usuario(partida_usuario)
 
     return res
 

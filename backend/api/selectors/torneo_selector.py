@@ -140,6 +140,7 @@ def get_torneo_by_partida(partida_id):
 def get_fase_actual_torneo(torneo_id):
     torneo = get_torneo_by_id(torneo_id)
     fases = [PartidaTorneo.FasePartida.SEMIFINAL, PartidaTorneo.FasePartida.FINAL]
+    res = None
     if torneo.num_jug_cua is not None and torneo.num_jug_cua > 0:
         fases.insert(0, PartidaTorneo.FasePartida.CUARTOS)
     if torneo.num_jug_oct is not None and torneo.num_jug_oct > 0:
@@ -148,11 +149,19 @@ def get_fase_actual_torneo(torneo_id):
         if PartidaTorneo.objects.filter(torneo__id=torneo_id, fase=fases[i]).exists():
             continue
         else:
-            return fases[i-1] if i > 0 else fases[0]
-    return None
+            if i > 0:
+                res = fases[i-1] 
+            else:
+                res = fases[0]
+    if res is None:
+        res = fases[-1]
+    return res
 
 def get_torneo_usuario_by_torneo_and_usuario_id(torneo_id, usuario_id):
     return TorneoUsuario.objects.filter(torneo__id=torneo_id, usuario__id=usuario_id).first()
+
+def get_torneo_usuario_by_usuario(usuario_id):
+    return TorneoUsuario.objects.filter(usuario__id=usuario_id).first()
 
 def get_partida_actual_de_torneo_by_torneo_and_usuario_id(torneo_id, usuario_id):
 
@@ -175,3 +184,11 @@ def get_partida_final_de_torneo(torneo_id):
 
 def get_torneo_usuario_by_torneo_id_exclude_usernames(torneo_id, lista_usernames):
     return TorneoUsuario.objects.filter(torneo=torneo_id).exclude(usuario__username__in=lista_usernames)
+
+def get_partidas_de_torneo_by_id(torneo_id):
+    return (
+        PartidaTorneo.objects
+        .filter(torneo__id=torneo_id)
+        .select_related('partida')
+        .order_by('fase', 'lado', 'pareja')
+    )

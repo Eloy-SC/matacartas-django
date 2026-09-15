@@ -8,11 +8,11 @@ def _nombre_field() -> serializers.CharField:
     return serializers.CharField(
         required=True,
         allow_blank=False,
-        max_length=40,
+        max_length=39,
         error_messages={
             "required": "Falta el nombre",
             "blank": "Falta el nombre",
-            "max_length": "El nombre es demasiado largo (max. 40 caracteres)",
+            "max_length": "El nombre es demasiado largo (max. 39 caracteres)",
         },
     )
 
