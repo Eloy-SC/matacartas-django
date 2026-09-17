@@ -2,7 +2,7 @@ import random
 from sqlite3 import IntegrityError
 from django.utils import timezone
 
-from backend.api.services.logro_service import asignar_logros_a_usuario
+from ..services.logro_service import asignar_logros_a_usuario
 
 from ..selectors.torneo_selector import get_partida_torneo_by_partida_id
 

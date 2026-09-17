@@ -2,7 +2,7 @@
 
 from django.db import IntegrityError, transaction
 
-from backend.api.selectors.resumen_mano_selector import get_resumen_mano_by_mano_id
+from ..selectors.resumen_mano_selector import get_resumen_mano_by_mano_id
 
 from ..selectors.mano_selector import get_manos_de_partida
 
