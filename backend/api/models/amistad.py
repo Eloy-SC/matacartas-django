@@ -1,6 +1,6 @@
 from django.db import models
 
-class Anuncio(models.Model):
+class Amistad(models.Model):
     """Modelo para representar una amistad."""
 
     usuario1 = models.ForeignKey("Usuario", on_delete=models.CASCADE, related_name="amistades_usuario1")

@@ -725,5 +725,62 @@ class Migration(migrations.Migration):
                 ("progreso", models.IntegerField(default=0)),
             ],
         ),
+        migrations.CreateModel(
+            name="Anuncio",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("titulo", models.CharField(max_length=80, null=False)),
+                ("subtitulo", models.CharField(max_length=120, null=False)),
+                ("descripcion", models.TextField(null=False)),
+                ("publicado", models.BooleanField(default=False)),
+                ("fecha_creacion", models.DateTimeField(auto_now_add=True)),
+                (
+                    "autor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="api.usuario",
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Amistad",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "usuario1",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="amistades_usuario1",
+                        to="api.usuario",
+                    ),
+                ),
+                (
+                    "usuario2",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="amistades_usuario2",
+                        to="api.usuario",
+                    ),
+                ),
+                ("aceptada", models.BooleanField(default=False)),
+            ],
+        ),
         migrations.RunPython(seed_config_global, reverse_code=migrations.RunPython.noop),
     ]
