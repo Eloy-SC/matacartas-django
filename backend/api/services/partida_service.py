@@ -642,9 +642,9 @@ def _calcular_puntuacion_ganada_por_jugadores(partida, posiciones):
     m = get_manos_de_partida(partida.id).count()
     for pos, jugadores_pos in posiciones.items():
         for jugador in jugadores_pos:
-            puntuable = (n > pos) and int(jugador["puntos"]) > -1000
+            puntuable = (n > int(pos)) and int(jugador["puntos"]) > -1000
             color = jugador["color"] if isinstance(jugador, dict) else jugador.color
-            puntuacion_ganada[color] = (((n / pos) * 100) + (m*5)) if puntuable else 0
+            puntuacion_ganada[color] = (((n / int(pos)) * 100) + (m*5)) if puntuable else 0
 
     return puntuacion_ganada
 
@@ -725,7 +725,7 @@ def finalizar_partida(actor, partida_id):
                 usuario = partida_usuario.usuario
                 n = partida.num_jugadores
                 puntuacion_del_jugador = puntuacion_ganada.get(color, 0)
-                if n > pos:
+                if n > int(pos):
                     usuario.puntuacion += puntuacion_del_jugador
                     usuario.save()
 

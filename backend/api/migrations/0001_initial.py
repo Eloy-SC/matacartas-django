@@ -640,6 +640,8 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         to="api.medalla",
+                        null=True,
+                        blank=True,
                     ),
                 ),
                 (
@@ -647,6 +649,8 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         to="api.logro",
+                        null=True,
+                        blank=True,
                     ),
                 ),
             ],
