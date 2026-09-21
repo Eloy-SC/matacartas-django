@@ -96,6 +96,7 @@ export default function Estadisticas() {
             })
             .then((data) => {
                 if (!cancelled) setEstadisticas(data);
+                console.log(data);
             })
             .catch((requestError) => {
                 if (!cancelled) setError(requestError instanceof Error ? requestError.message : "Error cargando estadísticas");
@@ -227,8 +228,8 @@ export default function Estadisticas() {
                             </div>
                             <div>
                                 <span>Partida más corta</span>
-                                <strong>{estadisticas.partidas_mas_corta?.[0] || "Sin datos"}</strong>
-                                <small>{formatDuration(estadisticas.partidas_mas_corta?.[1])}</small>
+                                <strong>{estadisticas.partida_mas_corta?.[0] || "Sin datos"}</strong>
+                                <small>{formatDuration(estadisticas.partida_mas_corta?.[1])}</small>
                             </div>
                         </div>
                     </section>

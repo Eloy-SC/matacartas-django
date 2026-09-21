@@ -120,11 +120,11 @@ def get_estadisticas_glob_partida_mas_larga():
     partidas_finalizadas = Partida.objects.filter(fecha_fin__isnull=False)
     if not partidas_finalizadas.exists():
         return None
-    duracion_maxima = 0.
+    duracion_maxima = None
     partida_mas_larga = None
     for p in partidas_finalizadas:
         duracion = (p.fecha_fin - p.fecha_inicio).total_seconds()
-        if duracion > duracion_maxima:
+        if duracion_maxima is None or duracion > duracion_maxima:
             duracion_maxima = duracion
             partida_mas_larga = p
     return (partida_mas_larga.nombre, duracion_maxima) if partida_mas_larga else (None, 0)
@@ -133,11 +133,11 @@ def get_estadisticas_glob_partida_mas_corta():
     partidas_finalizadas = Partida.objects.filter(fecha_fin__isnull=False)
     if not partidas_finalizadas.exists():
         return None
-    duracion_minima = 0.
+    duracion_minima = None
     partida_mas_corta = None
     for p in partidas_finalizadas:
         duracion = (p.fecha_fin - p.fecha_inicio).total_seconds()
-        if duracion < duracion_minima:
+        if duracion_minima is None or duracion < duracion_minima:
             duracion_minima = duracion
             partida_mas_corta = p
     return (partida_mas_corta.nombre, duracion_minima) if partida_mas_corta else (None, 0)
@@ -199,7 +199,7 @@ def get_estadisticas_ind_puntos_ganados(usuario_id):
     partida_usuarios = PartidaUsuario.objects.filter(usuario_id=usuario_id)
     puntos_totales = 0
     for pu in partida_usuarios:
-        if pu.partida.fecha_fin is not None:
+        if pu.partida.fecha_fin is not None and pu.puntos > -1000:
             puntos_totales += pu.puntos
     return puntos_totales
 

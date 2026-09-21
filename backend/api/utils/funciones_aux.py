@@ -195,7 +195,7 @@ def aux_fin_partida_posiciones(jugadores):
     """
 
     # Determinar las posiciones definitivas con efectos y puntos def. calculados
-    posiciones = {1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
+    posiciones = {"1": [], "2": [], "3": [], "4": [], "5": [], "6": []}
 
     jugadores_ordenados = sorted(
         jugadores,
@@ -215,7 +215,7 @@ def aux_fin_partida_posiciones(jugadores):
             if (jugador["puntos"] if isinstance(jugador, dict) else jugador.puntos) == puntos
         ]
 
-        posiciones[posicion] = empatados
+        posiciones[str(posicion)] = empatados
 
         posicion += len(empatados)
         i += len(empatados)

@@ -407,7 +407,8 @@ def aux_resolver_desempate_comodines(partida_id, ganadores, especiales):
     jugadores = get_jugadores_actuales_de_partida(partida_id)
     for jugador in jugadores:
         if jugador["color"] in ganadores:
-            ronda_comodines.cartas[jugador["color"]] = jugador["carta_comodin"]
+            if not jugador["retirado"]:
+                ronda_comodines.cartas[jugador["color"]] = jugador["carta_comodin"]
     ronda_comodines.save()
     comodines_a_usar = {
         (nombre, CATALOGO[nombre]["riqueza"])

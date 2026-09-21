@@ -24,7 +24,7 @@ def get_estadisticas_globales(actor):
         "retiradas": get_estadisticas_glob_retiradas(),
         "mas_retiradas_en_partida": get_estadisticas_glob_mas_retiradas_en_partida(),
         "partida_mas_larga": get_estadisticas_glob_partida_mas_larga(),
-        "partidas_mas_corta": get_estadisticas_glob_partida_mas_corta()
+        "partida_mas_corta": get_estadisticas_glob_partida_mas_corta(),
     }
 
     return estadisticas
