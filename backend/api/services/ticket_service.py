@@ -65,9 +65,9 @@ def repartir_tickets(partida_id):
                     ticket = random.choice(tickets_por_clase[clase])
 
             partida_usuario = get_partida_usuario_by_partida_and_color(partida_id, color)
-            if partida_usuario:
+            if partida_usuario and partida_usuario.ticket is None:
                 partida_usuario.ticket = ticket
-                partida_usuario.save()
+                partida_usuario.save(update_fields=["ticket"])
 
 def usar_ticket(actor, partida_id, ticket):
     """
@@ -293,6 +293,8 @@ def aux_usar_ticket_rt(partida_id, ticket, jugador_actor):
     for puntuacion, colores in dic_colores.items():
         if jugador_actor.color in colores:
             colores.remove(jugador_actor.color)
+            if len(puntuacion) == 0:
+                del dic_colores[puntuacion]
             break
     if dic_colores is None or len(dic_colores) == 0:
         raise ValueError("No hay jugadores con tickets para robar.")

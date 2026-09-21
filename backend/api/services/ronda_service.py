@@ -423,12 +423,12 @@ def aux_resolver_desempate_comodines(partida_id, ganadores, especiales):
             if color == ganador and carta_mayor_riqueza[0] == "AS_EXTRANJERO":
                 jugador_ganador = get_partida_usuario_by_partida_and_color(partida_id, color)
                 jugador_ganador.eff_as_extranjero = True
-                jugador_ganador.save()
+                jugador_ganador.save(update_fields=["eff_as_extranjero"])
                 for jugador in jugadores:
                     if jugador["eff_as_extranjero"] and jugador["color"] != color:
                         jugador_perdedor = get_partida_usuario_by_partida_and_color(partida_id, jugador["color"])
                         jugador_perdedor.eff_as_extranjero = False
-                        jugador_perdedor.save()
+                        jugador_perdedor.save(update_fields=["eff_as_extranjero"])
 
     recopilar_victoria(get_mano_actual(partida_id).id, ganador, "DESEMPATE_COMODINES", 4)
 

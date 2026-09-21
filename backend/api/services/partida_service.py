@@ -648,6 +648,38 @@ def _calcular_puntuacion_ganada_por_jugadores(partida, posiciones):
 
     return puntuacion_ganada
 
+
+def _reconstruir_datos_as_extranjero(jugadores):
+    """
+    Reconstruye los datos del as extranjero para respuestas de finalización repetidas.
+    """
+    jugador_as = next(
+        (jugador for jugador in jugadores if jugador.get("eff_as_extranjero")),
+        None,
+    )
+    if not jugador_as:
+        return {}
+
+    color = jugador_as["color"]
+    puntos_as = jugador_as["puntos"]
+    puntos_maximos_sin_as = max(
+        (
+            jugador["puntos"]
+            for jugador in jugadores
+            if jugador["color"] != color
+        ),
+        default=puntos_as,
+    )
+    if puntos_as <= puntos_maximos_sin_as:
+        return {}
+
+    puntos_extra = puntos_as - puntos_maximos_sin_as
+
+    return {
+        "jug_as_extranjero": color,
+        "puntuacion_extra_jug_as_extranjero": puntos_extra,
+    }
+
 def finalizar_partida(actor, partida_id):
     """
     Finaliza la partida y determina el ganador.
@@ -667,12 +699,14 @@ def finalizar_partida(actor, partida_id):
         posiciones = aux_fin_partida_posiciones(jugadores)
         puntos_ganados_por_kills, puntos_perdidos_por_deaths = _calcular_resumen_kills_deaths(jugadores)
         puntuacion_ganada = _calcular_puntuacion_ganada_por_jugadores(partida, posiciones)
-        return {
+        res = {
             "puntos_ganados_por_kills": puntos_ganados_por_kills,
             "puntos_perdidos_por_deaths": puntos_perdidos_por_deaths,
             "posiciones": _serializar_posiciones_para_resumen(posiciones),
             "puntuacion_ganada_por_jugadores": puntuacion_ganada,
         }
+        res.update(_reconstruir_datos_as_extranjero(jugadores))
+        return res
 
     jugadores = get_jugadores_actuales_de_partida(partida_id)
 

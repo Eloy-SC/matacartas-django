@@ -76,14 +76,11 @@ export default function ResumenPartidaOverlay({ datosFinalPartida }) {
 						<h3 className="juego-resumen-overlay__subtitle">As extranjero</h3>
 						<div className="juego-resumen-overlay__kv-list">
 							<div className="juego-resumen-overlay__kv-row">
-								<span className="juego-resumen-overlay__label">El jugador </span>
+								<span className="juego-resumen-overlay__value">El jugador </span>
 								<span className="juego-resumen-overlay__label" style={{ color: COLORJUGADOR[datosFinalPartida.jug_as_extranjero] }}>
 									{datosFinalPartida.jug_as_extranjero}
 								</span>
-							</div>
-							<div className="juego-resumen-overlay__kv-row">
-								<span className="juego-resumen-overlay__label">Puntos extra</span>
-								<span className="juego-resumen-overlay__value">{datosFinalPartida.puntuacion_extra_jug_as_extranjero ?? 0}</span>
+								<span className="juego-resumen-overlay__value"> ha quedado en primer lugar porque estaba a menos de 15 puntos de la posición más alta y ha sido el último en ganar una mano utilizando el as extranjero como carta comodín.</span>
 							</div>
 						</div>
 					</div>
