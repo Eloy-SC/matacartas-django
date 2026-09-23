@@ -9,6 +9,7 @@ const DiccionarioTicketsFront = {
     clase: "2ª clase",
     descripcion: "Cambia la baraja por una nueva, garantizando la presencia de, al menos, una carta única. Utilizar este ticket hará que todos los jugadores pierdan sus cartas y reciban nuevas. Sólo se puede usar durante serie de cambios, en la fase previa a los cambios de cartas.",
   },
+  /*
   ticket_cb_valiosa: {
     nombre: "Cambio baraja: la valiosa",
     clase: "2ª clase",
@@ -29,6 +30,7 @@ const DiccionarioTicketsFront = {
     clase: "Clase Imperial",
     descripcion: "Cambia la baraja por una nueva en la cual las 48 cartas son de tipo especial. Utilizar este ticket hará que todos los jugadores pierdan sus cartas y reciban nuevas. Sólo se puede usar durante serie de cambios, en la fase previa a los cambios de cartas.",
   },
+  */
 
   ticket_ic_azar: {
     nombre: "Intercambio de comodín: al azar",

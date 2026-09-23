@@ -250,23 +250,24 @@ def aux_calcular_puntos_ganados_carta(partida_id, color, carta):
     puntos = 0
     for mano in manos:
         resumen = get_resumen_mano_by_mano_id(mano.id)
-        for beneficiado, efecto in resumen.efectos_extra_fin_mano:
-            if carta != "JOYAS_REALES" and beneficiado == color and efecto == carta:
-                if carta == "MERCADER":
-                    puntos_anadir = resumen.puntos_mercader if resumen.puntos_mercader else 0
-                elif carta == "REBELDE":
-                    puntos_anadir = resumen.puntos_rebelde if resumen.puntos_rebelde else 0
-                elif carta == "SEGADOR":
-                    puntos_anadir = resumen.puntos_segador if resumen.puntos_segador else 0
-                puntos += puntos_anadir
-            elif carta == "JOYAS_REALES" and beneficiado == color:
-                if efecto == "JOYAS_REALES_2":
-                    puntos_anadir = 2
-                elif efecto == "JOYAS_REALES_3":
-                    puntos_anadir = 3
-                else:
-                    puntos_anadir = 0
-                puntos += puntos_anadir
+        if len(resumen.efectos_extra_fin_mano) > 0:
+            for beneficiado, efecto in resumen.efectos_extra_fin_mano:
+                if carta != "JOYAS_REALES" and beneficiado == color and efecto == carta:
+                    if carta == "MERCADER":
+                        puntos_anadir = resumen.puntos_mercader if resumen.puntos_mercader else 0
+                    elif carta == "REBELDE":
+                        puntos_anadir = resumen.puntos_rebelde if resumen.puntos_rebelde else 0
+                    elif carta == "SEGADOR":
+                        puntos_anadir = resumen.puntos_segador if resumen.puntos_segador else 0
+                    puntos += puntos_anadir
+                elif carta == "JOYAS_REALES" and beneficiado == color:
+                    if efecto == "JOYAS_REALES_2":
+                        puntos_anadir = 2
+                    elif efecto == "JOYAS_REALES_3":
+                        puntos_anadir = 3
+                    else:
+                        puntos_anadir = 0
+                    puntos += puntos_anadir
     return puntos
 
 def aux_calcular_cartas_victimas_segador(partida_id, color):
@@ -274,9 +275,10 @@ def aux_calcular_cartas_victimas_segador(partida_id, color):
     cartas = 0
     for mano in manos:
         resumen = get_resumen_mano_by_mano_id(mano.id)
-        for beneficiado, efecto in resumen.efectos_extra_fin_mano:
-            if efecto == "SEGADOR" and beneficiado == color:
-                cartas += resumen.puntos_segador/2
+        if len(resumen.efectos_extra_fin_mano) > 0:
+            for beneficiado, efecto in resumen.efectos_extra_fin_mano:
+                if efecto == "SEGADOR" and beneficiado == color:
+                    cartas += resumen.puntos_segador/2
     return cartas
 
 def aux_calcular_puntos_ganados_vinos_viejos(partida_id, color):
@@ -284,9 +286,10 @@ def aux_calcular_puntos_ganados_vinos_viejos(partida_id, color):
     puntos = 0
     for mano in manos:
         resumen = get_resumen_mano_by_mano_id(mano.id)
-        for beneficiado, efecto in resumen.efectos_inmediatos_ronda.values():
-            if efecto == "VINOS_VIEJOS" and beneficiado == color:
-                puntos += 2
+        for efectos_ronda in resumen.efectos_inmediatos_ronda.values():
+            for beneficiado, efecto in efectos_ronda:
+                if efecto == "VINOS_VIEJOS" and beneficiado == color:
+                    puntos += 2
     return puntos
 
 def aux_calcular_muertes_corrompidas_corruptor(partida_id, color):
@@ -304,9 +307,10 @@ def aux_calcular_tumbas_saqueadas_saqueador(partida_id, color):
     tumbas_saqueadas = 0
     for mano in manos:
         resumen = get_resumen_mano_by_mano_id(mano.id)
-        for beneficiado, efecto in resumen.efectos_inmediatos_ronda.values():
-            if efecto == "SAQUEADOR" and beneficiado == color:
-                tumbas_saqueadas += 1
+        for efectos_ronda in resumen.efectos_inmediatos_ronda.values():
+            for beneficiado, efecto in efectos_ronda:
+                if efecto == "SAQUEADOR" and beneficiado == color:
+                    tumbas_saqueadas += 1
     return tumbas_saqueadas
 
 def aux_calcular_partidas_ganadas(partida_id, color):
@@ -322,9 +326,10 @@ def aux_calcular_cartas_kills(partida_id, color):
     kills = 0
     for mano in manos:
         resumen = get_resumen_mano_by_mano_id(mano.id)
-        for jugador_matador, jugador_matado in resumen.muertes.values():
-            if jugador_matador == color:
-                kills += 1
+        if len(resumen.muertes.values()) > 0:
+            for jugador_matador, jugador_matado in resumen.muertes.values():
+                if jugador_matador == color:
+                    kills += 1
     return kills
 
 def aux_calcular_cartas_deaths(partida_id, color):
@@ -332,9 +337,10 @@ def aux_calcular_cartas_deaths(partida_id, color):
     deaths = 0
     for mano in manos:
         resumen = get_resumen_mano_by_mano_id(mano.id)
-        for jugador_matador, jugador_matado in resumen.muertes.values():
-            if jugador_matado == color:
-                deaths += 1
+        if len(resumen.muertes.values()) > 0:
+            for jugador_matador, jugador_matado in resumen.muertes.values():
+                if jugador_matado == color:
+                    deaths += 1
     return deaths
 
 def aux_calcular_rondas_ganadas(partida_id, color):
@@ -370,9 +376,10 @@ def aux_calcular_retiradas(partida_id, color):
     retiradas = 0
     for mano in manos:
         resumen = get_resumen_mano_by_mano_id(mano.id)
-        for jugadores_retirados in resumen.retiradas.values():
-            if color in jugadores_retirados:
-                retiradas += 1
+        if len(resumen.retiradas.values()) > 0:
+            for jugadores_retirados in resumen.retiradas.values():
+                if color in jugadores_retirados:
+                    retiradas += 1
     return retiradas
 
 def aux_calcular_manos_ganadas_unica(partida_id, color):
@@ -380,9 +387,10 @@ def aux_calcular_manos_ganadas_unica(partida_id, color):
     victorias = 0
     for mano in manos:
         resumen = get_resumen_mano_by_mano_id(mano.id)
-        for beneficiado, efecto in resumen.efectos_extra_fin_mano:
-            if efecto == "CARTA_UNICA" and beneficiado == color:
-                victorias += 1
+        if len(resumen.efectos_extra_fin_mano) > 0:
+            for beneficiado, efecto in resumen.efectos_extra_fin_mano:
+                if efecto == "CARTA_UNICA" and beneficiado == color:
+                    victorias += 1
     return victorias
 
 def aux_calcular_contraataques_bastos_punt(partida_id, color):

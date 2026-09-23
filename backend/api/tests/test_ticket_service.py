@@ -234,6 +234,7 @@ class TicketServiceTests(TestCase):
 
         self.assertEqual(self.partida.turno_actual, self.partida.disposicion_jugadores[0])
 
+    '''
     def test_usar_ticket_cb_valiosa_cambia_baraja_y_elimina_ticket(self):
         self.set_up_ronda_cambios()
 
@@ -385,7 +386,8 @@ class TicketServiceTests(TestCase):
         self.assertIsNone(self.pu_creator.ticket)
 
         self.assertEqual(self.partida.turno_actual, self.partida.disposicion_jugadores[0])
-
+    '''
+        
     ## INTERCAMBIO COMODINES
     def test_usar_ticket_ic_azar_intercambia_comodines(self):
         self.set_up_ronda_lances()

@@ -189,6 +189,10 @@ def aux_usar_ticket_ic(partida_id, ticket, jugador_actor):
     actor.save(update_fields=["carta_comodin"])
     objetivo.save(update_fields=["carta_comodin"])
 
+    if comodin_objetivo == "MONEDERO_PECULIAR":
+            objetivo.eff_acum_monedero = 0
+            objetivo.save(update_fields=["eff_acum_monedero"])
+
 def aux_usar_ticket_pp(partida_id, ticket, jugador_actor):
     dic_colores = get_colores_ordenados_por_puntuacion(partida_id)
     for puntuacion, colores in dic_colores.items():
