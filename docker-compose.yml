@@ -53,10 +53,28 @@ services:
       - "5173:5173"
     depends_on:
       - backend
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5173', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
     
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+
+  selenium:
+    build:
+      context: ./selenium
+      dockerfile: Dockerfile
+    environment:
+      SELENIUM_FRONTEND_BASE_URL: http://frontend:5173
+      SELENIUM_TIMEOUT_SECONDS: 20
+      SELENIUM_HEADLESS: "1"
+    depends_on:
+      frontend:
+        condition: service_healthy
 
 volumes:
   postgres_data:

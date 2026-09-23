@@ -8,15 +8,34 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+import time
+import urllib.request
 
 FRONTEND_BASE_URL = os.getenv("SELENIUM_FRONTEND_BASE_URL", "http://localhost:5173")
 DEFAULT_TIMEOUT = int(os.getenv("SELENIUM_TIMEOUT_SECONDS", "20"))
 
-
 class FrontendSeleniumBase(unittest.TestCase):
+
+    def wait_for_frontend(self):
+        deadline = time.time() + DEFAULT_TIMEOUT
+
+        while time.time() < deadline:
+            try:
+                urllib.request.urlopen(FRONTEND_BASE_URL, timeout=2)
+                return
+            except Exception:
+                time.sleep(0.5)
+
+        raise RuntimeError(
+            f"El frontend no está disponible en {FRONTEND_BASE_URL}"
+        )
+    
     @classmethod
     def setUpClass(cls):
+        cls.wait_for_frontend()
+
         options = Options()
+        options.binary_location = "/usr/bin/chromium"
         if os.getenv("SELENIUM_HEADLESS", "1") != "0":
             options.add_argument("--headless=new")
         options.add_argument("--window-size=1600,1200")
@@ -44,6 +63,12 @@ class FrontendSeleniumBase(unittest.TestCase):
 
     def login_ui(self, username="cervantes", password="123456"):
         self.open("/login")
+
+        self.driver.save_screenshot("/tmp/login.png")
+        print("URL:", self.driver.current_url)
+        print("TITLE:", self.driver.title)
+        print(self.driver.page_source[:10000])
+
         self.wait_for(By.ID, "username")
         self.driver.find_element(By.ID, "username").clear()
         self.driver.find_element(By.ID, "username").send_keys(username)
