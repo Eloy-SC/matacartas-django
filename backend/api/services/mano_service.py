@@ -240,6 +240,7 @@ def siguiente_mano(actor, partida_id):
     if not mano_actual or not mano_actual.ganador:
         raise ValueError("No se puede iniciar la siguiente mano hasta que termine la mano actual.")
 
+    # Devolver cartas a la baraja (también se incluyen las cartas comodin)
     for ronda in get_rondas_de_mano(mano_actual.id):
         for carta in ronda.cartas.values():
             if carta not in partida.baraja:
@@ -257,7 +258,7 @@ def siguiente_mano(actor, partida_id):
     comodines_utilizados = get_rondas_de_mano(mano_actual.id)[-1].cartas
     for jugador in get_jugadores_actuales_de_partida(partida_id):
         carta_comodin = jugador.get("carta_comodin")
-        if carta_comodin and carta_comodin not in comodines_utilizados:
+        if carta_comodin and carta_comodin not in comodines_utilizados.values():
             partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, jugador["id"])
             if partida_usuario:
                 if carta_comodin not in partida_usuario.cartas:
@@ -268,6 +269,12 @@ def siguiente_mano(actor, partida_id):
                     partida_usuario.eff_acum_monedero += 1
                 partida_usuario.retirado = False  # Asegurarse de que el jugador no esté marcado como retirado
                 partida_usuario.save()
+        # Eliminar comodines utilizados
+        if carta_comodin and carta_comodin in comodines_utilizados.values():
+            partida_usuario = get_partida_usuario_by_partida_and_usuario(partida_id, jugador["id"])
+            if partida_usuario:
+                partida_usuario.carta_comodin = None
+                partida_usuario.save(update_fields=["carta_comodin"])
 
     if mano_actual.num < partida.get_num_manos():
         # Crear nueva mano y su correspondiente ronda "0"

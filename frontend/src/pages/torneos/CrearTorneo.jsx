@@ -78,7 +78,7 @@ export default function CrearTorneo() {
 					const detail = data?.detail || "No se pudieron cargar las medallas";
 					throw new Error(detail);
 				}
-				setMedallas(Array.isArray(data) ? data : []);
+				setMedallas(Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []));
 			})
 			.catch((e) => {
 				if (cancelled) return;
@@ -190,7 +190,11 @@ export default function CrearTorneo() {
 			}
 
 			setSuccessMessage("Torneo creado");
-			navigate("/torneos");
+			const idTorneo = data?.id;
+			if (!idTorneo) {
+				throw new Error("No se pudo obtener el ID del torneo");
+			}
+			navigate(`/torneos/${idTorneo}`);
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Error creando torneo");
 		} finally {
@@ -209,7 +213,7 @@ export default function CrearTorneo() {
 					<div style={{ marginTop: 12 }}>
 						<label htmlFor="nombre">Nombre del torneo</label>
 						<br />
-						<input id="nombre" name="nombre" type="text" maxLength={40} placeholder="Hasta 40 caracteres" />
+						<input id="nombre" name="nombre" type="text" maxLength={39} placeholder="Hasta 39 caracteres" />
 					</div>
 					<div style={{ marginTop: 12 }}>
 						<label htmlFor="rangoMinimo">Rango minimo</label>
@@ -350,7 +354,7 @@ export default function CrearTorneo() {
 						<br />
 						<select id="medallaPrimerPuesto" name="medallaPrimerPuesto" disabled={medallasLoading || Boolean(medallasError)}>
 							<option value="">{medallaPlaceholder}</option>
-							{medallas.map((medalla) => (
+							{medallas.filter((medalla) => medalla.categoria === "oro").map((medalla) => (
 								<option key={medalla.id} value={medalla.id}>
 									{medalla.nombre}
 								</option>
@@ -363,7 +367,7 @@ export default function CrearTorneo() {
 						<br />
 						<select id="medallaSegundoPuesto" name="medallaSegundoPuesto" disabled={medallasLoading || Boolean(medallasError)}>
 							<option value="">{medallaPlaceholder}</option>
-							{medallas.map((medalla) => (
+							{medallas.filter((medalla) => medalla.categoria === "plata").map((medalla) => (
 								<option key={medalla.id} value={medalla.id}>
 									{medalla.nombre}
 								</option>
@@ -377,7 +381,7 @@ export default function CrearTorneo() {
 							<br />
 							<select id="medallaTercerPuesto" name="medallaTercerPuesto" disabled={medallasLoading || Boolean(medallasError)}>
 								<option value="">{medallaPlaceholder}</option>
-								{medallas.map((medalla) => (
+								{medallas.filter((medalla) => medalla.categoria === "bronce").map((medalla) => (
 									<option key={medalla.id} value={medalla.id}>
 										{medalla.nombre}
 									</option>

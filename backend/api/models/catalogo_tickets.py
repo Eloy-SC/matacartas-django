@@ -3,14 +3,16 @@ TICKETS = {
     ###### TICKETS DE CAMBIO DE BARAJA ######
     "ticket_cb_aleatorio": {
         "seccion": "cambio_baraja",
-        "clase": 2,
+        "clase": 1,
         "usable": "cambios",
     },
     "ticket_cb_con_unicas": {
         "seccion": "cambio_baraja",
-        "clase": 2,
+        "clase": 1,
         "usable": "cambios",
     },
+
+    '''
     "ticket_cb_valiosa": {
         "seccion": "cambio_baraja",
         "clase": 2,
@@ -31,6 +33,7 @@ TICKETS = {
         "clase": 0,
         "usable": "cambios",
     },
+    '''
 
     ###### TICKETS DE INTERCAMBIO DE COMODINES ######
     "ticket_ic_azar": {

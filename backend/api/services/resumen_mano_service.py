@@ -45,7 +45,7 @@ def get_resumen_ult_mano(actor, partida_id):
     )
 
     resumen_ronda_1 = ResumenRondaDTO(
-        victoria=resumen_mano.victorias["1"],
+        victoria=resumen_mano.victorias["1"] if "1" in resumen_mano.victorias.keys() else None,
         muerte=resumen_mano.muertes["1"] if "1" in resumen_mano.muertes.keys() else None,
         retiradas=resumen_mano.retiradas["1"] if "1" in resumen_mano.retiradas.keys() else None,
         efectos_inmediatos=resumen_mano.efectos_inmediatos_ronda["1"] if "1" in resumen_mano.efectos_inmediatos_ronda.keys() else None,
@@ -53,7 +53,7 @@ def get_resumen_ult_mano(actor, partida_id):
     )
 
     resumen_ronda_2 = ResumenRondaDTO(
-        victoria=resumen_mano.victorias["2"],
+        victoria=resumen_mano.victorias["2"] if "2" in resumen_mano.victorias.keys() else None,
         muerte=resumen_mano.muertes["2"] if "2" in resumen_mano.muertes.keys() else None,
         retiradas=resumen_mano.retiradas["2"] if "2" in resumen_mano.retiradas.keys() else None,
         efectos_inmediatos=resumen_mano.efectos_inmediatos_ronda["2"] if "2" in resumen_mano.efectos_inmediatos_ronda.keys() else None,
@@ -61,7 +61,7 @@ def get_resumen_ult_mano(actor, partida_id):
     )
 
     resumen_ronda_3 = ResumenRondaDTO(
-        victoria=resumen_mano.victorias["3"],
+        victoria=resumen_mano.victorias["3"] if "3" in resumen_mano.victorias.keys() else None,
         muerte=resumen_mano.muertes["3"] if "3" in resumen_mano.muertes.keys() else None,
         retiradas=resumen_mano.retiradas["3"] if "3" in resumen_mano.retiradas.keys() else None,
         efectos_inmediatos=resumen_mano.efectos_inmediatos_ronda["3"] if "3" in resumen_mano.efectos_inmediatos_ronda.keys() else None,
@@ -141,3 +141,14 @@ def recopilar_efecto_extra_fin_mano(mano_id, color_beneficiado, efecto):
     resumen_mano = get_resumen_mano_by_mano_id(mano_id)
     resumen_mano.efectos_extra_fin_mano.append((color_beneficiado, efecto))
     resumen_mano.save(update_fields=["efectos_extra_fin_mano"])
+
+def recopilar_puntos_extra(mano_id, carta, puntos):
+
+    resumen_mano = get_resumen_mano_by_mano_id(mano_id)
+    if carta == "REBELDE":
+        resumen_mano.puntos_rebelde = puntos
+    elif carta == "MERCADER":
+        resumen_mano.puntos_mercader = puntos
+    elif carta == "SEGADOR":
+        resumen_mano.puntos_segador = puntos
+    resumen_mano.save(update_fields=["puntos_rebelde", "puntos_mercader", "puntos_segador"])

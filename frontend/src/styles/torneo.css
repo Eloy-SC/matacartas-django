@@ -4,14 +4,16 @@
 }
 
 .torneo-details-card,
-.torneo-participants-card {
+.torneo-participants-card,
+.torneo-matches-card {
   width: min(1100px, 100%);
   margin-top: 0;
   margin-bottom: 10px;
 }
 
 .torneo-details-card h1,
-.torneo-participants-card h2 {
+.torneo-participants-card h2,
+.torneo-matches-card h2 {
   margin: 0 0 18px;
   color: #000000;
   text-align: center;
@@ -59,6 +61,80 @@
   color: #000000;
   font-weight: bold;
   text-align: center;
+}
+
+.torneo-phases-list {
+  display: grid;
+  gap: 20px;
+}
+
+.torneo-phase h3 {
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  color: #000000;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.15);
+}
+
+.torneo-matches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.torneo-match-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.torneo-match-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.torneo-match-card h4 {
+  margin: 0;
+  color: #000000;
+  overflow-wrap: anywhere;
+}
+
+.torneo-match-card__status {
+  flex-shrink: 0;
+  padding: 4px 7px;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.torneo-match-card__status.is-playing {
+  background: #b35c00;
+}
+
+.torneo-match-card__status.is-finished {
+  background: #28733b;
+}
+
+.torneo-match-card__players {
+  display: grid;
+  gap: 7px;
+}
+
+.torneo-match-card__player {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.torneo-match-card__player span {
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 600px) {

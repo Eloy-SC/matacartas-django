@@ -195,7 +195,7 @@ def aux_fin_partida_posiciones(jugadores):
     """
 
     # Determinar las posiciones definitivas con efectos y puntos def. calculados
-    posiciones = {1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
+    posiciones = {"1": [], "2": [], "3": [], "4": [], "5": [], "6": []}
 
     jugadores_ordenados = sorted(
         jugadores,
@@ -215,7 +215,7 @@ def aux_fin_partida_posiciones(jugadores):
             if (jugador["puntos"] if isinstance(jugador, dict) else jugador.puntos) == puntos
         ]
 
-        posiciones[posicion] = empatados
+        posiciones[str(posicion)] = empatados
 
         posicion += len(empatados)
         i += len(empatados)
@@ -471,7 +471,13 @@ def aux_asignar_clasificados_a_partidas(partidas, clasificados):
 
 def aux_eliminar_jugadores_no_clasificados(clasificados, torneo_id):
 
-    participantes_no_clasificados = get_torneo_usuario_by_torneo_id_exclude_usernames(torneo_id, clasificados)
+    clasificados_planos = [
+        username
+        for grupo in clasificados
+        for username in grupo
+    ]
+
+    participantes_no_clasificados = get_torneo_usuario_by_torneo_id_exclude_usernames(torneo_id, clasificados_planos)
 
     for participante in participantes_no_clasificados:
         participante.eliminado = True
@@ -614,7 +620,7 @@ def aux_iniciar_fase_final(torneo_id):
             aux_obtener_clasificados(
                 partidas_torneo_fase_anterior[i].posiciones_finales,
                 partidas_torneo_fase_anterior[i + 1].posiciones_finales,
-                torneo.num_jug_sem,
+                torneo.num_jug_fin,
                 torneo.desempate_mayor_punt
             )
         )

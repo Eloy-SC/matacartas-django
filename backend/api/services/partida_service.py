@@ -2,6 +2,8 @@ import random
 from sqlite3 import IntegrityError
 from django.utils import timezone
 
+from ..services.logro_service import asignar_logros_a_usuario
+
 from ..selectors.torneo_selector import get_partida_torneo_by_partida_id
 
 from ..selectors.ronda_selector import get_rondas_de_mano
@@ -293,6 +295,16 @@ def get_jugadores_partida(actor, partida_id):
     jugadores = get_jugadores_actuales_de_partida(partida_id)
     if jugadores is None:
         raise ValueError("La partida no existe")
+
+    partida = get_partida_by_id(partida_id).first()
+    if partida is None:
+        raise ValueError("La partida no existe")
+    if partida.fecha_inicio is not None: # Si la partida ha comenzado NO se deben mostrar datos secretos de los jugadores
+        for jugador in jugadores:
+            jugador["ticket"] = None
+            jugador["cartas"] = []
+            jugador["carta_comodin"] = None
+            jugador["eff_acum_monedero"] = 0
     
     return jugadores
 
@@ -630,11 +642,43 @@ def _calcular_puntuacion_ganada_por_jugadores(partida, posiciones):
     m = get_manos_de_partida(partida.id).count()
     for pos, jugadores_pos in posiciones.items():
         for jugador in jugadores_pos:
-            puntuable = (n > pos) and int(jugador["puntos"]) > -1000
+            puntuable = (n > int(pos)) and int(jugador["puntos"]) > -1000
             color = jugador["color"] if isinstance(jugador, dict) else jugador.color
-            puntuacion_ganada[color] = (((n / pos) * 100) + (m*5)) if puntuable else 0
+            puntuacion_ganada[color] = (((n / int(pos)) * 100) + (m*5)) if puntuable else 0
 
     return puntuacion_ganada
+
+
+def _reconstruir_datos_as_extranjero(jugadores):
+    """
+    Reconstruye los datos del as extranjero para respuestas de finalización repetidas.
+    """
+    jugador_as = next(
+        (jugador for jugador in jugadores if jugador.get("eff_as_extranjero")),
+        None,
+    )
+    if not jugador_as:
+        return {}
+
+    color = jugador_as["color"]
+    puntos_as = jugador_as["puntos"]
+    puntos_maximos_sin_as = max(
+        (
+            jugador["puntos"]
+            for jugador in jugadores
+            if jugador["color"] != color
+        ),
+        default=puntos_as,
+    )
+    if puntos_as <= puntos_maximos_sin_as:
+        return {}
+
+    puntos_extra = puntos_as - puntos_maximos_sin_as
+
+    return {
+        "jug_as_extranjero": color,
+        "puntuacion_extra_jug_as_extranjero": puntos_extra,
+    }
 
 def finalizar_partida(actor, partida_id):
     """
@@ -655,12 +699,14 @@ def finalizar_partida(actor, partida_id):
         posiciones = aux_fin_partida_posiciones(jugadores)
         puntos_ganados_por_kills, puntos_perdidos_por_deaths = _calcular_resumen_kills_deaths(jugadores)
         puntuacion_ganada = _calcular_puntuacion_ganada_por_jugadores(partida, posiciones)
-        return {
+        res = {
             "puntos_ganados_por_kills": puntos_ganados_por_kills,
             "puntos_perdidos_por_deaths": puntos_perdidos_por_deaths,
             "posiciones": _serializar_posiciones_para_resumen(posiciones),
             "puntuacion_ganada_por_jugadores": puntuacion_ganada,
         }
+        res.update(_reconstruir_datos_as_extranjero(jugadores))
+        return res
 
     jugadores = get_jugadores_actuales_de_partida(partida_id)
 
@@ -670,6 +716,7 @@ def finalizar_partida(actor, partida_id):
 
     # Actualizar puntuación de los usuarios si la partida tiene cartas especiales y tickets
     puntuacion_ganada = _calcular_puntuacion_ganada_por_jugadores(partida, posiciones)
+    partida.puntuacion_asignada_final = puntuacion_ganada
     if partida.cartas_especiales and partida.tickets:
         for pos, jugadores_pos in posiciones.items():
             for jugador in jugadores_pos:
@@ -677,13 +724,17 @@ def finalizar_partida(actor, partida_id):
                 partida_usuario = get_partida_usuario_by_partida_and_color(partida_id, color)
                 usuario = partida_usuario.usuario
                 n = partida.num_jugadores
-                if n > pos:
-                    usuario.puntuacion += (n/pos) * 100
+                puntuacion_del_jugador = puntuacion_ganada.get(color, 0)
+                if n > int(pos):
+                    usuario.puntuacion += puntuacion_del_jugador
                     usuario.save()
 
     # Guardar la fecha de finalización de la partida y limipiar turno actual para evitar acciones de juego
     partida.fecha_fin = timezone.now()
     partida.turno_actual = None
+    # Limpiar otros atributos
+    partida.baraja = []
+    # Guardar partida
     partida.save()
 
     # Recopilacion de datos para mostrar en front
@@ -701,6 +752,12 @@ def finalizar_partida(actor, partida_id):
     partida_torneo = get_partida_torneo_by_partida_id(partida_id)
     if partida_torneo:
         aux_almacenar_posiciones_finales_partida_torneo(partida_id)
+
+    # Asignar logros
+    for color in partida.disposicion_jugadores:
+        partida_usuario = get_partida_usuario_by_partida_and_color(partida_id, color)
+        if partida_usuario:
+            asignar_logros_a_usuario(partida_usuario)
 
     return res
 

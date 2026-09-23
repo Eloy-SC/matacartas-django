@@ -158,8 +158,8 @@ export default function CrearPartida() {
 							id="titulo"
 							name="titulo"
 							type="text"
-							maxLength={40}
-							placeholder="Hasta 40 caracteres"
+							maxLength={60}
+							placeholder="Hasta 60 caracteres"
 						/>
 					</div>
 					<div style={{ marginTop: 12 }}>

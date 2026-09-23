@@ -228,3 +228,15 @@ def get_partida_actual_de_torneo(request, torneo_id):
         return Response({"detail": str(e)}, status=404)
 
     return Response(data, status=200)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_partidas_de_torneo(request, torneo_id):
+    try:
+        data = torneo_service.get_partidas_de_torneo(request.user, torneo_id)
+    except PermissionError as e:
+        return Response({"detail": str(e)}, status=403)
+    except ValueError as e:
+        return Response({"detail": str(e)}, status=404)
+
+    return Response(data, status=200)

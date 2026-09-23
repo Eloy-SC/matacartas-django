@@ -1,4 +1,4 @@
-from ..services.resumen_mano_service import recopilar_efecto_extra_fin_mano, recopilar_efecto_inmediato_ronda, recopilar_retirada, recopilar_victoria, recopilar_muerte
+from ..services.resumen_mano_service import recopilar_efecto_extra_fin_mano, recopilar_efecto_inmediato_ronda, recopilar_puntos_extra, recopilar_retirada, recopilar_victoria, recopilar_muerte
 
 from ..models.catalogo_cartas import CATALOGO
 
@@ -407,7 +407,8 @@ def aux_resolver_desempate_comodines(partida_id, ganadores, especiales):
     jugadores = get_jugadores_actuales_de_partida(partida_id)
     for jugador in jugadores:
         if jugador["color"] in ganadores:
-            ronda_comodines.cartas[jugador["color"]] = jugador["carta_comodin"]
+            if not jugador["retirado"]:
+                ronda_comodines.cartas[jugador["color"]] = jugador["carta_comodin"]
     ronda_comodines.save()
     comodines_a_usar = {
         (nombre, CATALOGO[nombre]["riqueza"])
@@ -423,12 +424,12 @@ def aux_resolver_desempate_comodines(partida_id, ganadores, especiales):
             if color == ganador and carta_mayor_riqueza[0] == "AS_EXTRANJERO":
                 jugador_ganador = get_partida_usuario_by_partida_and_color(partida_id, color)
                 jugador_ganador.eff_as_extranjero = True
-                jugador_ganador.save()
+                jugador_ganador.save(update_fields=["eff_as_extranjero"])
                 for jugador in jugadores:
                     if jugador["eff_as_extranjero"] and jugador["color"] != color:
                         jugador_perdedor = get_partida_usuario_by_partida_and_color(partida_id, jugador["color"])
                         jugador_perdedor.eff_as_extranjero = False
-                        jugador_perdedor.save()
+                        jugador_perdedor.save(update_fields=["eff_as_extranjero"])
 
     recopilar_victoria(get_mano_actual(partida_id).id, ganador, "DESEMPATE_COMODINES", 4)
 
@@ -500,19 +501,25 @@ def aux_asignar_puntos_extra_final_mano(partida_id):
             cartas_lanzadas_mano_hasta_ronda = get_cartas_lanzadas_en_mano_hasta_ronda(mano_actual.id, ronda_mercader_lanzado)
             cartas_mercancias = sum(1 for carta in cartas_lanzadas_mano_hasta_ronda if carta.endswith(sufijos_mercancia))
             puntos_extra += min(cartas_mercancias, 6)
-            recopilar_efecto_extra_fin_mano(mano_actual.id, color, "MERCADER")
+            if cartas_mercancias > 0:
+                recopilar_efecto_extra_fin_mano(mano_actual.id, color, "MERCADER")
+                recopilar_puntos_extra(mano_actual.id, "MERCADER", min(cartas_mercancias, 6))
 
         # REBELDE
         if any(carta.endswith("REBELDE") for carta in cartas_lanzadas_por_jugador):
             cartas_bastos = sum(1 for carta in cartas_lanzadas_mano if carta.endswith(sufijos_bastos))
             puntos_extra += min(cartas_bastos, 8)
-            recopilar_efecto_extra_fin_mano(mano_actual.id, color, "REBELDE")
+            if cartas_bastos > 0:
+                recopilar_efecto_extra_fin_mano(mano_actual.id, color, "REBELDE")
+                recopilar_puntos_extra(mano_actual.id, "REBELDE", min(cartas_bastos, 8))
 
         # SEGADOR
         if any(carta.endswith("SEGADOR") for carta in cartas_lanzadas_por_jugador):
             cartas_valiosas_lanzadas = sum(1 for carta in cartas_lanzadas_mano if CATALOGO[carta]["tipo"] == "especial_val")
             puntos_extra += min(cartas_valiosas_lanzadas, 6) * 2
-            recopilar_efecto_extra_fin_mano(mano_actual.id, color, "SEGADOR")
+            if cartas_valiosas_lanzadas > 0:
+                recopilar_efecto_extra_fin_mano(mano_actual.id, color, "SEGADOR")
+                recopilar_puntos_extra(mano_actual.id, "SEGADOR", min(cartas_valiosas_lanzadas, 6) * 2)
 
         # MONEDERO PECULIAR
         if any(carta.endswith("MONEDERO_PECULIAR") for carta in cartas_lanzadas_por_jugador):

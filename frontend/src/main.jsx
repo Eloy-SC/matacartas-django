@@ -14,6 +14,8 @@ import AdminTorneos from "./pages/admin/AdminTorneos.jsx";
 import AdminRecompensas from "./pages/admin/AdminRecompensas.jsx";
 import AdminMedallas from "./pages/admin/AdminMedallas.jsx";
 import AdminMedallaForm from "./pages/admin/AdminMedallaForm.jsx";
+import AdminLogros from "./pages/admin/AdminLogros.jsx";
+import AdminLogroForm from "./pages/admin/AdminLogrosForm.jsx";
 import ListaPartidas from "./pages/partidas/ListaPartidas.jsx";
 import CrearPartida from "./pages/partidas/CrearPartida.jsx";
 import SalaEsperaPartida from "./pages/partidas/SalaEsperaPartida.jsx";
@@ -24,6 +26,8 @@ import RecuperarPassword from "./pages/RecuperarPassword.jsx";
 import RestablecerPassword from "./pages/RestablecerPassword.jsx";
 import VerificarEmail from "./pages/VerificarEmail.jsx";
 import Juego from "./pages/juego/Juego.jsx";
+import Estadisticas from "./pages/estadisticas_recompensas/Estadisticas.jsx";
+import Recompensas from "./pages/estadisticas_recompensas/Recompensas.jsx";
 import "./index.css";
 import "./styles/main.css";
 
@@ -263,6 +267,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/torneos" element={ <RequireAuth> <ListaTorneos /> </RequireAuth>}/>
         <Route path="/crear-torneo" element={ <RequireAuth> <CrearTorneo /> </RequireAuth>}/>
         <Route path="/torneos/:torneoId" element={ <RequireAuth> <Torneo /> </RequireAuth>}/>
+        <Route path="/estadisticas" element={ <RequireAuth> <Estadisticas /> </RequireAuth>}/>
+        <Route path="/recompensas" element={ <RequireAuth> <Recompensas /> </RequireAuth>}/>
 
         {/* Necesario iniciar sesión y participar en la partida */}
         <Route path="/partidas/sala-de-espera/:partidaId" element={ <RequireParticipatingNotStartNotTorneo> <SalaEsperaPartida /> </RequireParticipatingNotStartNotTorneo>}/>
@@ -281,6 +287,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/admin/recompensas/medallas" element={ <RequireAdmin> <AdminMedallas /> </RequireAdmin>}/>
         <Route path="/admin/recompensas/medallas/crear" element={ <RequireAdmin> <AdminMedallaForm /> </RequireAdmin>}/>
         <Route path="/admin/recompensas/medallas/:medallaId" element={ <RequireAdmin> <AdminMedallaForm /> </RequireAdmin>}/>
+        <Route path="/admin/recompensas/logros" element={ <RequireAdmin> <AdminLogros /> </RequireAdmin>}/>
+        <Route path="/admin/recompensas/logros/crear" element={ <RequireAdmin> <AdminLogroForm /> </RequireAdmin>}/>
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

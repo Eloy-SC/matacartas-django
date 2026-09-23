@@ -313,6 +313,7 @@ export default function Juego() {
 				const data = await res.json().catch(() => null);
 				if (res.ok && data) {
 					setDatosFinalPartida(data);
+					console.log(data);
 				}
 			} catch (e) {
 				console.error("No se pudo recuperar el resumen final de la partida", e);
@@ -484,7 +485,7 @@ export default function Juego() {
 						<div className="juego-mesa__cartas-y-acciones">
 							{/* Contenedor lateral izquierdo: ticket del jugador */}
 							<div className="juego-mesa__lado-izquierdo">
-								<TicketJugador ticket={jugador?.ticket} ticket_usable={jugador?.ticket_usable} ronda_actual={rondaActual.num} cambios={rondaActual.cambios} es_turno_actual={esTurnoJugador} es_fin_mano={esFinMano} partidaId={partidaId} loadMesa={loadMesa} />
+								<TicketJugador ticket={jugador?.ticket} ticket_usable={jugador?.ticket_usable} ronda_actual={rondaActual.ronda_num} cambios={rondaActual.cambios} es_turno_actual={esTurnoJugador} es_fin_mano={esFinMano} partidaId={partidaId} loadMesa={loadMesa} />
 							</div>
 							{jugador ? (
 								<div className="juego-mesa__cartas-jugador-propio">
