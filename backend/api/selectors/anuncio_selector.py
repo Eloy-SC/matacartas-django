@@ -7,4 +7,4 @@ def get_anuncio_by_id(anuncio_id):
     return Anuncio.objects.get(id=anuncio_id)
 
 def list_anuncios_publicos():
-    return Anuncio.objects.filter(publicado=True)
+    return Anuncio.objects.filter(fecha_publicacion__isnull=False).order_by('-fecha_publicacion')

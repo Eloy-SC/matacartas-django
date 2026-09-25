@@ -5,6 +5,7 @@ import cabecera from "../assets/cabecera.png";
 import "../styles/rangos.css";
 import UserRango from "../utils/UserRango.jsx";
 import { obtenerCsrfToken } from "../utils/ObtenerCsfrToken";
+import AnunciosModal from "../components/AnunciosModal.jsx";
 
 export default function Inicio() {
 	const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function Inicio() {
 	const [avatarError, setAvatarError] = useState(false);
 	const [isStaff, setIsStaff] = useState(false);
 	const [showClasificacion, setShowClasificacion] = useState(false);
+	const [showAnuncios, setShowAnuncios] = useState(false);
 	const [topUsers, setTopUsers] = useState([]);
 	const [topLoading, setTopLoading] = useState(false);
 	const [topError, setTopError] = useState("");
@@ -168,6 +170,15 @@ export default function Inicio() {
 			</button>
 			<button
 				type="button"
+				className="clasif-inicio-button"
+				style={{ right: 350 }}
+				onClick={() => setShowAnuncios(true)}
+				aria-label="Ver anuncios"
+			>
+				📢
+			</button>
+			<button
+				type="button"
 				className="avatar-button"
 				onClick={() => navigate("/perfil?mode=view")}
 				aria-label="Ir al perfil"
@@ -276,6 +287,7 @@ export default function Inicio() {
 					)}
 				</div>
 			)}
+			{showAnuncios && <AnunciosModal onClose={() => setShowAnuncios(false)} />}
 			<div className="form-card">
 				<div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 16 }}>
 					<button type="button" className="main-primary-button" onClick={() => navigate("/partidas")}>
