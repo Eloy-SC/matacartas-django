@@ -1,5 +1,15 @@
 from django.urls import path
 
+from .views.anuncio_view import (
+    crear_anuncio_admin,
+    editar_anuncio_admin,
+    eliminar_anuncio_admin,
+    listar_anuncios_admin,
+    listar_anuncios_publicos,
+    get_anuncio,
+    publicar_anuncio_admin,
+)
+
 from .views.estadisticas_view import (
     get_estadisticas_globales,
     get_estadisticas_individuales,
@@ -187,6 +197,15 @@ urlpatterns = [
     path("logros/admin/<int:logro_id>/requisitos/", obtener_requisitos_logro, name="obtener-requisitos-logro-admin"),
     path("logros/listar/", listar_logros_usuario, name="listar-logros"),
     path("logros/ocultos/pendientes/", contar_logros_ocultos_pendientes, name="contar-logros-ocultos-pendientes"),
+
+    # ANUNCIOS
+    path("anuncios/admin/listar/", listar_anuncios_admin, name="listar-anuncios-admin"),
+    path("anuncios/admin/crear/", crear_anuncio_admin, name="crear-anuncio-admin"),
+    path("anuncios/admin/<int:anuncio_id>/editar/", editar_anuncio_admin, name="editar-anuncio-admin"),
+    path("anuncios/admin/<int:anuncio_id>/eliminar/", eliminar_anuncio_admin, name="eliminar-anuncio-admin"),
+    path("anuncios/publicos/listar/", listar_anuncios_publicos, name="listar-anuncios-publicos"),
+    path("anuncios/<int:anuncio_id>/", get_anuncio, name="get-anuncio"),
+    path("anuncios/admin/<int:anuncio_id>/publicar/", publicar_anuncio_admin, name="publicar-anuncio-admin"),
 
     # CONFIGURACION GLOBAL
     path("config-global/rango-minimo/torneos/", obtener_rango_minimo_crear_torneo, name="obtener-rango-minimo-torneos"),
