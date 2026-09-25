@@ -24,6 +24,9 @@ export default function Admin() {
 				<button type="button" className="admin-primary-button" onClick={() => navigate("/admin/recompensas")}>
 					RECOMPENSAS
 				</button>
+				<button type="button" className="admin-primary-button" onClick={() => navigate("/admin/anuncios")}>
+					ANUNCIOS
+				</button>
 			</div>
 		</div>
 	);

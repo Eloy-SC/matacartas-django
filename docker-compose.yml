@@ -64,17 +64,17 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
 
-  selenium:
-    build:
-      context: ./selenium
-      dockerfile: Dockerfile
-    environment:
-      SELENIUM_FRONTEND_BASE_URL: http://frontend:5173
-      SELENIUM_TIMEOUT_SECONDS: 20
-      SELENIUM_HEADLESS: "1"
-    depends_on:
-      frontend:
-        condition: service_healthy
+#  selenium:
+#    build:
+#      context: ./selenium
+#      dockerfile: Dockerfile
+#    environment:
+#      SELENIUM_FRONTEND_BASE_URL: http://frontend:5173
+#      SELENIUM_TIMEOUT_SECONDS: 20
+#      SELENIUM_HEADLESS: "1"
+#    depends_on:
+#      frontend:
+#        condition: service_healthy
 
 volumes:
   postgres_data:

@@ -1,6 +1,6 @@
 
 
-from time import timezone
+from django.utils import timezone
 
 from ..utils.exceptions import RegistrationError
 

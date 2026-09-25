@@ -17,11 +17,11 @@ def listar_anuncios_admin(request):
 
     data = [
         {
-            "id": anuncio["id"],
-            "titulo": anuncio["titulo"],
-            "fecha_ult_mod": anuncio["fecha_ult_mod"],
-            "fecha_publicacion": anuncio["fecha_publicacion"],
-            "autor": anuncio["autor"].username,
+            "id": anuncio.id,
+            "titulo": anuncio.titulo,
+            "fecha_ult_mod": anuncio.fecha_ult_mod,
+            "fecha_publicacion": anuncio.fecha_publicacion,
+            "autor": anuncio.autor.nombre,
         }
         for anuncio in anuncios
     ]
@@ -38,11 +38,11 @@ def listar_anuncios_publicos(request):
 
     data = [
         {
-            "id": anuncio["id"],
-            "titulo": anuncio["titulo"],
-            "subtitulo": anuncio["subtitulo"],
-            "fecha_publicacion": anuncio["fecha_publicacion"],
-            "autor": anuncio["autor"].username,
+            "id": anuncio.id,
+            "titulo": anuncio.titulo,
+            "subtitulo": anuncio.subtitulo,
+            "fecha_publicacion": anuncio.fecha_publicacion,
+            "autor": anuncio.autor.nombre,
         }
         for anuncio in anuncios
     ]
@@ -67,7 +67,7 @@ def get_anuncio(request, anuncio_id):
         "descripcion": anuncio.descripcion,
         "fecha_ult_mod": anuncio.fecha_ult_mod,
         "fecha_publicacion": anuncio.fecha_publicacion,
-        "autor": anuncio.autor.username,
+        "autor": anuncio.autor.nombre,
     }
 
     return Response(data, status=200)
