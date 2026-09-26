@@ -6,6 +6,12 @@ from .views.amistad_view import (
     eliminar_amigo
 )
 
+from .views.notificacion_view import (
+    enviar_solicitud_amistad,
+    aceptar_solicitud_amistad,
+    rechazar_solicitud_amistad
+)
+
 from .views.anuncio_view import (
     crear_anuncio_admin,
     editar_anuncio_admin,
@@ -208,6 +214,12 @@ urlpatterns = [
     path("amigos/listar/", listar_amigos, name="listar-amigos"),
     path("amigos/<int:amigo_id>/eliminar/", eliminar_amigo, name="eliminar-amigo"),
     path("usuarios/buscar-amistad/", listar_usuarios_busqueda_amistad, name="listar-usuarios-busqueda-amistad"),
+
+    # NOTIFICACIONES
+    path("notificaciones/listar/", listar_notificaciones, name="listar-notificaciones"),
+    path("notificaciones/solicitud-amistad/enviar/<int:objetivo_id>/", enviar_solicitud_amistad, name="enviar-solicitud-amistad"),
+    path("notificaciones/solicitud-amistad/aceptar/<int:solicitud_id>/", aceptar_solicitud_amistad, name="aceptar-solicitud-amistad"),
+    path("notificaciones/solicitud-amistad/rechazar/<int:solicitud_id>/", rechazar_solicitud_amistad, name="rechazar-solicitud-amistad"),
 
     # ANUNCIOS
     path("anuncios/admin/listar/", listar_anuncios_admin, name="listar-anuncios-admin"),
