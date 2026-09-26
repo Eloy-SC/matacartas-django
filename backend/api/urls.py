@@ -1,5 +1,11 @@
 from django.urls import path
 
+from .views.amistad_view import (
+    listar_usuarios_busqueda_amistad,
+    listar_amigos, 
+    eliminar_amigo
+)
+
 from .views.anuncio_view import (
     crear_anuncio_admin,
     editar_anuncio_admin,
@@ -197,6 +203,11 @@ urlpatterns = [
     path("logros/admin/<int:logro_id>/requisitos/", obtener_requisitos_logro, name="obtener-requisitos-logro-admin"),
     path("logros/listar/", listar_logros_usuario, name="listar-logros"),
     path("logros/ocultos/pendientes/", contar_logros_ocultos_pendientes, name="contar-logros-ocultos-pendientes"),
+
+    # AMISTAD
+    path("amigos/listar/", listar_amigos, name="listar-amigos"),
+    path("amigos/<int:amigo_id>/eliminar/", eliminar_amigo, name="eliminar-amigo"),
+    path("usuarios/buscar-amistad/", listar_usuarios_busqueda_amistad, name="listar-usuarios-busqueda-amistad"),
 
     # ANUNCIOS
     path("anuncios/admin/listar/", listar_anuncios_admin, name="listar-anuncios-admin"),
