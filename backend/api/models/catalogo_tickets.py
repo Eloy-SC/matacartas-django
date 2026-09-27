@@ -12,29 +12,6 @@ TICKETS = {
         "usable": "cambios",
     },
 
-    '''
-    "ticket_cb_valiosa": {
-        "seccion": "cambio_baraja",
-        "clase": 2,
-        "usable": "cambios",
-    },    
-    "ticket_cb_magica": {
-        "seccion": "cambio_baraja",
-        "clase": 1,
-        "usable": "cambios",
-    },
-    "ticket_cb_unica": {
-        "seccion": "cambio_baraja",
-        "clase": 1,
-        "usable": "cambios",
-    },
-    "ticket_cb_todas": {
-        "seccion": "cambio_baraja",
-        "clase": 0,
-        "usable": "cambios",
-    },
-    '''
-
     ###### TICKETS DE INTERCAMBIO DE COMODINES ######
     "ticket_ic_azar": {
         "seccion": "intercambio_comodin",

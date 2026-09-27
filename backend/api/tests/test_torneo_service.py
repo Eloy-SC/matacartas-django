@@ -3,6 +3,8 @@ from django.contrib.auth.models import AnonymousUser
 from django.test import TestCase
 
 from api.models.configuracion_global import ConfiguracionGlobal
+from api.models.medalla_torneo import MedallaTorneo
+from api.models.recompensa import Medalla
 from api.models.partida import Partida
 from api.models.partida_torneo import PartidaTorneo
 from api.models.rango import Rango
@@ -64,6 +66,17 @@ class TorneoServiceTests(TestCase):
         self.config.rango_minimo_crear_torneo = self.rango_min
         self.config.save(update_fields=["rango_minimo_crear_torneo"])
 
+        self.medalla_primer_puesto = Medalla.objects.create(
+            nombre="Medalla Primer Puesto Torneo Service",
+            categoria=Medalla.CategoriaMedalla.ORO,
+        )
+        self.medalla_segundo_puesto = Medalla.objects.create(
+            nombre="Medalla Segundo Puesto Torneo Service",
+            categoria=Medalla.CategoriaMedalla.PLATA,
+        )
+        MedallaTorneo.objects.create(torneo=self.torneo, medalla=self.medalla_primer_puesto, puesto=1)
+        MedallaTorneo.objects.create(torneo=self.torneo, medalla=self.medalla_segundo_puesto, puesto=2)
+
     def test_listar_torneos_publicos_requires_authenticated_user(self):
         with self.assertRaises(PermissionError):
             torneo_service.listar_torneos_publicos(
@@ -102,6 +115,8 @@ class TorneoServiceTests(TestCase):
                 partidas_tickets=True,
                 partidas_tiempo_max_turno=90,
                 desempate_mayor_punt=True,
+                medalla_primer_puesto_id=self.medalla_primer_puesto.id,
+                medalla_segundo_puesto_id=self.medalla_segundo_puesto.id,
             )
 
     def test_crear_torneo_rejects_duplicate_name(self):
@@ -120,6 +135,8 @@ class TorneoServiceTests(TestCase):
                 partidas_tickets=True,
                 partidas_tiempo_max_turno=90,
                 desempate_mayor_punt=True,
+                medalla_primer_puesto_id=self.medalla_primer_puesto.id,
+                medalla_segundo_puesto_id=self.medalla_segundo_puesto.id,
             )
 
     def test_crear_torneo_checks_global_rank_requirement(self):
@@ -138,6 +155,8 @@ class TorneoServiceTests(TestCase):
                 partidas_tickets=True,
                 partidas_tiempo_max_turno=90,
                 desempate_mayor_punt=True,
+                medalla_primer_puesto_id=self.medalla_primer_puesto.id,
+                medalla_segundo_puesto_id=self.medalla_segundo_puesto.id,
             )
 
     def test_crear_torneo_creates_instance(self):
@@ -155,6 +174,8 @@ class TorneoServiceTests(TestCase):
             partidas_tickets=True,
             partidas_tiempo_max_turno=60,
             desempate_mayor_punt=False,
+            medalla_primer_puesto_id=self.medalla_primer_puesto.id,
+            medalla_segundo_puesto_id=self.medalla_segundo_puesto.id,
         )
 
         self.assertEqual(torneo.nombre, "TorneoServiceNuevo")
@@ -197,7 +218,9 @@ class TorneoServiceTests(TestCase):
     def test_get_medallas_torneo_returns_ordered_badges(self):
         medallas = torneo_service.get_medallas_torneo(self.creator, self.torneo.id)
 
-        self.assertEqual(len(medallas), 0)
+        self.assertEqual(len(medallas), 2)
+        self.assertEqual(medallas[0].nombre, "Medalla Primer Puesto Torneo Service")
+        self.assertEqual(medallas[1].nombre, "Medalla Segundo Puesto Torneo Service")
 
     def test_get_participantes_torneo_requires_authenticated_user(self):
         with self.assertRaises(PermissionError):
