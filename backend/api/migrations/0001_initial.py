@@ -815,5 +815,43 @@ class Migration(migrations.Migration):
                 ),
             ],
         ),
+        migrations.CreateModel(
+            name="InvitacionPartida",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "receptor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="notificaciones_recibidas",
+                        to="api.usuario",
+                    ),
+                ),
+                (
+                    "emisor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="solicitudes_amistad_enviadas",
+                        to="api.usuario",
+                    ),
+                ),
+                (
+                    "partida",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="invitaciones",
+                        to="api.partida",
+                    ),
+                ),
+            ],
+        ),
         migrations.RunPython(seed_config_global, reverse_code=migrations.RunPython.noop),
     ]
