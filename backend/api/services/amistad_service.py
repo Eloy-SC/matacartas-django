@@ -1,8 +1,10 @@
 
 
+from ..selectors.notificacion_selector import get_invitacion_partida_by_usuario_ids
+
 from ..selectors.amistad_selector import count_amigos, count_usuarios_disponibles_amistad, get_amistad_by_usuario_ids, list_amigos_paginated, list_usuarios_disponibles_amistad_paginated
 
-def listar_usuarios_busqueda_amistad(actor, page=1, page_size=10, search=None):
+def listar_usuarios_busqueda_amistad(actor, page=1, page_size=5, search=None):
     if not actor.is_active:
         raise PermissionError("No tienes permiso para buscar usuarios")
 
@@ -17,7 +19,7 @@ def listar_usuarios_busqueda_amistad(actor, page=1, page_size=10, search=None):
         "total_pages": max(1, (total + page_size - 1) // page_size),
     }
 
-def listar_amigos_paginated(actor, page=1, page_size=10, search=None):
+def listar_amigos_paginated(actor, page=1, page_size=5, search=None):
     if not actor.is_active:
         raise PermissionError("No tienes permiso para listar tus amigos")
 
@@ -43,5 +45,8 @@ def eliminar_amigo(actor, amigo_id):
 
     amistad.delete()
 
-
+    # Borrar posible invitacion a partida
+    invitacion = get_invitacion_partida_by_usuario_ids(actor.id, amigo_id)
+    if invitacion:
+        invitacion.delete()
 

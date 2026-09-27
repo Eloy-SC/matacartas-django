@@ -116,6 +116,8 @@
 
 .social-drawer__content {
 	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
 	padding: 26px 24px;
 	background: rgba(255, 255, 255, 0.4);
 }
@@ -163,8 +165,9 @@
 }
 
 .social-friend {
+	position: relative;
 	display: grid;
-	grid-template-columns: 44px minmax(0, 1fr);
+	grid-template-columns: 44px minmax(0, 1fr) 32px;
 	align-items: center;
 	gap: 10px;
 	padding: 10px;
@@ -261,4 +264,35 @@
 		width: min(100%, 380px);
 		min-width: 0;
 	}
+}
+
+.social-friend__remove {
+	grid-column: 3;
+	grid-row: 1;
+	justify-self: end;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: 2px solid #000000;
+	font-size: 1rem;
+	line-height: 1;
+}
+
+.social-drawer__add-friend {
+	width: 100%;
+	margin: 14px 0 4px;
+	padding: 10px;
+	font-size: 0.9rem;
+}
+
+.social-drawer__subview-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.social-drawer__subview-header button {
+	padding: 7px 9px;
+	font-size: 0.75rem;
 }

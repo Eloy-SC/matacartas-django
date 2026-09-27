@@ -18,7 +18,7 @@ def listar_usuarios_busqueda_amistad(request):
         paged = amistad_service.listar_usuarios_busqueda_amistad(
             request.user,
             page=page,
-            page_size=10,
+            page_size=5,
             search=(request.query_params.get("search") or "").strip() or None,
         )
     except PermissionError as e:
@@ -39,7 +39,7 @@ def listar_amigos(request):
         paged = amistad_service.listar_amigos_paginated(
             request.user,
             page=page,
-            page_size=10,
+            page_size=5,
             search=(request.query_params.get("search") or "").strip() or None,
         )
     except PermissionError as e:

@@ -1,6 +1,6 @@
 from django.db import models
 
-from backend.api.models.notificacion import InvitacionPartida
+from ..models.notificacion import InvitacionPartida, SolicitudAmistad
 from ..models import Amistad
 from ..models import Usuario
 
@@ -42,9 +42,20 @@ def list_usuarios_disponibles_amistad_paginated(usuario_id, offset, limit, searc
             "id": usuario.id,
             "nombre": usuario.nombre,
             "imagen": usuario.imagen,
+            "agregado": _get_usuario_agregado(usuario_id, usuario.id)
         }
         for usuario in usuarios_disponibles
     ]
+
+def _get_usuario_agregado(emisor_id, receptor_id):
+    solicitud = SolicitudAmistad.objects.filter(
+        emisor_id=emisor_id,
+        receptor_id=receptor_id
+    ).first()
+    if solicitud:
+        return True
+    else:
+        return False
 
 def count_amigos(usuario_id, search=None):
     return _amistades_de_usuario(usuario_id, search).count()

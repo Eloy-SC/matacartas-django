@@ -301,6 +301,31 @@ def seed_rangos(apps, schema_editor):
     for rango in RANGO_SEED:
         Rango.objects.update_or_create(nombre=rango["nombre"], defaults=rango)
 
+def seed_amistades(apps, schema_editor):
+    # Skip seeding when running tests or when explicitly disabled
+    if "test" in sys.argv or os.getenv("SKIP_SEED", "0") == "1":
+        return
+
+    UserModel = _get_user_model(apps)
+    Amistad = apps.get_model("api", "Amistad")
+
+    # Crear amistades entre algunos usuarios de prueba
+    amistades = [
+        ("cervantes", "quevedo"),
+        ("cervantes", "gongora"),
+        ("cervantes", "lope"),
+        ("cervantes", "becquer"),
+        ("cervantes", "velazquez"),
+        ("cervantes", "calderon"),
+        ("lope", "becquer"),
+        ("velazquez", "murillo"),
+        ("calderon", "garcilaso"),
+    ]
+
+    for username1, username2 in amistades:
+        user1 = UserModel.objects.get(username=username1)
+        user2 = UserModel.objects.get(username=username2)
+        Amistad.objects.update_or_create(usuario1=user1, usuario2=user2)
 
 def unseed_test_users(apps, schema_editor):
     UserModel = _get_user_model(apps)
@@ -313,6 +338,10 @@ def unseed_rangos(apps, schema_editor):
     nombres = [rango["nombre"] for rango in RANGO_SEED]
     Rango.objects.filter(nombre__in=nombres).delete()
 
+def unseed_amistades(apps, schema_editor):
+    Amistad = apps.get_model("api", "Amistad")
+    Amistad.objects.all().delete()
+
 class Migration(migrations.Migration):
     dependencies = [
         ("api", "0001_initial"),
@@ -321,4 +350,5 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(seed_test_users, reverse_code=unseed_test_users),
         migrations.RunPython(seed_rangos, reverse_code=unseed_rangos),
+        migrations.RunPython(seed_amistades, reverse_code=unseed_amistades),
     ]

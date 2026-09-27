@@ -15,6 +15,16 @@ export default function SocialDrawer({ canInviteToMatch = false, partidaId = nul
 	const [friendsLoading, setFriendsLoading] = useState(false);
 	const [friendsError, setFriendsError] = useState("");
 	const [invitingFriendId, setInvitingFriendId] = useState(null);
+	const [friendsView, setFriendsView] = useState("list");
+	const [users, setUsers] = useState([]);
+	const [usersPage, setUsersPage] = useState(1);
+	const [usersTotalPages, setUsersTotalPages] = useState(1);
+	const [usersSearch, setUsersSearch] = useState("");
+	const [usersSearchInput, setUsersSearchInput] = useState("");
+	const [usersLoading, setUsersLoading] = useState(false);
+	const [usersError, setUsersError] = useState("");
+	const [addingUserId, setAddingUserId] = useState(null);
+	const [removingFriendId, setRemovingFriendId] = useState(null);
 
 	useEffect(() => {
 		if (!isOpen || activeSection !== "friends") return;
@@ -53,10 +63,51 @@ export default function SocialDrawer({ canInviteToMatch = false, partidaId = nul
 		};
 	}, [activeSection, friendsPage, friendsSearch, isOpen]);
 
+	useEffect(() => {
+		if (!isOpen || activeSection !== "friends" || friendsView !== "add") return;
+
+		let cancelled = false;
+		setUsersLoading(true);
+		setUsersError("");
+
+		const params = new URLSearchParams({ page: String(usersPage) });
+		if (usersSearch) params.set("search", usersSearch);
+
+		fetch(`/api/usuarios/buscar-amistad/?${params.toString()}`, {
+			method: "GET",
+			credentials: "include",
+		})
+			.then(async (res) => {
+				const data = await res.json().catch(() => ({}));
+				if (!res.ok) throw new Error(data?.detail || "No se pudieron cargar los usuarios");
+				if (cancelled) return;
+				setUsers(Array.isArray(data?.items) ? data.items : []);
+				setUsersTotalPages(Math.max(1, Number(data?.total_pages) || 1));
+			})
+			.catch((error) => {
+				if (cancelled) return;
+				setUsers([]);
+				setUsersError(error instanceof Error ? error.message : "Error buscando usuarios");
+			})
+			.finally(() => {
+				if (!cancelled) setUsersLoading(false);
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [activeSection, friendsView, isOpen, usersPage, usersSearch]);
+
 	function handleFriendsSearch(event) {
 		event.preventDefault();
 		setFriendsPage(1);
 		setFriendsSearch(friendsSearchInput.trim());
+	}
+
+	function handleUsersSearch(event) {
+		event.preventDefault();
+		setUsersPage(1);
+		setUsersSearch(usersSearchInput.trim());
 	}
 
 	async function handleInvite(friendId) {
@@ -85,6 +136,54 @@ export default function SocialDrawer({ canInviteToMatch = false, partidaId = nul
 			setFriendsError(error instanceof Error ? error.message : "Error enviando la invitación");
 		} finally {
 			setInvitingFriendId(null);
+		}
+	}
+
+	async function handleAddUser(userId) {
+		if (addingUserId !== null) return;
+
+		setAddingUserId(userId);
+		try {
+			const csrfToken = await obtenerCsrfToken();
+			const response = await fetch(`/api/notificaciones/solicitud-amistad/enviar/${userId}/`, {
+				method: "POST",
+				credentials: "include",
+				headers: { "X-CSRFToken": csrfToken },
+			});
+			const data = await response.json().catch(() => ({}));
+			if (!response.ok) throw new Error(data?.detail || "No se pudo enviar la solicitud de amistad");
+
+			setUsers((currentUsers) =>
+				currentUsers.map((user) => user.id === userId ? { ...user, agregado: true } : user)
+			);
+		} catch (error) {
+			setUsersError(error instanceof Error ? error.message : "Error enviando la solicitud");
+		} finally {
+			setAddingUserId(null);
+		}
+	}
+
+	async function handleRemoveFriend(friendId, friendName) {
+		if (!window.confirm(`¿Seguro que quieres eliminar a ${friendName || "este amigo"} como amigo?`)) {
+			return;
+		}
+
+		setRemovingFriendId(friendId);
+		try {
+			const csrfToken = await obtenerCsrfToken();
+			const response = await fetch(`/api/amigos/${friendId}/eliminar/`, {
+				method: "DELETE",
+				credentials: "include",
+				headers: { "X-CSRFToken": csrfToken },
+			});
+			const data = await response.json().catch(() => ({}));
+			if (!response.ok) throw new Error(data?.detail || "No se pudo eliminar al amigo");
+
+			setFriends((currentFriends) => currentFriends.filter((friend) => friend.id !== friendId));
+		} catch (error) {
+			setFriendsError(error instanceof Error ? error.message : "Error eliminando al amigo");
+		} finally {
+			setRemovingFriendId(null);
 		}
 	}
 
@@ -138,6 +237,7 @@ export default function SocialDrawer({ canInviteToMatch = false, partidaId = nul
 								className={activeSection === "friends" ? "is-active" : ""}
 								onClick={() => {
 									setFriendsPage(1);
+									setFriendsView("list");
 									setActiveSection("friends");
 								}}
 								aria-pressed={activeSection === "friends"}
@@ -154,26 +254,38 @@ export default function SocialDrawer({ canInviteToMatch = false, partidaId = nul
 								</>
 							) : (
 								<>
-									<h3>Amigos</h3>
-									<form className="social-drawer__search" onSubmit={handleFriendsSearch}>
-										<label htmlFor="social-friends-search">Buscar amigo</label>
-										<div>
-											<input
-												id="social-friends-search"
-												value={friendsSearchInput}
-												onChange={(event) => setFriendsSearchInput(event.target.value)}
-												placeholder="Nombre"
-											/>
-											<button type="submit" aria-label="Buscar amigo">Buscar</button>
-										</div>
-									</form>
-									{friendsLoading ? (
+									{friendsView === "list" ? (
+										<>
+											<h3>Amigos</h3>
+											<button
+												type="button"
+												className="social-drawer__add-friend"
+												onClick={() => {
+													setUsersPage(1);
+													setFriendsView("add");
+												}}
+											>
+												Agregar nuevo amigo
+											</button>
+											<form className="social-drawer__search" onSubmit={handleFriendsSearch}>
+												<label htmlFor="social-friends-search">Buscar amigo</label>
+												<div>
+													<input
+														id="social-friends-search"
+														value={friendsSearchInput}
+														onChange={(event) => setFriendsSearchInput(event.target.value)}
+														placeholder="Nombre"
+													/>
+													<button type="submit" aria-label="Buscar amigo">Buscar</button>
+												</div>
+											</form>
+											{friendsLoading ? (
 										<p>Cargando amigos...</p>
-									) : friendsError ? (
+										) : friendsError ? (
 										<p className="social-drawer__error" role="alert">{friendsError}</p>
-									) : friends.length === 0 ? (
+										) : friends.length === 0 ? (
 										<p>No se encontraron amigos.</p>
-									) : (
+										) : (
 										<div className="social-drawer__friends">
 											{friends.map((friend) => (
 												<article className="social-friend" key={friend.id}>
@@ -201,16 +313,86 @@ export default function SocialDrawer({ canInviteToMatch = false, partidaId = nul
 															</button>
 														)
 													)}
+															<button
+																type="button"
+																className="social-friend__remove"
+																onClick={() => handleRemoveFriend(friend.id, friend.nombre)}
+																disabled={removingFriendId === friend.id}
+																aria-label={`Eliminar a ${friend.nombre || "amigo"}`}
+																title="Eliminar amigo"
+															>
+																🗑
+															</button>
 												</article>
 											))}
-										</div>
-									)}
-									{friendsTotalPages > 1 && (
+											</div>
+											)}
+											{friendsTotalPages > 1 && (
 										<div className="social-drawer__pagination">
 											<button type="button" onClick={() => setFriendsPage((page) => page - 1)} disabled={friendsPage <= 1} aria-label="Página anterior">‹</button>
 											<span>Página {friendsPage} de {friendsTotalPages}</span>
 											<button type="button" onClick={() => setFriendsPage((page) => page + 1)} disabled={friendsPage >= friendsTotalPages} aria-label="Página siguiente">›</button>
 										</div>
+									)}
+										</>
+									) : (
+										<>
+											<div className="social-drawer__subview-header">
+												<h3>Agregar nuevo amigo</h3>
+												<button type="button" onClick={() => setFriendsView("list")}>Volver</button>
+											</div>
+											<form className="social-drawer__search" onSubmit={handleUsersSearch}>
+												<label htmlFor="social-users-search">Buscar usuario</label>
+												<div>
+													<input
+														id="social-users-search"
+														value={usersSearchInput}
+														onChange={(event) => setUsersSearchInput(event.target.value)}
+														placeholder="Nombre"
+													/>
+													<button type="submit" aria-label="Buscar usuario">Buscar</button>
+												</div>
+											</form>
+											{usersLoading ? <p>Cargando usuarios...</p> : usersError ? (
+												<p className="social-drawer__error" role="alert">{usersError}</p>
+											) : users.length === 0 ? <p>No se encontraron usuarios.</p> : (
+												<div className="social-drawer__friends">
+													{users.map((user) => (
+														<article className="social-friend" key={user.id}>
+															<img
+																className="social-friend__avatar"
+																src={user.imagen || defaultProfilePic}
+																alt={`Foto de perfil de ${user.nombre || "usuario"}`}
+																onError={(event) => { event.currentTarget.src = defaultProfilePic; }}
+															/>
+															<div className="social-friend__details">
+																<strong>{user.nombre || "Sin nombre"}</strong>
+																<UserRango userId={user.id} />
+															</div>
+															{user.agregado ? (
+																<span className="social-friend__invited">Solicitud de amistad enviada</span>
+															) : (
+																<button
+																	type="button"
+																	className="social-friend__invite"
+																	onClick={() => handleAddUser(user.id)}
+																	disabled={addingUserId === user.id}
+																>
+																	{addingUserId === user.id ? "Enviando..." : "Agregar"}
+																</button>
+															)}
+														</article>
+													))}
+												</div>
+											)}
+											{usersTotalPages > 1 && (
+												<div className="social-drawer__pagination">
+													<button type="button" onClick={() => setUsersPage((page) => page - 1)} disabled={usersPage <= 1} aria-label="Página anterior">‹</button>
+													<span>Página {usersPage} de {usersTotalPages}</span>
+													<button type="button" onClick={() => setUsersPage((page) => page + 1)} disabled={usersPage >= usersTotalPages} aria-label="Página siguiente">›</button>
+												</div>
+											)}
+										</>
 									)}
 								</>
 							)}
