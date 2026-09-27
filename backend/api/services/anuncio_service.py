@@ -41,8 +41,8 @@ def crear_anuncio_admin(actor, *, titulo, subtitulo, descripcion):
     anuncios_existentes = list_anuncios_all()
     if anuncios_existentes.filter(titulo=titulo).exists():
         raise RegistrationError("Ya existe un anuncio con ese título")
-    if len(anuncios_existentes) >= 20:
-        raise RegistrationError("Ya existen 20 aununcios, es necesario borrar alguno para poder crear uno nuevo")
+    if len(anuncios_existentes) >= 30:
+        raise RegistrationError("Ya existen 30 anuncios, es necesario borrar alguno para poder crear uno nuevo")
 
     anuncio = Anuncio(
         titulo=titulo,
