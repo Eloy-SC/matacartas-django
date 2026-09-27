@@ -486,7 +486,11 @@ export default function SalaEsperaPartida() {
 
 	return (
 		<div className="app sala-espera-page">
-			<SocialDrawer canInviteToMatch partidaId={partidaId} />
+			<SocialDrawer
+				canInviteToMatch
+				partidaId={partidaId}
+				partidaPlayerIds={jugadores.map((jugador) => jugador.id)}
+			/>
 			<img src={cabecera} alt="Matacartas" style={{ maxWidth: "100%", height: "auto" }} />
 
 			<div className="sala-espera-card">

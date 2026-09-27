@@ -229,6 +229,60 @@
 	font-weight: bold;
 }
 
+.social-drawer__notifications {
+	display: grid;
+	gap: 10px;
+}
+
+.social-notification {
+	display: grid;
+	gap: 12px;
+	padding: 10px;
+	border: 2px solid rgba(0, 0, 0, 0.18);
+	background: rgba(255, 255, 255, 0.78);
+}
+
+.social-notification__identity {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+	gap: 10px;
+}
+
+.social-notification__identity > div {
+	display: grid;
+	min-width: 0;
+	gap: 4px;
+}
+
+.social-notification__identity strong,
+.social-notification__identity span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.social-notification__identity strong {
+	color: #000000;
+	font-size: 0.9rem;
+}
+
+.social-notification__identity span {
+	color: #3c3c3c;
+	font-size: 0.82rem;
+}
+
+.social-notification__actions {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 6px;
+}
+
+.social-notification__actions button {
+	padding: 8px 5px;
+	font-size: 0.78rem;
+}
+
 .social-drawer__pagination {
 	display: flex;
 	align-items: center;

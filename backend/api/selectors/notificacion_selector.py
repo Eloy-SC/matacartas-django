@@ -6,9 +6,10 @@ def count_notificaciones(usuario_id):
     return SolicitudAmistad.objects.filter(receptor_id=usuario_id).count() + InvitacionPartida.objects.filter(receptor_id=usuario_id).count()
 
 def list_notificaciones_paginated(usuario_id, offset, limit):
-    solicitudes = SolicitudAmistad.objects.filter(receptor_id=usuario_id).order_by('-id')[offset:offset + limit]
-    invitaciones = InvitacionPartida.objects.filter(receptor_id=usuario_id).order_by('-id')[offset:offset + limit]
-    notificaciones = solicitudes + invitaciones
+    solicitudes = list(SolicitudAmistad.objects.filter(receptor_id=usuario_id))
+    invitaciones = list(InvitacionPartida.objects.filter(receptor_id=usuario_id))
+    notificaciones = sorted(solicitudes + invitaciones, key=lambda notificacion: notificacion.id, reverse=True)
+    notificaciones = notificaciones[offset:offset + limit]
     return [
         {
             "id": notificacion.id,
@@ -16,7 +17,7 @@ def list_notificaciones_paginated(usuario_id, offset, limit):
             "emisor_nombre": notificacion.emisor.nombre,
             "emisor_imagen": notificacion.emisor.imagen,
             "partida_id": notificacion.partida_id if hasattr(notificacion, 'partida_id') else None,
-            "tipo": "solicitud_amistad" if notificacion.isinstance(SolicitudAmistad) else "invitacion_partida",
+            "tipo": "solicitud_amistad" if isinstance(notificacion, SolicitudAmistad) else "invitacion_partida",
         }
         for notificacion in notificaciones
     ]

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import defaultProfilePic from "../assets/default_profile_pic.png";
 import UserRango from "../utils/UserRango.jsx";
 import { obtenerCsrfToken } from "../utils/ObtenerCsfrToken";
 import "../styles/social_drawer.css";
 
-export default function SocialDrawer({ canInviteToMatch = false, partidaId = null }) {
+export default function SocialDrawer({ canInviteToMatch = false, partidaId = null, partidaPlayerIds = [] }) {
+	const navigate = useNavigate();
 	const [isOpen, setIsOpen] = useState(false);
 	const [activeSection, setActiveSection] = useState("notifications");
 	const [friends, setFriends] = useState([]);
@@ -25,6 +27,44 @@ export default function SocialDrawer({ canInviteToMatch = false, partidaId = nul
 	const [usersError, setUsersError] = useState("");
 	const [addingUserId, setAddingUserId] = useState(null);
 	const [removingFriendId, setRemovingFriendId] = useState(null);
+	const [notifications, setNotifications] = useState([]);
+	const [notificationsPage, setNotificationsPage] = useState(1);
+	const [notificationsTotalPages, setNotificationsTotalPages] = useState(1);
+	const [notificationsLoading, setNotificationsLoading] = useState(false);
+	const [notificationsError, setNotificationsError] = useState("");
+	const [processingNotificationId, setProcessingNotificationId] = useState(null);
+
+	useEffect(() => {
+		if (!isOpen || activeSection !== "notifications") return;
+
+		let cancelled = false;
+		setNotificationsLoading(true);
+		setNotificationsError("");
+
+		fetch(`/api/notificaciones/listar/?page=${notificationsPage}`, {
+			method: "GET",
+			credentials: "include",
+		})
+			.then(async (res) => {
+				const data = await res.json().catch(() => ({}));
+				if (!res.ok) throw new Error(data?.detail || "No se pudieron cargar las notificaciones");
+				if (cancelled) return;
+				setNotifications(Array.isArray(data?.items) ? data.items : []);
+				setNotificationsTotalPages(Math.max(1, Number(data?.total_pages) || 1));
+			})
+			.catch((error) => {
+				if (cancelled) return;
+				setNotifications([]);
+				setNotificationsError(error instanceof Error ? error.message : "Error cargando notificaciones");
+			})
+			.finally(() => {
+				if (!cancelled) setNotificationsLoading(false);
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [activeSection, isOpen, notificationsPage]);
 
 	useEffect(() => {
 		if (!isOpen || activeSection !== "friends") return;
@@ -187,6 +227,63 @@ export default function SocialDrawer({ canInviteToMatch = false, partidaId = nul
 		}
 	}
 
+	async function handleNotificationAction(notification, action) {
+		if (processingNotificationId !== null) return;
+
+		setProcessingNotificationId(notification.id);
+		setNotificationsError("");
+		try {
+			const csrfToken = await obtenerCsrfToken();
+			const isFriendRequest = notification.tipo === "solicitud_amistad";
+			const notificationBase = isFriendRequest
+				? `/api/notificaciones/solicitud-amistad/${action}/${notification.id}/`
+				: `/api/notificaciones/invitacion-partida/${action}/${notification.id}/`;
+			const notificationResponse = await fetch(notificationBase, {
+				method: action === "aceptar" ? "POST" : "DELETE",
+				credentials: "include",
+				headers: { "X-CSRFToken": csrfToken },
+			});
+			const notificationData = await notificationResponse.json().catch(() => ({}));
+			if (!notificationResponse.ok) {
+				throw new Error(notificationData?.detail || "No se pudo procesar la notificación");
+			}
+
+			if (!isFriendRequest && action === "aceptar") {
+				if (canInviteToMatch && partidaId) {
+					const leaveResponse = await fetch(`/api/partidas/${partidaId}/sala-espera/abandonar/`, {
+						method: "DELETE",
+						credentials: "include",
+						headers: { "X-CSRFToken": csrfToken },
+					});
+					const leaveData = await leaveResponse.json().catch(() => ({}));
+					if (!leaveResponse.ok) {
+						throw new Error(leaveData?.detail || "No se pudo abandonar la sala actual");
+					}
+				}
+
+				const joinResponse = await fetch(`/api/partidas/${notification.partida_id}/unirse/`, {
+					method: "POST",
+					credentials: "include",
+					headers: { "X-CSRFToken": csrfToken },
+				});
+				const joinData = await joinResponse.json().catch(() => ({}));
+				if (!joinResponse.ok) {
+					throw new Error(joinData?.detail || "No se pudo unir a la partida");
+				}
+
+				navigate(`/partidas/sala-de-espera/${notification.partida_id}`);
+			}
+
+			setNotifications((currentNotifications) =>
+				currentNotifications.filter((item) => item.id !== notification.id)
+			);
+		} catch (error) {
+			setNotificationsError(error instanceof Error ? error.message : "Error procesando la notificación");
+		} finally {
+			setProcessingNotificationId(null);
+		}
+	}
+
 	return (
 		<>
 			<button
@@ -250,7 +347,51 @@ export default function SocialDrawer({ canInviteToMatch = false, partidaId = nul
 							{activeSection === "notifications" ? (
 								<>
 									<h3>Notificaciones</h3>
-									<p>Aquí aparecerán tus notificaciones.</p>
+									{notificationsLoading ? (
+										<p>Cargando notificaciones...</p>
+									) : notificationsError ? (
+										<p className="social-drawer__error" role="alert">{notificationsError}</p>
+									) : notifications.length === 0 ? (
+										<p>No tienes notificaciones.</p>
+									) : (
+										<div className="social-drawer__notifications">
+											{notifications.map((notification) => {
+												const isFriendRequest = notification.tipo === "solicitud_amistad";
+												const isProcessing = processingNotificationId === notification.id;
+												return (
+													<article className="social-notification" key={`${notification.tipo}-${notification.id}`}>
+														<div className="social-notification__identity">
+															<img
+																className="social-friend__avatar"
+																src={notification.emisor_imagen || defaultProfilePic}
+																alt={`Foto de perfil de ${notification.emisor_nombre || "usuario"}`}
+																onError={(event) => { event.currentTarget.src = defaultProfilePic; }}
+															/>
+															<div>
+																<strong>{isFriendRequest ? "Solicitud de amistad" : "Invitación a partida"}</strong>
+																<span>de {notification.emisor_nombre || "usuario"}</span>
+															</div>
+														</div>
+														<div className="social-notification__actions">
+															<button type="button" onClick={() => handleNotificationAction(notification, "aceptar")} disabled={isProcessing}>
+																{isProcessing ? "Procesando..." : "Aceptar"}
+															</button>
+															<button type="button" onClick={() => handleNotificationAction(notification, "rechazar")} disabled={isProcessing}>
+																Rechazar
+															</button>
+														</div>
+													</article>
+												);
+											})}
+										</div>
+									)}
+									{notificationsTotalPages > 1 && (
+										<div className="social-drawer__pagination">
+											<button type="button" onClick={() => setNotificationsPage((page) => page - 1)} disabled={notificationsPage <= 1} aria-label="Página anterior">‹</button>
+											<span>Página {notificationsPage} de {notificationsTotalPages}</span>
+											<button type="button" onClick={() => setNotificationsPage((page) => page + 1)} disabled={notificationsPage >= notificationsTotalPages} aria-label="Página siguiente">›</button>
+										</div>
+									)}
 								</>
 							) : (
 								<>
@@ -299,20 +440,22 @@ export default function SocialDrawer({ canInviteToMatch = false, partidaId = nul
 														<strong>{friend.nombre || "Sin nombre"}</strong>
 														<UserRango userId={friend.id} />
 													</div>
-													{canInviteToMatch && (
-														friend.invitado ? (
-															<span className="social-friend__invited">Invitación enviada</span>
-														) : (
-															<button
-																type="button"
-																className="social-friend__invite"
-																onClick={() => handleInvite(friend.id)}
-																disabled={invitingFriendId === friend.id}
-															>
-																{invitingFriendId === friend.id ? "Enviando..." : "Invitar a la partida"}
-															</button>
-														)
-													)}
+															{canInviteToMatch && (
+																partidaPlayerIds.includes(friend.id) ? (
+																	<span className="social-friend__invited">Ya está en la partida</span>
+																) : friend.invitado ? (
+																	<span className="social-friend__invited">Invitación enviada</span>
+																) : (
+																	<button
+																		type="button"
+																		className="social-friend__invite"
+																		onClick={() => handleInvite(friend.id)}
+																		disabled={invitingFriendId === friend.id}
+																	>
+																		{invitingFriendId === friend.id ? "Enviando..." : "Invitar a la partida"}
+																	</button>
+																)
+															)}
 															<button
 																type="button"
 																className="social-friend__remove"
