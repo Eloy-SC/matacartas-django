@@ -6,15 +6,19 @@ from locust import HttpUser, between, task
 API_PREFIX = "/api"
 HOST = "http://localhost:8000"
 PARTIDA_IDS = {
-    1: 30,
-    2: 31,
-    3: 32,
-    4: 33,
-    5: 34,
+    # Sustituir estos valores por los IDs que imprime preparar_locust.
+    1: 18,
+    2: 19,
+    3: 20,
+    4: 21,
+    5: 22,
+    6: 23,
+    7: 24,
+    8: 25,
 }
 
 # Contador para asignar automáticamente los usuarios
-# locust_player_1 ... locust_player_10
+# locust_player_1 ... locust_player_32
 _player_counter = count(1)
 
 
@@ -92,15 +96,17 @@ class UsuarioPartida(HttpUser):
     def on_start(self):
         self.player_number = next(_player_counter)
 
-        # Dos jugadores por partida
-        numero_partida = ((self.player_number - 1) // 2) + 1
+        # Cuatro jugadores por partida y ocho partidas en total.
+        numero_partida = ((self.player_number - 1) // 4) + 1
         self.partida_id = PARTIDA_IDS[numero_partida]
+
+        if self.partida_id is None:
+            raise RuntimeError(
+                "Debes copiar en PARTIDA_IDS los IDs que imprime preparar_locust."
+            )
 
         self.username = f"locust_player_{self.player_number}"
         self.password = f"locust_password_{self.player_number}"
-
-        # El jugador impar es ROJO y el par AZUL
-        self.es_rojo = self.player_number % 2 == 1
 
         self.obtener_csrf()
 
@@ -134,9 +140,6 @@ class UsuarioPartida(HttpUser):
                 f"{response.text}"
             )
 
-        self.carta = "1_OROS"
-        self.accion_realizada = False
-
     @task(5)
     def mesa(self):
         self.client.get(
@@ -166,19 +169,7 @@ class UsuarioPartida(HttpUser):
         )
 
     @task
-    def jugar_o_retirarse(self):
-
-        # ROJO juega directamente porque sabemos que
-        # todas las partidas empiezan con ROJO.
-        if self.es_rojo and not self.accion_realizada:
-            self.jugar_carta()
-
-        # AZUL comprueba primero si ya es su turno.
-        elif not self.es_rojo and not self.accion_realizada:
-            self.comprobar_turno_y_retirarse()
-
-
-    def comprobar_turno_y_retirarse(self):
+    def actuar_en_partida(self):
         response = self.client.get(
             f"{API_PREFIX}/partida/"
             f"{self.partida_id}/mano/mesa/"
@@ -193,23 +184,49 @@ class UsuarioPartida(HttpUser):
             return
 
         datos = response.json()
+        partida = datos.get("partida", {})
+        jugador = datos.get("jugador", {})
+        rondas = datos.get("rondas", [])
+        ronda_actual = rondas[-1] if rondas else None
 
-        turno_actual = datos["partida"]["turno_actual"]
-
-        if turno_actual != "azul":
+        if not ronda_actual or partida.get("turno_actual") != jugador.get("color"):
             return
 
-        self.retirarse()
+        ronda_num = ronda_actual.get("ronda_num")
+        cambios = ronda_actual.get("cambios")
+
+        if ronda_num == 0 and cambios == 0:
+            self.no_quiero_cambio()
+        elif ronda_num in (1, 2, 3):
+            cartas = jugador.get("cartas") or []
+            if cartas:
+                self.jugar_carta(cartas[0])
 
 
-    def jugar_carta(self):
+    def no_quiero_cambio(self):
+        csrf_token = self.client.cookies.get("csrftoken")
+
+        response = self.client.put(
+            f"{API_PREFIX}/partida/"
+            f"{self.partida_id}/mano/no-quiero-cambio/",
+            headers={"X-CSRFToken": csrf_token},
+        )
+
+        if response.status_code not in (200, 201):
+            print(
+                f"NO QUIERO CAMBIO {self.username} -> "
+                f"{response.status_code} {response.text}"
+            )
+
+
+    def jugar_carta(self, carta):
         csrf_token = self.client.cookies.get("csrftoken")
 
         response = self.client.put(
             f"{API_PREFIX}/partida/"
             f"{self.partida_id}/mano/ronda/jugar-carta/",
             json={
-                "carta": self.carta,
+                "carta": carta,
             },
             headers={
                 "X-CSRFToken": csrf_token,
@@ -224,39 +241,9 @@ class UsuarioPartida(HttpUser):
             )
             return
 
-        self.accion_realizada = True
-
         print(
             f"{self.username} ha jugado "
-            f"{self.carta} en partida "
-            f"{self.partida_id}"
-        )
-
-
-    def retirarse(self):
-        csrf_token = self.client.cookies.get("csrftoken")
-
-        response = self.client.put(
-            f"{API_PREFIX}/partida/"
-            f"{self.partida_id}/mano/ronda/retirarse/",
-            headers={
-                "X-CSRFToken": csrf_token,
-            },
-        )
-
-        if response.status_code not in (200, 201):
-            print(
-                f"RETIRARSE {self.username} -> "
-                f"{response.status_code} "
-                f"{response.text}"
-            )
-            return
-
-        self.accion_realizada = True
-
-        print(
-            f"{self.username} se ha retirado "
-            f"de partida "
+            f"{carta} en partida "
             f"{self.partida_id}"
         )
 
@@ -308,4 +295,46 @@ class Administrador(HttpUser):
     def listar_rangos(self):
         self.client.get(
             f"{API_PREFIX}/rangos/listar/"
+        )
+
+    @task(2)
+    def listar_logros(self):
+        self.client.get(
+            f"{API_PREFIX}/logros/admin/listar/"
+        )
+
+    @task(2)
+    def listar_medallas(self):
+        self.client.get(
+            f"{API_PREFIX}/medallas/listar/"
+        )
+
+    @task(2)
+    def listar_amigos(self):
+        self.client.get(
+            f"{API_PREFIX}/amigos/listar/"
+        )
+
+    @task(2)
+    def listar_notificaciones(self):
+        self.client.get(
+            f"{API_PREFIX}/notificaciones/listar/"
+        )
+
+    @task(2)
+    def listar_anuncios(self):
+        self.client.get(
+            f"{API_PREFIX}/anuncios/admin/listar/"
+        )
+
+    @task(2)
+    def obtener_estadisticas_globales(self):
+        self.client.get(
+            f"{API_PREFIX}/estadisticas/globales/"
+        )
+
+    @task(2)
+    def obtener_estadisticas_individuales(self):
+        self.client.get(
+            f"{API_PREFIX}/estadisticas/individuales/"
         )
