@@ -1,6 +1,11 @@
+import os
+import sys
+
 from django.utils import timezone
 
 from django.db import migrations
+
+from django.conf import settings
 
 
 TEST_ANUNCIOS = [
@@ -36,12 +41,20 @@ TEST_ANUNCIOS = [
     },
 ]
 
+def _get_user_model(apps):
+    app_label, model_name = settings.AUTH_USER_MODEL.split(".")
+    return apps.get_model(app_label, model_name)
+
 def seed_test_anuncios(apps, schema_editor):
+    # Skip seeding when running tests or when explicitly disabled
+    if "test" in sys.argv or os.getenv("SKIP_SEED", "0") == "1":
+        return
+
     Anuncio = apps.get_model("api", "Anuncio")
-    Usuario = apps.get_model("api", "Usuario")
+    UserModel = _get_user_model(apps)
 
     # Obtener un admin existente para asignarlo como autor
-    autor = Usuario.objects.filter(is_staff=True).first()
+    autor = UserModel.objects.filter(is_staff=True).first()
 
     for anuncio_spec in TEST_ANUNCIOS:
         Anuncio.objects.update_or_create(
