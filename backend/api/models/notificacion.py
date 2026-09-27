@@ -3,7 +3,7 @@ from django.db import models
 
 class Notificacion(models.Model):
 
-    receptor = models.ForeignKey("Usuario", on_delete=models.CASCADE, related_name="notificaciones_recibidas")
+    receptor = models.ForeignKey("Usuario", on_delete=models.CASCADE)
 
     class Meta:
         abstract = True

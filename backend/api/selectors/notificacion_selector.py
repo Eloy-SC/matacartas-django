@@ -38,3 +38,6 @@ def get_invitacion_partida_by_usuario_ids(emisor_id, receptor_id):
 
 def get_invitacion_partida_by_id(invitacion_id):
     return InvitacionPartida.objects.filter(id=invitacion_id).first()
+
+def get_invitaciones_de_partida(partida_id):
+    return InvitacionPartida.objects.filter(partida_id=partida_id)

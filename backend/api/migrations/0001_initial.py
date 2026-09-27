@@ -801,7 +801,7 @@ class Migration(migrations.Migration):
                     "receptor",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="notificaciones_recibidas",
+                        related_name="notificaciones_recibidas_sol",
                         to="api.usuario",
                     ),
                 ),
@@ -831,7 +831,7 @@ class Migration(migrations.Migration):
                     "receptor",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="notificaciones_recibidas",
+                        related_name="notificaciones_recibidas_inv",
                         to="api.usuario",
                     ),
                 ),

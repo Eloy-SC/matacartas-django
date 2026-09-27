@@ -1,4 +1,6 @@
 from django.db import models
+
+from backend.api.models.notificacion import InvitacionPartida
 from ..models import Amistad
 from ..models import Usuario
 
@@ -47,7 +49,6 @@ def list_usuarios_disponibles_amistad_paginated(usuario_id, offset, limit, searc
 def count_amigos(usuario_id, search=None):
     return _amistades_de_usuario(usuario_id, search).count()
 
-
 def list_amigos_paginated(usuario_id, offset, limit, search=None):
     amistades = _amistades_de_usuario(usuario_id, search)[offset:offset + limit]
     amigos = [
@@ -60,8 +61,19 @@ def list_amigos_paginated(usuario_id, offset, limit, search=None):
             "id": amigo.id,
             "nombre": amigo.nombre,
             "imagen": amigo.imagen,
+            "invitado": _get_amigo_invitado(usuario_id, amigo.id)
         })
     return res
+
+def _get_amigo_invitado(usuario_id, amigo_id):
+    invitacion = InvitacionPartida.objects.filter(
+        emisor_id=usuario_id,
+        receptor_id=amigo_id
+    ).first()
+    if invitacion:
+        return True
+    else:
+        return False
 
 def get_amistad_by_usuario_ids(usuario1_id, usuario2_id):
     """Devuelve la amistad entre dos usuarios, si existe."""

@@ -6,6 +6,7 @@ import "../styles/rangos.css";
 import UserRango from "../utils/UserRango.jsx";
 import { obtenerCsrfToken } from "../utils/ObtenerCsfrToken";
 import AnunciosModal from "../components/AnunciosModal.jsx";
+import SocialDrawer from "../components/SocialDrawer.jsx";
 
 export default function Inicio() {
 	const navigate = useNavigate();
@@ -133,6 +134,7 @@ export default function Inicio() {
 
 	return (
 		<div className="app app--with-avatar">
+			<SocialDrawer />
 			{isStaff && (
 				<button
 					type="button"

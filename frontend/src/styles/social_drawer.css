@@ -1,0 +1,264 @@
+.social-drawer-trigger {
+	position: fixed;
+	top: 110px;
+	right: 30px;
+	z-index: 20;
+	width: 56px;
+	height: 56px;
+	padding: 0;
+	border: 2px solid var(--ui-accent);
+	border-radius: 0;
+	background-image: var(--form-card-texture);
+	background-repeat: repeat;
+	background-size: 200px 200px;
+	color: var(--ui-accent);
+	font-size: 1.6rem;
+}
+
+.social-drawer-trigger:hover {
+	background-color: var(--ui-accent);
+	background-image: none;
+	color: var(--ui-bg);
+}
+
+.social-drawer-layer {
+	position: fixed;
+	inset: 0;
+	z-index: 50;
+	display: flex;
+	justify-content: flex-end;
+}
+
+.social-drawer-backdrop {
+	position: absolute;
+	inset: 0;
+	padding: 0;
+	border: 0;
+	background: rgba(0, 0, 0, 0.28);
+	color: inherit;
+}
+
+.social-drawer-backdrop:hover {
+	background: rgba(0, 0, 0, 0.28);
+}
+
+.social-drawer {
+	position: relative;
+	width: 25vw;
+	min-width: 300px;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	border-left: 3px solid #000000;
+	background-image: var(--form-card-texture);
+	background-repeat: repeat;
+	background-size: 210px 210px;
+	box-shadow: -8px 0 0 rgba(0, 0, 0, 0.14);
+	animation: social-drawer-in 180ms ease-out;
+}
+
+.social-drawer__header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 28px 24px 20px;
+	border-bottom: 3px solid #000000;
+}
+
+.social-drawer__eyebrow {
+	display: block;
+	margin-bottom: 4px;
+	color: var(--ui-accent);
+	font-size: 0.75rem;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.social-drawer h2,
+.social-drawer h3 {
+	margin: 0;
+	color: #000000;
+}
+
+.social-drawer h2 {
+	font-size: 1.35rem;
+}
+
+.social-drawer__close {
+	width: 38px;
+	height: 38px;
+	padding: 0;
+	border-radius: 0;
+	font-size: 1.6rem;
+	line-height: 1;
+}
+
+.social-drawer__tabs {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+	padding: 16px 20px;
+	border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.social-drawer__tabs button {
+	min-height: 48px;
+	padding: 10px 8px;
+	font-size: 0.9rem;
+}
+
+.social-drawer__tabs button.is-active {
+	background: var(--ui-accent);
+	color: var(--ui-bg);
+}
+
+.social-drawer__content {
+	flex: 1;
+	padding: 26px 24px;
+	background: rgba(255, 255, 255, 0.4);
+}
+
+.social-drawer__content h3 {
+	margin-bottom: 10px;
+	font-size: 1.15rem;
+}
+
+.social-drawer__content p {
+	color: #3c3c3c;
+	line-height: 1.5;
+}
+
+.social-drawer__search {
+	display: grid;
+	gap: 6px;
+	margin: 16px 0;
+}
+
+.social-drawer__search label {
+	font-size: 0.85rem;
+}
+
+.social-drawer__search div {
+	display: flex;
+	gap: 6px;
+}
+
+.social-drawer__search input {
+	min-width: 0;
+	width: 100%;
+	padding: 8px;
+	font-size: 0.9rem;
+}
+
+.social-drawer__search button {
+	padding: 8px 10px;
+	font-size: 0.85rem;
+}
+
+.social-drawer__friends {
+	display: grid;
+	gap: 10px;
+}
+
+.social-friend {
+	display: grid;
+	grid-template-columns: 44px minmax(0, 1fr);
+	align-items: center;
+	gap: 10px;
+	padding: 10px;
+	border: 2px solid rgba(0, 0, 0, 0.18);
+	background: rgba(255, 255, 255, 0.78);
+}
+
+.social-friend__avatar {
+	width: 44px;
+	height: 44px;
+	border: 2px solid var(--ui-accent);
+	border-radius: 50%;
+	background: #ffffff;
+	object-fit: cover;
+}
+
+.social-friend__details {
+	display: grid;
+	min-width: 0;
+	gap: 3px;
+}
+
+.social-friend__details strong,
+.social-friend__details .rango-text {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.social-friend__details strong {
+	color: #000000;
+}
+
+.social-friend__details .rango-text {
+	font-size: 0.82rem;
+}
+
+.social-friend__invite,
+.social-friend__invited {
+	grid-column: 1 / -1;
+	justify-self: stretch;
+	text-align: center;
+}
+
+.social-friend__invite {
+	padding: 8px 6px;
+	font-size: 0.78rem;
+}
+
+.social-friend__invited {
+	padding-top: 4px;
+	color: #28733b;
+	font-size: 0.8rem;
+	font-weight: 800;
+}
+
+.social-drawer__error {
+	color: #b00020 !important;
+	font-weight: bold;
+}
+
+.social-drawer__pagination {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin-top: 18px;
+	color: #3c3c3c;
+	font-size: 0.82rem;
+}
+
+.social-drawer__pagination button {
+	width: 34px;
+	height: 34px;
+	padding: 0;
+	font-size: 1.3rem;
+}
+
+@keyframes social-drawer-in {
+	from {
+		transform: translateX(100%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+
+@media (max-width: 700px) {
+	.social-drawer-trigger {
+		right: 100px;
+	}
+
+	.social-drawer {
+		width: min(100%, 380px);
+		min-width: 0;
+	}
+}
