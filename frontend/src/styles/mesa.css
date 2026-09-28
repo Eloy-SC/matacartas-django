@@ -438,6 +438,94 @@
 	z-index: 1;
 }
 
+.boton-informacion-arriba-dcha {
+	position: absolute;
+	top: 8px;
+	right: 200px;
+	z-index: 1;
+}
+
+.juego-informacion-modal {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	z-index: 1500;
+	width: min(760px, calc(100vw - 32px));
+	max-height: calc(100vh - 32px);
+	overflow: auto;
+	transform: translate(-50%, -50%);
+	padding: 22px;
+	box-sizing: border-box;
+	border: 3px solid #000000;
+	border-radius: 8px;
+	background: var(--form-card-texture);
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.juego-informacion-modal__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.juego-informacion-modal__header h2 {
+	margin: 0;
+	color: #000000;
+	font-size: 1.35rem;
+}
+
+.juego-informacion-modal__close {
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border: 2px solid #000000;
+	border-radius: 15%;
+	background: #ffffff;
+	color: #000000;
+	font-size: 1.5rem;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.juego-informacion-modal__table {
+	width: 100%;
+	border-collapse: collapse;
+	color: #000000;
+	background: rgba(255, 255, 255, 0.78);
+}
+
+.juego-informacion-modal__table th,
+.juego-informacion-modal__table td {
+	padding: 10px;
+	border: 2px solid rgba(0, 0, 0, 0.35);
+	text-align: left;
+	vertical-align: top;
+}
+
+.juego-informacion-modal__table th {
+	background: rgba(0, 0, 0, 0.12);
+	font-weight: 800;
+}
+
+@media (max-width: 640px) {
+	.boton-informacion-arriba-dcha {
+		top: 52px;
+		right: 8px;
+	}
+
+	.juego-informacion-modal {
+		padding: 16px;
+	}
+
+	.juego-informacion-modal__table th,
+	.juego-informacion-modal__table td {
+		padding: 7px;
+		font-size: 0.82rem;
+	}
+}
+
 .recuadro-info-superior {
 	border: 3px solid #000000;
 	border-radius: 8px;

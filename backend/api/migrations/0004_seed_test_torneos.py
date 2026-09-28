@@ -1,3 +1,6 @@
+import os
+import sys
+
 from django.db import migrations
 from django.utils import timezone
 
@@ -135,19 +138,31 @@ TEST_MEDALLAS_TORNEO = [
 def _resolve_rango(rango_model, nombre):
     if not nombre:
         return None
-    return rango_model.objects.get(nombre=nombre)
+    return rango_model.objects.filter(nombre=nombre).first()
 
 def _resolve_medalla(medalla_model, nombre):
     if not nombre:
         return None
-    return medalla_model.objects.get(nombre=nombre)
+    return medalla_model.objects.filter(nombre=nombre).first()
 
 def seed_test_torneos(apps, schema_editor):
+    # Skip seeding when running tests or when explicitly disabled
+    if "test" in sys.argv or os.getenv("SKIP_SEED", "0") == "1":
+        return
+
     Torneo = apps.get_model("api", "Torneo")
     Rango = apps.get_model("api", "Rango")
     MedallaTorneo = apps.get_model("api", "MedallaTorneo")
 
     for torneo_spec in TEST_TORNEOS:
+        if torneo_spec["rango_minimo"]:
+            r_min = _resolve_rango(Rango, torneo_spec["rango_minimo"])
+        else:
+            r_min = None
+        if torneo_spec["rango_maximo"]:
+            r_max = _resolve_rango(Rango, torneo_spec["rango_maximo"])
+        else:
+            r_max = None
         defaults = {
             "fecha_inicio": torneo_spec["fecha_inicio"] if "fecha_inicio" in torneo_spec else None,
             "num_jug_fin": torneo_spec["num_jug_fin"],
@@ -159,8 +174,8 @@ def seed_test_torneos(apps, schema_editor):
             "partidas_tickets": torneo_spec["partidas_tickets"],
             "partidas_tiempo_max_turno": torneo_spec["partidas_tiempo_max_turno"],
             "desempate_mayor_punt": torneo_spec["desempate_mayor_punt"],
-            "rango_minimo": _resolve_rango(Rango, torneo_spec["rango_minimo"]),
-            "rango_maximo": _resolve_rango(Rango, torneo_spec["rango_maximo"]),
+            "rango_minimo": r_min,
+            "rango_maximo": r_max,
         }
         Torneo.objects.update_or_create(nombre=torneo_spec["nombre"], defaults=defaults)
     for medalla_torneo_spec in TEST_MEDALLAS_TORNEO:
@@ -196,6 +211,10 @@ def seed_test_partidas_torneo(apps, schema_editor):
 """
 
 def seed_test_medallas(apps, schema_editor):
+    # Skip seeding when running tests or when explicitly disabled
+    if "test" in sys.argv or os.getenv("SKIP_SEED", "0") == "1":
+        return
+    
     Medalla = apps.get_model("api", "Medalla")
 
     for medalla_spec in TEST_MEDALLAS:

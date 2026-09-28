@@ -1,3 +1,6 @@
+import os
+import sys
+
 from django.db import migrations
 
 
@@ -106,6 +109,10 @@ def _resolve_rango(rango_model, nombre):
 
 
 def seed_test_partidas(apps, schema_editor):
+	# Skip seeding when running tests or when explicitly disabled
+	if "test" in sys.argv or os.getenv("SKIP_SEED", "0") == "1":
+		return
+	
 	Partida = apps.get_model("api", "Partida")
 	Rango = apps.get_model("api", "Rango")
 

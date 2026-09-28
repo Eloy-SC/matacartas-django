@@ -4,6 +4,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from api.models.configuracion_global import ConfiguracionGlobal
+from api.models.medalla_torneo import MedallaTorneo
+from api.models.recompensa import Medalla
 from api.models.rango import Rango
 from api.models.torneo import Torneo
 
@@ -42,7 +44,16 @@ class TorneoAPITest(APITestCase):
             puntos_maximos=1999,
         )
 
-        Torneo.objects.create(
+        self.medalla_primer_puesto = Medalla.objects.create(
+            nombre="Medalla Primer Puesto Torneo API",
+            categoria=Medalla.CategoriaMedalla.ORO,
+        )
+        self.medalla_segundo_puesto = Medalla.objects.create(
+            nombre="Medalla Segundo Puesto Torneo API",
+            categoria=Medalla.CategoriaMedalla.PLATA,
+        )
+
+        self.torneo = Torneo.objects.create(
             nombre="TorneoApiExistente",
             rango_minimo=self.rango_min,
             rango_maximo=self.rango_max,
@@ -56,6 +67,8 @@ class TorneoAPITest(APITestCase):
             partidas_tiempo_max_turno=90,
             desempate_mayor_punt=True,
         )
+        MedallaTorneo.objects.create(torneo=self.torneo, medalla=self.medalla_primer_puesto, puesto=1)
+        MedallaTorneo.objects.create(torneo=self.torneo, medalla=self.medalla_segundo_puesto, puesto=2)
 
         self.config, _ = ConfiguracionGlobal.objects.get_or_create(id=1)
         self.config.rango_minimo_crear_torneo = self.rango_min
@@ -75,6 +88,8 @@ class TorneoAPITest(APITestCase):
             "partidas_tickets": True,
             "partidas_tiempo_max_turno": 90,
             "desempate_mayor_punt": True,
+            "medalla_primer_puesto_id": self.medalla_primer_puesto.id,
+            "medalla_segundo_puesto_id": self.medalla_segundo_puesto.id,
         }
         payload.update(overrides)
         return payload
@@ -147,6 +162,8 @@ class TorneoAPITest(APITestCase):
             partidas_tiempo_max_turno=90,
             desempate_mayor_punt=True,
         )
+        MedallaTorneo.objects.create(torneo=torneo, medalla=self.medalla_primer_puesto, puesto=1)
+        MedallaTorneo.objects.create(torneo=torneo, medalla=self.medalla_segundo_puesto, puesto=2)
         url = reverse("get-participantes-torneo", args=[torneo.id])
         self.client.force_authenticate(user=self.creator)
 

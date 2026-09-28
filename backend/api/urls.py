@@ -1,5 +1,31 @@
 from django.urls import path
 
+from .views.amistad_view import (
+    listar_usuarios_busqueda_amistad,
+    listar_amigos, 
+    eliminar_amigo
+)
+
+from .views.notificacion_view import (
+    enviar_solicitud_amistad,
+    aceptar_solicitud_amistad,
+    enviar_invitacion_partida,
+    aceptar_invitacion_partida,
+    rechazar_invitacion_partida,
+    listar_notificaciones,
+    rechazar_solicitud_amistad
+)
+
+from .views.anuncio_view import (
+    crear_anuncio_admin,
+    editar_anuncio_admin,
+    eliminar_anuncio_admin,
+    listar_anuncios_admin,
+    listar_anuncios_publicos,
+    get_anuncio,
+    publicar_anuncio_admin,
+)
+
 from .views.estadisticas_view import (
     get_estadisticas_globales,
     get_estadisticas_individuales,
@@ -187,6 +213,29 @@ urlpatterns = [
     path("logros/admin/<int:logro_id>/requisitos/", obtener_requisitos_logro, name="obtener-requisitos-logro-admin"),
     path("logros/listar/", listar_logros_usuario, name="listar-logros"),
     path("logros/ocultos/pendientes/", contar_logros_ocultos_pendientes, name="contar-logros-ocultos-pendientes"),
+
+    # AMISTAD
+    path("amigos/listar/", listar_amigos, name="listar-amigos"),
+    path("amigos/<int:amigo_id>/eliminar/", eliminar_amigo, name="eliminar-amigo"),
+    path("usuarios/buscar-amistad/", listar_usuarios_busqueda_amistad, name="listar-usuarios-busqueda-amistad"),
+
+    # NOTIFICACIONES
+    path("notificaciones/listar/", listar_notificaciones, name="listar-notificaciones"),
+    path("notificaciones/solicitud-amistad/enviar/<int:objetivo_id>/", enviar_solicitud_amistad, name="enviar-solicitud-amistad"),
+    path("notificaciones/solicitud-amistad/aceptar/<int:solicitud_id>/", aceptar_solicitud_amistad, name="aceptar-solicitud-amistad"),
+    path("notificaciones/solicitud-amistad/rechazar/<int:solicitud_id>/", rechazar_solicitud_amistad, name="rechazar-solicitud-amistad"),
+    path("notificaciones/invitacion-partida/enviar/<int:objetivo_id>/<int:partida_id>/", enviar_invitacion_partida, name="enviar-invitacion-partida"),
+    path("notificaciones/invitacion-partida/aceptar/<int:invitacion_id>/", aceptar_invitacion_partida, name="aceptar-invitacion-partida"),
+    path("notificaciones/invitacion-partida/rechazar/<int:invitacion_id>/", rechazar_invitacion_partida, name="rechazar-invitacion-partida"),
+
+    # ANUNCIOS
+    path("anuncios/admin/listar/", listar_anuncios_admin, name="listar-anuncios-admin"),
+    path("anuncios/admin/crear/", crear_anuncio_admin, name="crear-anuncio-admin"),
+    path("anuncios/admin/<int:anuncio_id>/editar/", editar_anuncio_admin, name="editar-anuncio-admin"),
+    path("anuncios/admin/<int:anuncio_id>/eliminar/", eliminar_anuncio_admin, name="eliminar-anuncio-admin"),
+    path("anuncios/publicos/listar/", listar_anuncios_publicos, name="listar-anuncios-publicos"),
+    path("anuncios/<int:anuncio_id>/", get_anuncio, name="get-anuncio"),
+    path("anuncios/admin/<int:anuncio_id>/publicar/", publicar_anuncio_admin, name="publicar-anuncio-admin"),
 
     # CONFIGURACION GLOBAL
     path("config-global/rango-minimo/torneos/", obtener_rango_minimo_crear_torneo, name="obtener-rango-minimo-torneos"),

@@ -744,8 +744,8 @@ class Migration(migrations.Migration):
                 ("titulo", models.CharField(max_length=80, null=False)),
                 ("subtitulo", models.CharField(max_length=120, null=False)),
                 ("descripcion", models.TextField(null=False)),
-                ("publicado", models.BooleanField(default=False)),
-                ("fecha_creacion", models.DateTimeField(auto_now_add=True)),
+                ("fecha_ult_mod", models.DateTimeField(auto_now_add=True)),
+                ("fecha_publicacion", models.DateTimeField(null=True, blank=True)),
                 (
                     "autor",
                     models.ForeignKey(
@@ -783,7 +783,74 @@ class Migration(migrations.Migration):
                         to="api.usuario",
                     ),
                 ),
-                ("aceptada", models.BooleanField(default=False)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="SolicitudAmistad",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "receptor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="notificaciones_recibidas_sol",
+                        to="api.usuario",
+                    ),
+                ),
+                (
+                    "emisor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="solicitudes_amistad_enviadas",
+                        to="api.usuario",
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="InvitacionPartida",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "receptor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="notificaciones_recibidas_inv",
+                        to="api.usuario",
+                    ),
+                ),
+                (
+                    "emisor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="solicitudes_amistad_enviadas",
+                        to="api.usuario",
+                    ),
+                ),
+                (
+                    "partida",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="invitaciones",
+                        to="api.partida",
+                    ),
+                ),
             ],
         ),
         migrations.RunPython(seed_config_global, reverse_code=migrations.RunPython.noop),

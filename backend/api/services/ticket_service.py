@@ -297,7 +297,7 @@ def aux_usar_ticket_rt(partida_id, ticket, jugador_actor):
     for puntuacion, colores in dic_colores.items():
         if jugador_actor.color in colores:
             colores.remove(jugador_actor.color)
-            if len(puntuacion) == 0:
+            if len(colores) == 0:
                 del dic_colores[puntuacion]
             break
     if dic_colores is None or len(dic_colores) == 0:

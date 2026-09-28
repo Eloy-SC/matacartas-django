@@ -1,3 +1,6 @@
+import os
+import sys
+
 from django.db import migrations
 
 
@@ -154,6 +157,10 @@ TEST_LOGROS = [
 
 
 def seed_test_logros(apps, schema_editor):
+    # Skip seeding when running tests or when explicitly disabled
+    if "test" in sys.argv or os.getenv("SKIP_SEED", "0") == "1":
+        return
+
     Logro = apps.get_model("api", "Logro")
     RequisitoLogro = apps.get_model("api", "RequisitoLogro")
 

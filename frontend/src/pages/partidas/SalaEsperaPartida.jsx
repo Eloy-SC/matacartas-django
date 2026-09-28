@@ -7,6 +7,7 @@ import "../../styles/partidas.css";
 import "../../styles/sala_espera.css";
 import UserRango from "../../utils/UserRango.jsx";
 import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
+import SocialDrawer from "../../components/SocialDrawer.jsx";
 
 function formatBoolean(value) {
 	if (typeof value === "boolean") {
@@ -485,6 +486,11 @@ export default function SalaEsperaPartida() {
 
 	return (
 		<div className="app sala-espera-page">
+			<SocialDrawer
+				canInviteToMatch
+				partidaId={partidaId}
+				partidaPlayerIds={jugadores.map((jugador) => jugador.id)}
+			/>
 			<img src={cabecera} alt="Matacartas" style={{ maxWidth: "100%", height: "auto" }} />
 
 			<div className="sala-espera-card">

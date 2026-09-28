@@ -46,7 +46,7 @@ class Command(BaseCommand):
 
         usuarios = []
 
-        for i in range(1, 11):
+        for i in range(1, 33):
             usuario, _ = UserModel.objects.get_or_create(
                 username=f"locust_player_{i}",
                 defaults={
@@ -66,11 +66,25 @@ class Command(BaseCommand):
         # CREAR PARTIDAS EMPEZADAS
         # ==================================================
 
-        for i in range(5):
+        colores = [
+            PartidaUsuario.ColorJugador.ROJO,
+            PartidaUsuario.ColorJugador.AZUL,
+            PartidaUsuario.ColorJugador.VERDE,
+            PartidaUsuario.ColorJugador.AMARILLO,
+        ]
+
+        cartas_por_jugador = [
+            ["1_OROS", "2_OROS", "3_OROS"],
+            ["1_COPAS", "2_COPAS", "3_COPAS"],
+            ["1_ESPADAS", "2_ESPADAS", "3_ESPADAS"],
+            ["1_BASTOS", "2_BASTOS", "3_BASTOS"],
+        ]
+
+        for i in range(8):
             partida, _ = Partida.objects.get_or_create(
                 nombre=f"partida_empezada_{i + 1}",
                 defaults={
-                    "num_jugadores": 2,
+                    "num_jugadores": 4,
                     "privada": False,
                     "clave": None,
                     "longitud": Partida.LongitudPartida.NORMAL,
@@ -78,10 +92,7 @@ class Command(BaseCommand):
                     "tickets": True,
                     "tiempo_max_turno": 90,
                     "fecha_inicio": timezone.now(),
-                    "disposicion_jugadores": [
-                        PartidaUsuario.ColorJugador.ROJO,
-                        PartidaUsuario.ColorJugador.AZUL,
-                    ],
+                    "disposicion_jugadores": colores,
                     "turno_actual": PartidaUsuario.ColorJugador.ROJO,
                 },
             )
@@ -96,54 +107,24 @@ class Command(BaseCommand):
             # USUARIOS DE LA PARTIDA
             # ----------------------------------------------
 
-            usuario_rojo = usuarios[i * 2]
-            usuario_azul = usuarios[i * 2 + 1]
-
-            jugador_rojo, _ = PartidaUsuario.objects.get_or_create(
-                partida=partida,
-                usuario=usuario_rojo,
-                defaults={
-                    "creador": True,
-                    "listo": True,
-                    "color": PartidaUsuario.ColorJugador.ROJO,
-                    "cartas": [
-                        "1_OROS",
-                        "2_COPAS",
-                        "3_ESPADAS",
-                    ],
-                },
-            )
-
-            jugador_azul, _ = PartidaUsuario.objects.get_or_create(
-                partida=partida,
-                usuario=usuario_azul,
-                defaults={
-                    "creador": False,
-                    "listo": True,
-                    "color": PartidaUsuario.ColorJugador.AZUL,
-                    "cartas": [
-                        "4_OROS",
-                        "5_COPAS",
-                        "6_ESPADAS",
-                    ],
-                },
-            )
-
-            # Por si los objetos ya existían y queremos
-            # garantizar el estado de las cartas.
-            jugador_rojo.cartas = [
-                "1_OROS",
-                "2_COPAS",
-                "3_ESPADAS",
-            ]
-            jugador_rojo.save(update_fields=["cartas"])
-
-            jugador_azul.cartas = [
-                "4_OROS",
-                "5_COPAS",
-                "6_ESPADAS",
-            ]
-            jugador_azul.save(update_fields=["cartas"])
+            for jugador_index in range(4):
+                jugador, _ = PartidaUsuario.objects.get_or_create(
+                    partida=partida,
+                    usuario=usuarios[i * 4 + jugador_index],
+                    defaults={
+                        "creador": jugador_index == 0,
+                        "listo": True,
+                        "color": colores[jugador_index],
+                        "cartas": cartas_por_jugador[jugador_index],
+                    },
+                )
+                jugador.creador = jugador_index == 0
+                jugador.listo = True
+                jugador.color = colores[jugador_index]
+                jugador.cartas = cartas_por_jugador[jugador_index]
+                jugador.abandono = False
+                jugador.retirado = False
+                jugador.save(update_fields=["creador", "listo", "color", "cartas", "abandono", "retirado"])
 
             # ----------------------------------------------
             # MANO
@@ -158,9 +139,10 @@ class Command(BaseCommand):
             # RONDA
             # ----------------------------------------------
 
-            Ronda.objects.get_or_create(
+            Ronda.objects.update_or_create(
                 mano=mano,
-                num=1,
+                num=0,
+                defaults={"cartas": {}, "cambios": 0},
             )
 
         self.stdout.write(

@@ -15,6 +15,13 @@ class LogroAPITest(APITestCase):
             email="user_logros_api@example.com",
             nombre="User Logros API",
         )
+        self.admin = UserModel.objects.create_user(
+            username="admin_logros_api",
+            password="admin-pass-123",
+            email="admin_logros_api@example.com",
+            nombre="Admin Logros API",
+            is_staff=True,
+        )
         self.logro = Logro.objects.create(
             nombre="Logro Inicial API",
             descripcion="Descripción inicial",
@@ -52,8 +59,8 @@ class LogroAPITest(APITestCase):
                 for index in range(11)
             ]
         )
-        self.client.force_authenticate(user=self.user)
-        url = reverse("listar-logros")
+        self.client.force_authenticate(user=self.admin)
+        url = reverse("listar-logros-admin")
 
         response = self.client.get(url, {"search": "Logro 0", "ordering": "-nombre"})
 
@@ -113,3 +120,11 @@ class LogroAPITest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["total"], 1)
+
+    def test_obtener_requisitos_logro_returns_requirements(self):
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(reverse("obtener-requisitos-logro-admin", args=[self.logro.id]))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]["valor_necesario"], 3)

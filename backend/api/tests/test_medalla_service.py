@@ -48,7 +48,7 @@ class MedallaServiceTests(TestCase):
 
     def test_get_medalla_returns_item(self):
         data = medalla_service.get_medalla(self.user, self.medalla.id)
-        self.assertEqual(data["nombre"], "Medalla Inicial")
+        self.assertEqual(data.nombre, "Medalla Inicial")
 
     def test_crear_medalla_admin_requires_staff(self):
         with self.assertRaises(PermissionError):

@@ -2,6 +2,8 @@ import random
 from sqlite3 import IntegrityError
 from django.utils import timezone
 
+from ..selectors.notificacion_selector import get_invitaciones_de_partida
+
 from ..services.logro_service import asignar_logros_a_usuario
 
 from ..selectors.torneo_selector import get_partida_torneo_by_partida_id
@@ -554,6 +556,11 @@ def iniciar_partida(actor, partida_id, manual=False):
     
     if partida.fecha_inicio is not None:
         raise ValueError("La partida ya ha comenzado")
+
+    # Eliminar invitaciones
+    invitaciones = get_invitaciones_de_partida(partida_id)
+    for invitacion in invitaciones:
+        invitacion.delete()
     
     # Partida
     partida.fecha_inicio = timezone.now()

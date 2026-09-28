@@ -17,6 +17,7 @@ import InfoSuperior from "./InfoSuperior.jsx";
 import MesaInicialContrincantes from "./MesaInicialContrincantes.jsx";
 import ResumenManoPanel from "./ResumenManoPanel.jsx";
 import ResumenPartidaOverlay from "./ResumenPartidaOverlay.jsx";
+import InformacionJuegoModal from "./InformacionJuegoModal.jsx";
 import { obtenerCsrfToken } from "../../utils/ObtenerCsfrToken";
 import "../../styles/mesa.css";
 
@@ -45,6 +46,7 @@ export default function Juego() {
 	const [cargandoResumenMano, setCargandoResumenMano] = useState(false);
 	const [errorResumenMano, setErrorResumenMano] = useState("");
 	const [datosFinalPartida, setDatosFinalPartida] = useState(null);
+	const [mostrarInformacionJuego, setMostrarInformacionJuego] = useState(false);
 	const finManoProgramadaRef = useRef(null);
 	const resumenManoSolicitadoRef = useRef(null);
 	const resumenFinalSolicitadoRef = useRef(false);
@@ -89,8 +91,15 @@ export default function Juego() {
 			!("puntuacion_ganada_por_jugadores" in datosFinalPartida)
 		),
 	);
+	const resumenManoVisible = cuentaAtrasFinMano !== null;
 
 	const puedeAbandonarPartida = Boolean(!partidaFinalizada && !esFinMano);
+
+	useEffect(() => {
+		if (resumenManoVisible || partidaFinalizada) {
+			setMostrarInformacionJuego(false);
+		}
+	}, [partidaFinalizada, resumenManoVisible]);
 
 	const mostrarBotonRetirada = 
 		Boolean(rondaActual && rondaActual.ronda_num >= 1 && rondaActual.ronda_num <= 3);
@@ -472,6 +481,18 @@ export default function Juego() {
 						>
 							Abandonar partida
 						</button>
+						{!resumenManoVisible && !partidaFinalizada && !mostrarInformacionJuego ? (
+							<button
+								type="button"
+								className="main-primary-button boton-informacion-arriba-dcha"
+								onClick={() => setMostrarInformacionJuego(true)}
+							>
+								Tabla de muertes
+							</button>
+						) : null}
+						{mostrarInformacionJuego && !resumenManoVisible && !partidaFinalizada ? (
+							<InformacionJuegoModal onClose={() => setMostrarInformacionJuego(false)} />
+						) : null}
 						{mesaInicial && (
 							<MesaInicialContrincantes
 								partida={mesaInicial.partida}
