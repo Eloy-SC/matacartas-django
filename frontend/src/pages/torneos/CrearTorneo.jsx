@@ -241,7 +241,7 @@ export default function CrearTorneo() {
 					</div>
 
 					<div style={{ marginTop: 12 }}>
-						<label htmlFor="numJugFin">Jugadores por partida en final</label>
+						<label htmlFor="numJugFin">Jugadores en la final</label>
 						<br />
 						<select id="numJugFin" name="numJugFin" defaultValue={3} onChange={(e) => setNumJugFin(Number(e.target.value))}>
 							{JUGADORES_OPTIONS.map((value) => (

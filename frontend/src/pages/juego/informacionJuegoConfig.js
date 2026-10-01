@@ -1,5 +1,5 @@
 export const INFORMACION_JUEGO = {
-	titulo: "Información de la partida",
+	titulo: "Tabla de muertes",
 	columnas: ["Carta", "Amenazas", "Recompensa"],
 	filas: [
 		["As de espadas", "6, 7, 8 ó 9 de bastos", "+3 puntos"],

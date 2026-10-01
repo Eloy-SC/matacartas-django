@@ -145,6 +145,37 @@ def _resolve_medalla(medalla_model, nombre):
         return None
     return medalla_model.objects.filter(nombre=nombre).first()
 
+def seed_test_recompensa_usuario(apps, schema_editor):
+    if "test" in sys.argv or os.getenv("SKIP_SEED", "0") == "1":
+        return
+
+    Usuario = apps.get_model("api", "Usuario")
+    Medalla = apps.get_model("api", "Medalla")
+    RecompensaUsuario = apps.get_model("api", "RecompensaUsuario")
+
+    usuario = Usuario.objects.filter(username="cervantes").first()
+    medalla = _resolve_medalla(Medalla, "Tercer Puesto Generico Nombre Muuy Largo")
+    if usuario is None or medalla is None:
+        return
+
+    RecompensaUsuario.objects.update_or_create(
+        usuario=usuario,
+        medalla=medalla,
+        defaults={"logro": None},
+    )
+
+def unseed_test_recompensa_usuario(apps, schema_editor):
+    Usuario = apps.get_model("api", "Usuario")
+    Medalla = apps.get_model("api", "Medalla")
+    RecompensaUsuario = apps.get_model("api", "RecompensaUsuario")
+
+    usuario = Usuario.objects.filter(username="cervantes").first()
+    medalla = _resolve_medalla(Medalla, "Tercer Puesto Generico Nombre Muuy Largo")
+    if usuario is None or medalla is None:
+        return
+
+    RecompensaUsuario.objects.filter(usuario=usuario, medalla=medalla).delete()
+
 def seed_test_torneos(apps, schema_editor):
     # Skip seeding when running tests or when explicitly disabled
     if "test" in sys.argv or os.getenv("SKIP_SEED", "0") == "1":
@@ -255,6 +286,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(seed_test_medallas, reverse_code=unseed_test_medallas),
+        migrations.RunPython(seed_test_recompensa_usuario, reverse_code=unseed_test_recompensa_usuario),
         migrations.RunPython(seed_test_torneos, reverse_code=unseed_test_torneos),
         #migrations.RunPython(seed_test_partidas_torneo, reverse_code=unseed_test_partidas_torneo),
     ]
