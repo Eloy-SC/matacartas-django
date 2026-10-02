@@ -317,6 +317,8 @@ def aux_calcular_partidas_ganadas(partida_id, color):
     pu = get_partida_usuario_by_partida_and_color(partida_id, color)
     partida = pu.partida
     mayor_puntuacion = max(partida.puntuacion_asignada_final.values()) if partida.puntuacion_asignada_final else 0
+    if not color in partida.puntuacion_asignada_final.keys():
+        return 0
     if pu.abandono or partida.puntuacion_asignada_final[color] < mayor_puntuacion:
         return 0
     return 1

@@ -155,7 +155,7 @@ export default function AdminAnuncios() {
 											<button type="button" className="admin-delete-button" aria-label="Borrar anuncio" onClick={() => handleDelete(anuncio.id)} disabled={deletingId === anuncio.id || publicandoId === anuncio.id}>
 												<svg viewBox="0 0 24 24" role="img" aria-hidden="true" className="admin-icon"><path d="M9 3h6l1 1h4v2H4V4h4l1-1zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9zm-1 12h12a1 1 0 0 1-1-1V8H5v12a1 1 0 0 1 1 1z" /></svg>
 											</button>
-                                            <button type="button" className="admin-delete-button" aria-label="Publicar anuncio" onClick={() => handlePublicar(anuncio.id)} disabled={deletingId === anuncio.id || publicandoId === anuncio.id}>
+                                            <button type="button" className="admin-delete-button" aria-label="Publicar anuncio" onClick={() => handlePublicar(anuncio.id)} disabled={deletingId === anuncio.id || publicandoId === anuncio.id || anuncio.fecha_publicacion}>
 												Publicar
 											</button>
 										</div>

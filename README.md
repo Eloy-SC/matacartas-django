@@ -27,9 +27,10 @@ matacartas_django/
 │   │   └── main.js
 │   ├── index.html
 │   ├── vite.config.js
-│   ├── nginx.conf           # Used in production image
+│   ├── nginx.conf
 │   └── Dockerfile
 ├── docker-compose.yml
+├── docker-compose-prod.yml
 ├── .env.example
 └── .gitignore
 ```
@@ -40,27 +41,14 @@ matacartas_django/
 
 - [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
 
-### 1. Clone and configure environment
+### Start with Docker
 
 ```bash
-git clone <repo-url>
-cd matacartas_django
 cp .env.example .env
-# Edit .env and set a strong SECRET_KEY for production
-```
-
-### 2. Build and start services
-
-```bash
 docker compose up --build
 ```
 
-This will:
-- Start a PostgreSQL 15 database on port `5432`
-- Run Django migrations and start the API on port `8000`
-- Start the React dev server with hot-reload on port `5173`
-
-### 3. Open the app
+The application will be available at:
 
 | Service       | URL                          |
 |---------------|------------------------------|
@@ -68,54 +56,49 @@ This will:
 | Django API    | http://localhost:8000/api/   |
 | Django admin  | http://localhost:8000/admin/ |
 
-### 4. Create a Django superuser
+When using `docker-compose.yml`, the migration `0002_seed_test_users` creates the test users defined in `backend/api/migrations/0002_seed_test_users.py`. Their password is `123456`; for example:
+
+| Username   | Email                    | Role          |
+|------------|--------------------------|---------------|
+| `admin`    | `admin@matacartas.es`    | Administrator |
+| `cervantes`| `cervantes@complutum.es`| Normal user   |
+
+### Create a superuser
 
 ```bash
 docker compose exec backend python manage.py createsuperuser
 ```
+
+The command asks for `username`, `email`, `nombre` and `password`. The new user is created with `is_staff=True` and `is_superuser=True`.
+
+The production compose file only applies migration `0001_initial`, so it does not create the test users automatically.
 
 ## Development
 
 ### Running Django tests
 
 ```bash
-# With Docker (uses PostgreSQL)
 docker compose exec backend python manage.py test
-
-# Without Docker (uses SQLite in-memory)
-cd backend
-python manage.py test --settings=matacartas.test_settings
 ```
 
 ### Running Locust load tests
 
-```bash
-cd backend
-locust -f api/tests/locustfile_user.py --host http://localhost:8000
-locust -f api/tests/locustfile_partida.py --host http://localhost:8000
-locust -f api/tests/locustfile_rango.py --host http://localhost:8000
-```
-
-Por defecto usa el usuario normal `cervantes/123456` para los endpoints de usuario y partida, y `admin/123456` para los endpoints de administración. Puedes sobrescribirlos con `LOCUST_USERNAME`, `LOCUST_PASSWORD`, `LOCUST_ADMIN_USERNAME`, `LOCUST_ADMIN_PASSWORD` y `LOCUST_PARTIDA_PRIVADA_CLAVE`.
-
-### Running the backend without Docker
+Prepare the test users and games first:
 
 ```bash
-cd backend
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-# Set environment variables or create a .env file in backend/
-python manage.py migrate
-python manage.py runserver
+docker compose exec backend python manage.py preparar_locust
 ```
 
-### Running the frontend without Docker
+Copy the generated game IDs into `PARTIDA_IDS` in `backend/api/tests/locustfile.py` if they differ from the configured values. Then start Locust:
 
 ```bash
-cd frontend
-npm install
-npm run dev
+docker compose exec backend locust \
+	-f api/tests/locustfile.py \
+	--host http://localhost:8000 \
+	--web-host 0.0.0.0
 ```
+
+Open http://localhost:8089 to select the test user class and configure the load. The prepared credentials are `locust_user` / `locust_password` and `locust_player_1` through `locust_player_32`, each with password `locust_password_N`.
 
 ## Environment variables
 
@@ -132,3 +115,5 @@ See `.env.example` for all available variables.
 | `POSTGRES_HOST`       | `db`                            | Database host (Docker service) |
 | `POSTGRES_PORT`       | `5432`                          | Database port                  |
 | `CORS_ALLOWED_ORIGINS`| `http://localhost:5173,...`     | Allowed CORS origins           |
+
+NOTE: There are variables required for deployment and mail services that are not shown in the table. These variables are: `FRONTEND_URL`, `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL`.

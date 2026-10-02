@@ -77,7 +77,6 @@ export default function Estadisticas() {
     const [errorHistorial, setErrorHistorial] = useState("");
 
     const DURACION_MANOS = {
-        express: "5",
 		corta: "20",
 		normal: "40",
 		larga: "60",

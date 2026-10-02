@@ -7,14 +7,14 @@ API_PREFIX = "/api"
 HOST = "http://localhost:8000"
 PARTIDA_IDS = {
     # Sustituir estos valores por los IDs que imprime preparar_locust.
-    1: 18,
-    2: 19,
-    3: 20,
-    4: 21,
-    5: 22,
-    6: 23,
-    7: 24,
-    8: 25,
+    1: 10,
+    2: 11,
+    3: 12,
+    4: 13,
+    5: 14,
+    6: 15,
+    7: 16,
+    8: 17,
 }
 
 # Contador para asignar automáticamente los usuarios

@@ -3,7 +3,6 @@ from django.db import models
 
 class Torneo(models.Model):
     class LongitudPartidaDeTorneo(models.TextChoices):
-        EXPRESS = "express", "Express"
         CORTA = "corta", "Corta"
         NORMAL = "normal", "Normal"
         LARGA = "larga", "Larga"
