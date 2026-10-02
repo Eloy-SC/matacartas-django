@@ -3,7 +3,6 @@ from django.db import models
 
 class Partida(models.Model):
     class LongitudPartida(models.TextChoices):
-        EXPRESS = "express", "Express"
         CORTA = "corta", "Corta"
         NORMAL = "normal", "Normal"
         LARGA = "larga", "Larga"
@@ -46,8 +45,6 @@ class Partida(models.Model):
     # Métodos
 
     def get_num_manos(self):
-        if self.longitud == self.LongitudPartida.EXPRESS:
-            return 5
         if self.longitud == self.LongitudPartida.CORTA:
             return 20
         elif self.longitud == self.LongitudPartida.NORMAL:

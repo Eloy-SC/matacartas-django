@@ -9,7 +9,6 @@ import "../../styles/sala_espera.css";
 import "../../styles/torneo.css";
 
 const LONGITUD_LABELS = {
-    express: "Express (5 manos)",
     corta: "Corta (20 manos)",
     normal: "Normal (40 manos)",
     larga: "Larga (60 manos)",
