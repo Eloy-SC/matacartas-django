@@ -1,0 +1,80 @@
+services:
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-matacartas}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: >
+      sh -c "python manage.py migrate api 0001 --noinput &&
+             python manage.py collectstatic --noinput &&
+             gunicorn matacartas.asgi:application --bind 0.0.0.0:8000 -k uvicorn.workers.UvicornWorker"
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+      - "8089:8089"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
+    command: >
+      sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "200"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5173', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+#  selenium:
+#    build:
+#      context: ./selenium
+#      dockerfile: Dockerfile
+#    environment:
+#      SELENIUM_FRONTEND_BASE_URL: http://frontend:5173
+#      SELENIUM_TIMEOUT_SECONDS: 20
+#      SELENIUM_HEADLESS: "1"
+#    depends_on:
+#      frontend:
+#        condition: service_healthy
+
+volumes:
+  postgres_data:
