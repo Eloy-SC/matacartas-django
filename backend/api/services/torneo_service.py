@@ -165,7 +165,7 @@ def crear_torneo(
 
     config = ConfiguracionGlobal.objects.get(pk=1)
     rango_minimo_creador = config.rango_minimo_crear_torneo
-    if rango_minimo_creador is not None and actor.puntuacion < rango_minimo_creador.puntos_minimos:
+    if rango_minimo_creador is not None and actor.puntuacion < rango_minimo_creador.puntos_minimos and not actor.is_staff:
         raise PermissionError("Tu puntuación es insuficiente para crear torneos")
 
     rango_minimo = get_rango_by_id(rango_minimo_id) if rango_minimo_id is not None else None
