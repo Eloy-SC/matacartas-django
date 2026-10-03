@@ -131,7 +131,8 @@ def crear_usuario_admin(actor, *, username, password, email, nombre, imagen=None
         raise PermissionError("No tienes permiso para crear un usuario")
 
     UserModel = get_user_model()
-    user = UserModel(username=username, password=password, email=email, nombre=nombre, imagen=imagen, is_staff=is_staff, email_verificado=True)
+    user = UserModel(username=username, email=email, nombre=nombre, imagen=imagen, is_staff=is_staff, email_verificado=True)
+    user.set_password(password)
 
     try:
         user.save()
