@@ -62,6 +62,10 @@ When using `docker-compose.yml`, the migration `0002_seed_test_users` creates th
 |------------|--------------------------|---------------|
 | `admin`    | `admin@matacartas.es`    | Administrator |
 | `cervantes`| `cervantes@complutum.es`| Normal user   |
+| `lope`| `lope@madrid.es`| Normal user   |
+| `garcilaso`| `garcilaso@toledo.es`| Normal user   |
+| `quevedo`| `quevedo@cr.es`| Normal user   |
+| `gongora`| `gongora@cordoba.es`| Normal user   |
 
 ### Create a superuser
 
